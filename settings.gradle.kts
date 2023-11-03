@@ -22,4 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Mystere"
 
-include(":server")
+include(":mystere")

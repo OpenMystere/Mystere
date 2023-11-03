@@ -1,6 +1,6 @@
 # Mystere
 
-![Badge](https://img.shields.io/badge/OneBot-11-black)
+[![Badge](https://img.shields.io/badge/OneBot-11-black)](https://github.com/botuniverse/onebot-11)
 
 ## 介绍
 
