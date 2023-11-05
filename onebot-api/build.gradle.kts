@@ -24,23 +24,13 @@ kotlin {
             dependencies {
                 implementation(mystere.kotlin.reflect)
                 implementation(mystere.kotlin.stdlib)
-                implementation(mystere.kotlin.logging)
-
-                implementation(mystere.ktor.plugin.serialization.kotlinx.json)
-
-                implementation(mystere.kotlinx.coroutines.core)
-                implementation(mystere.kotlinx.io.core)
-                implementation(mystere.clikt)
-
-                implementation(project(":mystere-core"))
             }
         }
 
         // jvm
         val jvmMain by getting {
-            dependsOn(commonMain)
             dependencies {
-                implementation(mystere.logback.classic)
+
             }
         }
 
@@ -86,7 +76,6 @@ kotlin {
 
         // windows
         val mingwX64Main by getting {
-            dependsOn(commonMain)
             dependencies {
 
             }

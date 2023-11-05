@@ -22,4 +22,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "Mystere"
 
+include(":onebot-api")
+include(":onebot-v11")
+
 include(":mystere")
+include(":mystere-core")

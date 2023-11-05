@@ -10,8 +10,6 @@ Mystere 是一个纯 Kotlin、对接 [QQ 开放平台](https://q.qq.com) 的机�
 
 本项目需要您在 [QQ 开放平台](https://q.qq.com) 创建自己的机器人才能使用。
 
-## 
-
 ## 鸣谢
 
 > [IntelliJ IDEA](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE，适用于 JVM 平台语言。
