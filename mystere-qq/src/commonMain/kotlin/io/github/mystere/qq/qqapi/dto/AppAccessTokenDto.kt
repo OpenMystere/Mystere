@@ -18,3 +18,9 @@ data class AppAccessTokenRespDto(
     @SerialName("expires_in")
     val expiresIn: Int,
 )
+
+@Serializable
+data class GatewayRespDto(
+    @SerialName("url")
+    val url: String,
+)

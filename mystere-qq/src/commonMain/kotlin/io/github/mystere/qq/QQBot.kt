@@ -1,41 +1,20 @@
 package io.github.mystere.qq
 
-import io.github.mystere.core.MystereBot
+import io.github.mystere.core.IMystereBot
 import io.github.mystere.qq.qqapi.dto.AppAccessTokenReqDto
+import io.github.mystere.qq.qqapi.http.QQAuthAPI
 import io.github.mystere.qq.qqapi.http.QQBotAPI
+import io.github.mystere.qq.qqapi.websocket.QQBotWebsocketConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.math.max
 
-sealed interface IQQBot: MystereBot {
-    companion object {
-        fun create(
-            config: Config.() -> Unit
-        ): QQBot {
-            return QQBot(Config().also(config).copy())
-        }
-        fun create(
-            config: Config
-        ): QQBot {
-            return QQBot(config)
-        }
-    }
-
-    @Serializable
-    data class Config internal constructor(
-        @SerialName("app-id")
-        val botId: String = "",
-        @SerialName("client-secret")
-        val clientSecret: String = "",
-    )
-}
-
 data class QQBot internal constructor(
-    private val config: IQQBot.Config,
-): IQQBot {
-    private val log = KotlinLogging.logger("QQBot(id: ${config.botId})")
+    private val config: Config,
+): IMystereBot {
+    private val log = KotlinLogging.logger("QQBot(id: ${config.appId})")
 
     private var accessToken: String = ""
     private var accessTokenExpire: Int = -1
@@ -43,8 +22,24 @@ data class QQBot internal constructor(
     private val scope: CoroutineScope by lazy {
         CoroutineScope(Dispatchers.IO)
     }
+    private var websocket: QQBotWebsocketConnection? = null
 
-    override suspend fun connect() {
+    private val QQAuthAPI by lazy {
+        QQAuthAPI(
+            logger = log,
+        )
+    }
+    private val QQBotAPI by lazy {
+        QQBotAPI(
+            logger = log,
+            appId = config.appId,
+            accessTokenProvider = {
+                accessToken
+            }
+        )
+    }
+
+    override fun connect() {
         scope.launch(Dispatchers.IO) {
             while (true) {
                 if (accessTokenExpire >= 0) {
@@ -53,8 +48,8 @@ data class QQBot internal constructor(
                     continue
                 }
                 try {
-                    QQBotAPI.getAppAccessToken(AppAccessTokenReqDto(
-                        config.botId, config.clientSecret
+                    QQAuthAPI.getAppAccessToken(AppAccessTokenReqDto(
+                        config.appId, config.clientSecret
                     )).let {
                         accessToken = it.accessToken
                         accessTokenExpire = it.expiresIn
@@ -63,12 +58,50 @@ data class QQBot internal constructor(
                 } catch (e: Exception) {
                     log.warn(e) { "Failed to refresh token, retry in 10s..." }
                     accessTokenExpire = 10
+                    return@launch
+                }
+
+                if (websocket == null) {
+                    websocket = QQBotWebsocketConnection(
+                        log = log,
+                        url = QQBotAPI.gateway().url,
+                    ) {
+                        accessToken
+                    }
                 }
             }
         }
     }
 
-    override fun close() {
+    override fun disconnect() {
         scope.cancel()
+    }
+
+    @Serializable
+    data class Config internal constructor(
+        @SerialName("app-id")
+        val appId: String,
+        @SerialName("client-secret")
+        val clientSecret: String,
+    )
+
+    companion object {
+        fun create(
+            config: Config.() -> Unit
+        ): QQBot {
+            return QQBot(Config("", "").also(config).copy().also {
+                if (it.appId.isBlank()) {
+                    throw IllegalArgumentException("empty appId of a QQBot")
+                }
+                if (it.clientSecret.isBlank()) {
+                    throw IllegalArgumentException("empty clientSecret of a QQBot")
+                }
+            })
+        }
+        fun create(
+            config: Config
+        ): QQBot {
+            return QQBot(config)
+        }
     }
 }

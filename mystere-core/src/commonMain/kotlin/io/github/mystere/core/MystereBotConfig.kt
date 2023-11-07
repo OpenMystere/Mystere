@@ -1,10 +1,12 @@
 package io.github.mystere.core
 
 
-@OptIn(ExperimentalStdlibApi::class)
-interface MystereBot: AutoCloseable {
-    suspend fun connect()
+interface IMystereBot {
+    fun connect()
+    fun disconnect()
 
     override fun equals(other: Any?): Boolean
     override fun hashCode(): Int
 }
+
+

@@ -8,5 +8,5 @@ actual fun HttpClient(): HttpClient = HttpClient(WinHttp) {
 
 }
 actual fun WebsocketClient(): HttpClient = HttpClient(WinHttp) {
-    install(WebSockets)
+
 }

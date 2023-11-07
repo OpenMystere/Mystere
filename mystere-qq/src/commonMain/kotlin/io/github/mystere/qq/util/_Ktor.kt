@@ -14,6 +14,7 @@ val JsonGlobal = Json {
     isLenient = true
     ignoreUnknownKeys = true
     encodeDefaults = true
+    explicitNulls = true
 }
 
 val HttpClient.withJsonContent: HttpClient get() {

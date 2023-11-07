@@ -1,4 +1,4 @@
-package io.github.mystere.qq
+package io.github.mystere.core
 
 /**
  * @author Madray Haven

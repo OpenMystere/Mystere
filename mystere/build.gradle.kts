@@ -5,7 +5,7 @@ plugins {
 
 kotlin {
     jvm {
-        jvmToolchain(21)
+        jvmToolchain(17)
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()
@@ -55,6 +55,13 @@ kotlin {
             }
         }
 
+        // native
+        val nativeMain by getting {
+            dependencies {
+
+            }
+        }
+
         // macos
         val macosArm64Main by getting {
             dependencies {
@@ -101,6 +108,6 @@ kotlin {
 // https://github.com/JetBrains/compose-multiplatform/issues/3123#issuecomment-1699296352
 tasks.configureEach {
     if (name == "jvmRun" || name.contains("run(.*?)Executable".toRegex())) {
-        (this as Exec).workingDir = project.file("bin")
+        (this as ProcessForkOptions).workingDir = project.file("bin")
     }
 }

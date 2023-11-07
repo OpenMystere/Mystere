@@ -1,6 +1,4 @@
-package io.github.mystere.qq
-
-import io.github.mystere.qq.PlatformType
+package io.github.mystere.core
 
 /**
  * @author Madray Haven

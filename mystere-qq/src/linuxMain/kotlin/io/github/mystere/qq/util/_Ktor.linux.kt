@@ -8,5 +8,5 @@ actual fun HttpClient(): HttpClient = HttpClient(CIO) {
 
 }
 actual fun WebsocketClient(): HttpClient = HttpClient(CIO) {
-    install(WebSockets)
+
 }

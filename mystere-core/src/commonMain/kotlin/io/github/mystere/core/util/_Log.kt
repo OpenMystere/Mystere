@@ -1,4 +1,4 @@
-package io.github.mystere.app.util
+package io.github.mystere.core.util
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 
