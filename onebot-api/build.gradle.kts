@@ -18,6 +18,8 @@ kotlin {
     linuxX64()
     mingwX64()
 
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
         // common
         val commonMain by getting {
@@ -45,10 +47,7 @@ kotlin {
 
             }
         }
-        val macosMain by creating {
-            dependsOn(commonMain)
-            macosArm64Main.dependsOn(this)
-            macosX64Main.dependsOn(this)
+        val macosMain by getting {
             dependencies {
 
             }
@@ -65,10 +64,7 @@ kotlin {
 //
 //            }
 //        }
-        val linuxMain by creating {
-            dependsOn(commonMain)
-//            linuxArm64Main.dependsOn(this)
-            linuxX64Main.dependsOn(this)
+        val linuxMain by getting {
             dependencies {
 
             }

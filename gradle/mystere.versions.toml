@@ -14,6 +14,7 @@ kotlin-logging = "5.1.0"
 slf4j = "2.0.9"
 logback = "1.4.11"
 clikt = "4.2.1"
+yamlkt = "0.13.0"
 
 [libraries]
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
@@ -37,6 +38,7 @@ ktor-plugin-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-seria
 
 kotlinx-serialization-message-pack = { group = "com.wunderbee.kompack", name = "kompack-kotlin-serialization", version.ref = "ktor" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+yamlkt = { group = "net.mamoe.yamlkt", name = "yamlkt", version.ref = "yamlkt" }
 
 ktorfit-lib-light = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
 ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }

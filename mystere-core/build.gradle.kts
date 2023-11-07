@@ -20,6 +20,8 @@ kotlin {
     linuxX64()
     mingwX64()
 
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
         // common
         val commonMain by getting {
@@ -41,7 +43,6 @@ kotlin {
 
         // jvm
         val jvmMain by getting {
-            dependsOn(commonMain)
             dependencies {
                 implementation(mystere.ktor.client.cio)
                 implementation(mystere.slf4j.api)
@@ -59,10 +60,7 @@ kotlin {
 
             }
         }
-        val macosMain by creating {
-            dependsOn(commonMain)
-            macosArm64Main.dependsOn(this)
-            macosX64Main.dependsOn(this)
+        val macosMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)
             }
@@ -80,10 +78,7 @@ kotlin {
 //
 //            }
 //        }
-        val linuxMain by creating {
-            dependsOn(commonMain)
-//            linuxArm64Main.dependsOn(this)
-            linuxX64Main.dependsOn(this)
+        val linuxMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)
             }

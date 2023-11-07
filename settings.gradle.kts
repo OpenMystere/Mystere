@@ -27,3 +27,4 @@ include(":onebot-v11")
 
 include(":mystere")
 include(":mystere-core")
+include(":mystere-qq")

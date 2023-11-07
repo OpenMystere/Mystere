@@ -1,6 +1,8 @@
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.kotlin.plugin.serialization)
+    alias(mystere.plugins.ksp)
+    alias(mystere.plugins.ktorfit)
 }
 
 kotlin {
@@ -12,19 +14,11 @@ kotlin {
             }
         }
     }
-    listOf(
-        macosArm64(),
-        macosX64(),
-        // TODO: clikt
-//        linuxArm64(),
-        linuxX64(),
-        mingwX64(),
-    ).forEach {
-        it.binaries.executable {
-            baseName = "mystere"
-            entryPoint = "io.github.mystere.app.main"
-        }
-    }
+    macosArm64()
+    macosX64()
+//    linuxArm64()
+    linuxX64()
+    mingwX64()
 
     applyDefaultHierarchyTemplate()
 
@@ -36,22 +30,24 @@ kotlin {
                 implementation(mystere.kotlin.stdlib)
                 implementation(mystere.kotlin.logging)
 
+                implementation(mystere.ktor.client.core)
+                implementation(mystere.ktor.client.content.negotiation)
+                implementation(mystere.ktor.client.auth)
+                implementation(mystere.ktor.plugin.logging)
                 implementation(mystere.ktor.plugin.serialization.kotlinx.json)
+                implementation(mystere.ktorfit.lib.light)
 
                 implementation(mystere.kotlinx.coroutines.core)
-                implementation(mystere.kotlinx.io.core)
-                implementation(mystere.clikt)
-                implementation(mystere.yamlkt)
 
                 implementation(project(":mystere-core"))
-                implementation(project(":mystere-qq"))
             }
         }
 
         // jvm
         val jvmMain by getting {
             dependencies {
-                implementation(mystere.logback.classic)
+                implementation(mystere.ktor.client.cio)
+                implementation(mystere.slf4j.api)
             }
         }
 
@@ -68,7 +64,7 @@ kotlin {
         }
         val macosMain by getting {
             dependencies {
-
+                implementation(mystere.ktor.client.cio)
             }
         }
 
@@ -85,22 +81,29 @@ kotlin {
 //        }
         val linuxMain by getting {
             dependencies {
-
+                implementation(mystere.ktor.client.cio)
             }
         }
 
         // windows
         val mingwX64Main by getting {
+            dependsOn(commonMain)
             dependencies {
-
+                implementation(mystere.ktor.client.winhttp)
             }
         }
     }
 }
 
-// https://github.com/JetBrains/compose-multiplatform/issues/3123#issuecomment-1699296352
-tasks.configureEach {
-    if (name == "jvmRun" || name.contains("run(.*?)Executable".toRegex())) {
-        (this as Exec).workingDir = project.file("bin")
+dependencies {
+    with(mystere.ktorfit.ksp) {
+        add("kspCommonMainMetadata", this)
+        add("kspJvm", this)
+//        add("kspLinuxArm64", this)
+        add("kspLinuxX64", this)
+        add("kspMacosArm64", this)
+        add("kspMacosX64", this)
+        add("kspMacosArm64", this)
+        add("kspMingwX64", this)
     }
 }
