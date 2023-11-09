@@ -2,6 +2,8 @@ package io.github.mystere.core
 
 
 interface IMystereBot {
+    val botId: String
+
     fun connect()
     fun disconnect()
 

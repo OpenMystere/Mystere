@@ -1,6 +1,9 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
+
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.kotlin.plugin.serialization)
+    alias(mystere.plugins.buildkonfig)
 }
 
 kotlin {
@@ -45,6 +48,9 @@ kotlin {
 
                 implementation(project(":mystere-core"))
                 implementation(project(":mystere-qq"))
+
+                implementation(project(":onebot-api"))
+                implementation(project(":onebot-v11"))
             }
         }
 
@@ -109,5 +115,14 @@ kotlin {
 tasks.configureEach {
     if (name == "jvmRun" || name.contains("run(.*?)Executable".toRegex())) {
         (this as ProcessForkOptions).workingDir = project.file("bin")
+    }
+}
+
+buildkonfig {
+    packageName = findProperty("mystere.app.pkgName")!!.toString()
+
+    defaultConfigs {
+        buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", findProperty("mystere.app.version")!!.toString())
+//        buildConfigField(FieldSpec.Type.STRING, "COMMIT", VersionGen.GIT_HEAD)
     }
 }

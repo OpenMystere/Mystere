@@ -145,7 +145,7 @@ data class QQBotWebsocketPayload(
     @SerialName("t")
     val type: String? = "",
     @SerialName("d")
-    val data: JsonElement,
+    val data: JsonElement = JsonNull,
 ) {
     @Serializable(with = OpCode.OpCodeSerializer::class)
     enum class OpCode(

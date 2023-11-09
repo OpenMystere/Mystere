@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import io.github.mystere.app.util.runBlockingWithCancellation
 import io.github.mystere.core.IMystereBot
+import io.github.mystere.core.MystereCore
 import io.github.mystere.core.util.logger
 import io.github.mystere.qq.QQBot
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -15,8 +16,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlMap
-
-
 
 @OptIn(ExperimentalStdlibApi::class)
 object Mystere: CliktCommand(), AutoCloseable {
@@ -34,15 +33,9 @@ object Mystere: CliktCommand(), AutoCloseable {
             },
         )
 
-    private val _debug: Boolean? by option("-d", "--debug")
+    private val _debug: Boolean by option("-d", "--debug")
         .flag()
         .help("Enable debug mode.")
-
-    val Debug: Boolean by lazy {
-        return@lazy _debug
-            .takeIf { it != null }
-            ?: Config.debug ?: false
-    }
 
     val Config: MystereConfig by lazy {
         Yaml.decodeFromString(
@@ -51,31 +44,42 @@ object Mystere: CliktCommand(), AutoCloseable {
         )
     }
 
-    private val bots = hashSetOf<IMystereBot>()
+    private val bots = hashMapOf<String, IMystereBot>()
 
     override fun run() {
+        if (_debug || Config.debug) {
+            MystereCore.forceDebug()
+        }
+        if (MystereCore.Debug) {
+            log.info { "Debug mode on!" }
+        }
         if (Config.bots.isEmpty()) {
             log.warn { "No bot added!" }
             return
         }
-        for (config in Config.bots) {
-            val type = config.getStringOrNull("type")
+        for (bots in Config.bots) {
+            val type = bots.getStringOrNull("type")
                 ?.lowercase() ?: continue
-            bots.add(when (type) {
+            when (type) {
                 "qq" -> QQBot.create(Yaml.decodeFromString(
                     QQBot.Config.serializer(),
-                    config.toString(),
+                    bots.toString(),
                 ))
                 else -> continue
-            })
+            }.let {
+                this.bots[it.botId] = it
+            }
         }
-        for (bot in bots) {
+        for (service in Config.services) {
+
+        }
+        for ((_, bot) in bots) {
             bot.connect()
         }
     }
 
     override fun close() {
-        for (bot in bots) {
+        for ((_, bot) in bots) {
             bot.disconnect()
         }
     }
@@ -95,14 +99,24 @@ fun main(args: Array<String>) {
             if (e != null) {
                 log.error(e) { "Mystere exit unexpected!" }
             }
-        }
+        },
     )
 }
 
 @Serializable
 data class MystereConfig(
     @SerialName("debug")
-    val debug: Boolean? = null,
+    val debug: Boolean = false,
     @SerialName("bots")
-    val bots: List<YamlMap> = listOf()
-)
+    val bots: List<YamlMap> = listOf(),
+    @SerialName("services")
+    val services: List<OneBotConfig> = listOf(),
+) {
+    @Serializable
+    data class OneBotConfig(
+        @SerialName("version")
+        val version: String = "11",
+        @SerialName("connection")
+        val connection: YamlMap,
+    )
+}

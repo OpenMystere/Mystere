@@ -11,3 +11,13 @@ enum class PlatformType {
     macOS,
     Windows,
 }
+
+expect val isDebugBinary: Boolean
+
+object MystereCore {
+    private var _debug = isDebugBinary
+    val Debug: Boolean get() = _debug
+    fun forceDebug() {
+        _debug = true
+    }
+}

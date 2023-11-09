@@ -1,6 +1,7 @@
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.kotlin.plugin.serialization)
+    alias(mystere.plugins.buildkonfig)
 }
 
 kotlin {
@@ -26,6 +27,7 @@ kotlin {
             dependencies {
                 implementation(mystere.kotlin.reflect)
                 implementation(mystere.kotlin.stdlib)
+                implementation(mystere.kotlinx.serialization.core)
             }
         }
 
@@ -76,5 +78,13 @@ kotlin {
 
             }
         }
+    }
+}
+
+buildkonfig {
+    packageName = findProperty("mystere.lib.onebot.api.pkgName")!!.toString()
+
+    defaultConfigs {
+
     }
 }

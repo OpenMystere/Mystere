@@ -4,7 +4,7 @@
 
 ## 介绍
 
-Mystere 是一个纯 Kotlin、对接 [QQ 开放平台](https://q.qq.com) 的机器人无头客户端。
+Mystere 是一个基于 Kotlin/Native、实现了 OneBot 协议、对接 [QQ 开放平台](https://q.qq.com) 的机器人无头客户端。
 
 项目名称取自[《Synduality Noir》](https://synduality-noir.com/)中的 [诺瓦尔（Noir）](https://zh.moegirl.org.cn/%E8%AF%BA%E7%93%A6%E5%B0%94) 里人格 米丝缇（Mystere），希望此项目能如米丝媂一样强大。
 

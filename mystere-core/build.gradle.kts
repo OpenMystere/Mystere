@@ -3,6 +3,7 @@ plugins {
     alias(mystere.plugins.kotlin.plugin.serialization)
     alias(mystere.plugins.ksp)
     alias(mystere.plugins.ktorfit)
+    alias(mystere.plugins.buildkonfig)
 }
 
 kotlin {
@@ -104,5 +105,13 @@ dependencies {
         add("kspMacosX64", this)
         add("kspMacosArm64", this)
         add("kspMingwX64", this)
+    }
+}
+
+buildkonfig {
+    packageName = findProperty("mystere.lib.core.pkgName")!!.toString()
+
+    defaultConfigs {
+
     }
 }

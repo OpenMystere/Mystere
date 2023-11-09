@@ -14,6 +14,8 @@ import kotlin.math.max
 data class QQBot internal constructor(
     private val config: Config,
 ): IMystereBot {
+    override val botId: String = config.appId
+
     private val log = KotlinLogging.logger("QQBot(id: ${config.appId})")
 
     private var accessToken: String = ""

@@ -24,7 +24,10 @@ rootProject.name = "Mystere"
 
 include(":onebot-api")
 include(":onebot-v11")
+include(":onebot-v12")
 
 include(":mystere")
 include(":mystere-core")
 include(":mystere-qq")
+
+include(":kotlin-serialization-cqcode")
