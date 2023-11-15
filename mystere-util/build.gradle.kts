@@ -1,6 +1,5 @@
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
-    alias(mystere.plugins.kotlin.plugin.serialization)
     alias(mystere.plugins.buildkonfig)
 }
 
@@ -25,17 +24,14 @@ kotlin {
         // common
         val commonMain by getting {
             dependencies {
-                implementation(mystere.kotlin.reflect)
-                implementation(mystere.kotlin.stdlib)
-                implementation(mystere.kotlinx.serialization.core)
-                implementation(mystere.kotlinx.serialization.json)
+                api(mystere.kotlin.logging)
             }
         }
 
         // jvm
         val jvmMain by getting {
             dependencies {
-
+                implementation(mystere.slf4j.api)
             }
         }
 
@@ -83,7 +79,7 @@ kotlin {
 }
 
 buildkonfig {
-    packageName = findProperty("mystere.lib.serialization.cqcode.pkgName")!!.toString()
+    packageName = findProperty("mystere.lib.util.pkgName")!!.toString()
 
     defaultConfigs {
 
