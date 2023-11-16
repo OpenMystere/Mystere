@@ -57,7 +57,7 @@ kotlin {
         // jvm
         val jvmMain by getting {
             dependencies {
-                implementation(mystere.logback.classic)
+
             }
         }
 

@@ -32,6 +32,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(mystere.slf4j.api)
+                implementation(mystere.logback.classic)
             }
         }
 

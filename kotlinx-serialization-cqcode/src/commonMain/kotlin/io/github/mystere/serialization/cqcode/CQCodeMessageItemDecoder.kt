@@ -4,7 +4,8 @@ import io.github.mystere.util.logger
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.modules.SerializersModule
 
 class CQCodeMessageItemDecoder(
@@ -39,10 +40,16 @@ class CQCodeMessageItemDecoder(
                 if (elementIndex < 0) {
                     throw IllegalStateException("Call beginStructure() first")
                 }
-                elementIndex += 1
+                if (elementIndex >= descriptor.elementsCount) {
+                    return CompositeDecoder.DECODE_DONE
+                }
                 name = descriptor.getElementName(elementIndex)
-            } while (args.containsKey(name))
-            return elementIndex
+                if (args.containsKey(name)) {
+                    break
+                }
+                elementIndex += 1
+            } while (true)
+            return elementIndex++
         }
 
         override fun decodeStringElement(descriptor: SerialDescriptor, index: Int): String {
@@ -56,7 +63,6 @@ class CQCodeMessageItemDecoder(
             previousValue: T?
         ): T {
             val name = descriptor.getElementName(index)
-            log.warn { "decodeSerializableElement: $name" }
             return deserializer.deserialize(CQCodeMessageItemDecoder(
                 args[name]!!, mapOf(), serializersModule
             ))

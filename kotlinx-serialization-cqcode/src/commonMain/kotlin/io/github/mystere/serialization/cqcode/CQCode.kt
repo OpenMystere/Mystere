@@ -1,5 +1,6 @@
 package io.github.mystere.serialization.cqcode
 
+import io.github.mystere.util.logger
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -13,6 +14,8 @@ internal val CQCodeJson = Json {
 sealed class CQCode(
     override val serializersModule: SerializersModule
 ): StringFormat {
+    private val log by logger()
+
     @Deprecated(
         message = "Use decodeFromString instead.",
         replaceWith = ReplaceWith("decodeFromString(string)"),
@@ -104,10 +107,11 @@ sealed class CQCode(
                         string.length - 4
                     })
                     .takeIf { it != "text" }
-                    ?.asCQCodeMessageItemType
+                    ?.lowercase()
                     ?: throw SerializationException("Not a valid CQCode: $string")
-                val args = with(string.substring(type.name.length + 4, string.length - 1)) {
+                val args = with(string.substring(type.length + 5, string.length - 1)) {
                     HashMap<String, String>().also {
+                        it["type"] = type
                         for (item in split(",")) {
                             if (!item.contains("=")) {
                                 continue
@@ -117,7 +121,7 @@ sealed class CQCode(
                         }
                     }
                 }
-                return type.deserialize(CQCodeMessageItemDecoder(
+                return type.asCQCodeMessageItemType.deserialize(CQCodeMessageItemDecoder(
                     string, args, serializersModule
                 ))
             } else {
