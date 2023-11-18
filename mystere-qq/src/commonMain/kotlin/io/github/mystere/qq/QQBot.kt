@@ -1,11 +1,19 @@
 package io.github.mystere.qq
 
 import io.github.mystere.core.IMystereBot
+import io.github.mystere.core.MystereCore
+import io.github.mystere.core.MystereScope
 import io.github.mystere.onebot.IOneBotConnection
+import io.github.mystere.onebot.v11.HeartbeatStatus
+import io.github.mystere.onebot.v11.IOneBotV11Connection
+import io.github.mystere.onebot.v11.MetaHeartbeat
+import io.github.mystere.onebot.v11.connection.applySelfIdHeader
+import io.github.mystere.onebot.v12.IOneBotV12Connection
 import io.github.mystere.qq.qqapi.dto.AppAccessTokenReqDto
 import io.github.mystere.qq.qqapi.http.QQAuthAPI
 import io.github.mystere.qq.qqapi.http.QQBotAPI
 import io.github.mystere.qq.qqapi.websocket.QQBotWebsocketConnection
+import io.github.mystere.util.withLogging
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.serialization.SerialName
@@ -14,6 +22,7 @@ import kotlin.math.max
 
 data class QQBot internal constructor(
     private val config: Config,
+    override val connection: IOneBotConnection,
 ): IMystereBot {
     override val botId: String = config.appId
 
@@ -22,9 +31,8 @@ data class QQBot internal constructor(
     private var accessToken: String = ""
     private var accessTokenExpire: Int = -1
 
-    private val scope: CoroutineScope by lazy {
-        CoroutineScope(Dispatchers.IO)
-    }
+    private val coroutineScope: CoroutineScope by lazy { MystereScope() }
+
     private var websocket: QQBotWebsocketConnection? = null
 
     private val QQAuthAPI by lazy {
@@ -42,12 +50,31 @@ data class QQBot internal constructor(
         )
     }
 
-    private var _OneBotConnection: IOneBotConnection? = null
-    private val OneBotConnection: IOneBotConnection get() = _OneBotConnection!!
-
-    override fun connect(connection: IOneBotConnection) {
-        scope.launch(Dispatchers.IO) {
-            _OneBotConnection = connection
+    override fun connect() {
+        coroutineScope.launch(Dispatchers.IO) {
+            connection.connect {
+                applySelfIdHeader(botId)
+                withLogging(log, MystereCore.Debug)
+            }
+            // 心跳
+            delay(5_000)
+            while (true) {
+                when (connection) {
+                    is IOneBotV11Connection -> {
+                        connection.sendEvent(MetaHeartbeat(
+                            botId.toLong(), HeartbeatStatus(
+                                online = true, good = true
+                            )
+                        ))
+                    }
+                    is IOneBotV12Connection -> {
+                        // TODO
+                    }
+                }
+                delay(30_000)
+            }
+        }
+        coroutineScope.launch(Dispatchers.IO) {
             while (true) {
                 if (accessTokenExpire >= 0) {
                     delay(max(accessTokenExpire - 55, accessTokenExpire) * 1000L)
@@ -81,7 +108,7 @@ data class QQBot internal constructor(
     }
 
     override fun disconnect() {
-        scope.cancel()
+        coroutineScope.cancel()
     }
 
     @Serializable
@@ -94,21 +121,26 @@ data class QQBot internal constructor(
 
     companion object {
         fun create(
-            config: Config.() -> Unit
+            connection: IOneBotConnection,
+            config: Config.() -> Unit,
         ): QQBot {
-            return QQBot(Config("", "").also(config).copy().also {
-                if (it.appId.isBlank()) {
-                    throw IllegalArgumentException("empty appId of a QQBot")
-                }
-                if (it.clientSecret.isBlank()) {
-                    throw IllegalArgumentException("empty clientSecret of a QQBot")
-                }
-            })
+            return QQBot(
+                Config("", "").also(config).copy().also {
+                    if (it.appId.isBlank()) {
+                        throw IllegalArgumentException("empty appId of a QQBot")
+                    }
+                    if (it.clientSecret.isBlank()) {
+                        throw IllegalArgumentException("empty clientSecret of a QQBot")
+                    }
+                },
+                connection,
+            )
         }
         fun create(
-            config: Config
+            config: Config,
+            connection: IOneBotConnection,
         ): QQBot {
-            return QQBot(config)
+            return QQBot(config, connection)
         }
     }
 }

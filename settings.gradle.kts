@@ -12,6 +12,15 @@ dependencyResolutionManagement {
         mavenCentral()
         google()
         mavenLocal()
+
+        maven("https://raw.githubusercontent.com/krzema12/snakeyaml-engine-kmp/artifacts/m2/") {
+            name = "SnakeYAML Engine KMP Snapshots"
+            mavenContent {
+                // only include the relevant snapshots
+                includeGroup("it.krzeminski")
+                snapshotsOnly()
+            }
+        }
     }
     versionCatalogs {
         val mystere by creating {

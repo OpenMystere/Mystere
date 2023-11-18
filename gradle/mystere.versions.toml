@@ -18,6 +18,7 @@ slf4j = "2.0.9"
 logback = "1.4.11"
 clikt = "4.2.1"
 yamlkt = "0.13.0"
+snakeyaml = "2.7.1-SNAPSHOT"
 
 [libraries]
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
@@ -46,7 +47,6 @@ ktor-plugin-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-seria
 kotlinx-serialization-message-pack = { group = "com.wunderbee.kompack", name = "kompack-kotlin-serialization", version.ref = "ktor" }
 kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization-json" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
-yamlkt = { group = "net.mamoe.yamlkt", name = "yamlkt", version.ref = "yamlkt" }
 
 ktorfit-lib-light = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
 ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
@@ -56,6 +56,8 @@ sqldelight-driver-sqlite-jvm = { group = "app.cash.sqldelight", name = "sqlite-d
 
 # :mystere
 clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
+yamlkt = { group = "net.mamoe.yamlkt", name = "yamlkt", version.ref = "yamlkt" }
+snakeyaml = { group = "it.krzeminski", name = "snakeyaml-engine-kmp", version.ref = "snakeyaml" }
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "agp" }

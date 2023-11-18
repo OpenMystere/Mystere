@@ -15,6 +15,13 @@ fun HttpClient.withLogging(
     log: KLogger,
     debug: Boolean = false,
 ): HttpClient = config {
+    withLogging(log, debug)
+}
+
+fun HttpClientConfig<*>.withLogging(
+    log: KLogger,
+    debug: Boolean = false,
+) {
     install(Logging) {
         level = if (debug) LogLevel.ALL else LogLevel.HEADERS
         logger = object : Logger {

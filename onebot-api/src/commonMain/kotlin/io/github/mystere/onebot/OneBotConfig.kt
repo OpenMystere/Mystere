@@ -1,8 +1,12 @@
 package io.github.mystere.onebot
 
-interface IOneBotConnection {
-    suspend fun init()
-    suspend fun sendEvent(event: IOneBotEvent)
+import io.ktor.client.*
+
+abstract class IOneBotConnection(
+    open val originConfig: IConfig,
+) {
+    abstract suspend fun connect(httpClient: HttpClientConfig<*>.() -> Unit)
+    abstract suspend fun sendEvent(event: IOneBotEvent)
 
 
     interface IConfig {

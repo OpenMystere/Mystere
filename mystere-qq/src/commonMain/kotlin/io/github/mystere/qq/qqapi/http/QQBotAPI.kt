@@ -4,13 +4,14 @@ import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.POST
+import io.github.mystere.core.MystereCore
 import io.github.mystere.qq.qqapi.dto.AppAccessTokenReqDto
 import io.github.mystere.qq.qqapi.dto.AppAccessTokenRespDto
 import io.github.mystere.qq.qqapi.dto.GatewayRespDto
-import io.github.mystere.qq.util.HttpClient
-import io.github.mystere.qq.util.withContentNegotiation
-import io.github.mystere.qq.util.withJsonContent
-import io.github.mystere.qq.util.withLogging
+import io.github.mystere.util.HttpClient
+import io.github.mystere.util.withContentNegotiation
+import io.github.mystere.util.withJsonContent
+import io.github.mystere.util.withLogging
 import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.client.plugins.api.*
 import io.ktor.client.request.*
@@ -31,7 +32,7 @@ fun QQAuthAPI(
             HttpClient()
                 .withJsonContent
                 .withContentNegotiation
-                .withLogging(logger)
+                .withLogging(logger, MystereCore.Debug)
         )
         .build()
         .create()
@@ -53,7 +54,7 @@ fun QQBotAPI(
             HttpClient()
                 .withJsonContent
                 .withContentNegotiation
-                .withLogging(logger)
+                .withLogging(logger, MystereCore.Debug)
                 .config {
                     install(createClientPlugin("qq-auth-header") {
                         onRequest { request, _ ->

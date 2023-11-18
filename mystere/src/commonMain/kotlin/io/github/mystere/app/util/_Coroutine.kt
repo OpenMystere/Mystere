@@ -2,19 +2,18 @@ package io.github.mystere.app.util
 
 import kotlinx.coroutines.*
 
-fun runBlockingWithCancellation(
+fun CoroutineScope.runBlockingWithCancellation(
     block: suspend () -> Unit,
     exit: suspend (Exception?) -> Unit,
 ) {
-    val scope = CoroutineScope(Dispatchers.Default)
     addShutdownHook {
         runBlocking {
             exit(null)
-            scope.cancel()
+            cancel()
         }
     }
     runBlocking {
-        scope.launch {
+        this@runBlockingWithCancellation.launch {
             try {
                 block()
             } catch (e: Exception) {

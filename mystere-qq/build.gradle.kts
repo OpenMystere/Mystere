@@ -48,6 +48,7 @@ kotlin {
 
                 implementation(project(":onebot-api"))
                 implementation(project(":onebot-v11"))
+                implementation(project(":onebot-v12"))
             }
         }
 
