@@ -1,72 +1,93 @@
 package io.github.mystere.serialization.cqcode
 
 import kotlinx.serialization.*
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.encoding.decodeStructure
-import kotlinx.serialization.encoding.encodeStructure
 import kotlinx.serialization.json.*
 
 /**
  * CQ 码元素
  * @see <a href="https://docs.go-cqhttp.org/cqcode/#%E6%B6%88%E6%81%AF%E7%B1%BB%E5%9E%8B">CQ 码 / CQ Code | go-cqhttp 帮助中心</a>
  */
-@Serializable
-sealed interface CQCodeMessageItem {
+interface CQCodeMessageItem {
     @Transient
-    val type: Type
+    val _type: Type
 
     // TODO: 这个地方非常不优雅，暂时想不到优化方案，等待大佬 pr。。。
-    @Serializable(with = CQCodeMessageItemTypeSerializer::class)
     enum class Type(
         val decodeFromJsonElement: (json: Json, element: JsonElement) -> CQCodeMessageItem,
+        val encodeToJsonElement: (json: Json, value: CQCodeMessageItem) -> JsonElement,
         val deserialize: (decoder: Decoder) -> CQCodeMessageItem,
         val serialize: (encoder: Encoder, value: CQCodeMessageItem) -> Unit,
     ) {
-        Text(
+        text(
             decodeFromJsonElement = { json, element ->
-                json.decodeFromJsonElement(CQCodeMessageItem.Text.serializer(), element)
+                json.decodeFromJsonElement(Text.serializer(), element)
+            },
+            encodeToJsonElement = { json, value ->
+                json.encodeToJsonElement(Text.serializer(), value as Text)
             },
             deserialize = { decoder ->
-                CQCodeMessageItem.Text.serializer().deserialize(decoder)
+                Text.serializer().deserialize(decoder)
             },
             serialize = { encoder, value ->
-                CQCodeMessageItem.Text.serializer().serialize(encoder, value as CQCodeMessageItem.Text)
+                Text.serializer().serialize(encoder, value as Text)
             },
         ),
-        Face(
+        face(
             decodeFromJsonElement = { json, element ->
-                json.decodeFromJsonElement(CQCodeMessageItem.Text.serializer(), element)
+                json.decodeFromJsonElement(Face.serializer(), element)
+            },
+            encodeToJsonElement = { json, value ->
+                json.encodeToJsonElement(Face.serializer(), value as Face)
             },
             deserialize = { decoder ->
-                CQCodeMessageItem.Face.serializer().deserialize(decoder)
+                Face.serializer().deserialize(decoder)
             },
             serialize = { encoder, value ->
-                CQCodeMessageItem.Face.serializer().serialize(encoder, value as CQCodeMessageItem.Face)
+                Face.serializer().serialize(encoder, value as Face)
             },
         ),
-        Record(
+        image(
             decodeFromJsonElement = { json, element ->
-                json.decodeFromJsonElement(CQCodeMessageItem.Text.serializer(), element)
+                json.decodeFromJsonElement(Image.serializer(), element)
+            },
+            encodeToJsonElement = { json, value ->
+                json.encodeToJsonElement(Image.serializer(), value as Image)
             },
             deserialize = { decoder ->
-                CQCodeMessageItem.Record.serializer().deserialize(decoder)
+                Image.serializer().deserialize(decoder)
             },
             serialize = { encoder, value ->
-                CQCodeMessageItem.Record.serializer().serialize(encoder, value as CQCodeMessageItem.Record)
+                Image.serializer().serialize(encoder, value as Image)
             },
         ),
-        Video(
+        record(
             decodeFromJsonElement = { json, element ->
-                json.decodeFromJsonElement(CQCodeMessageItem.Text.serializer(), element)
+                json.decodeFromJsonElement(Record.serializer(), element)
+            },
+            encodeToJsonElement = { json, value ->
+                json.encodeToJsonElement(Record.serializer(), value as Record)
             },
             deserialize = { decoder ->
-                CQCodeMessageItem.Video.serializer().deserialize(decoder)
+                Record.serializer().deserialize(decoder)
             },
             serialize = { encoder, value ->
-                CQCodeMessageItem.Video.serializer().serialize(encoder, value as CQCodeMessageItem.Video)
+                Record.serializer().serialize(encoder, value as Record)
+            },
+        ),
+        video(
+            decodeFromJsonElement = { json, element ->
+                json.decodeFromJsonElement(Video.serializer(), element)
+            },
+            encodeToJsonElement = { json, value ->
+                json.encodeToJsonElement(Video.serializer(), value as Video)
+            },
+            deserialize = { decoder ->
+                Video.serializer().deserialize(decoder)
+            },
+            serialize = { encoder, value ->
+                Video.serializer().serialize(encoder, value as Video)
             },
         ),
         ;
@@ -91,7 +112,7 @@ sealed interface CQCodeMessageItem {
         @SerialName("text")
         val text: String
     ): CQCodeMessageItem {
-        override val type: Type = Type.Text
+        override val _type: Type = Type.text
     }
 
     // QQ 表情
@@ -100,7 +121,22 @@ sealed interface CQCodeMessageItem {
         @SerialName("id")
         val id: Long,
     ): CQCodeMessageItem {
-        override val type: Type = Type.Face
+        override val _type: Type = Type.face
+    }
+
+    // 图片
+    @Serializable
+    data class Image(
+        @SerialName("file")
+        val file: String,
+        @SerialName("type")
+        val type: Type? = null,
+    ): CQCodeMessageItem {
+        override val _type: CQCodeMessageItem.Type = CQCodeMessageItem.Type.image
+
+        enum class Type {
+            flash,
+        }
     }
 
     // 语音
@@ -115,7 +151,7 @@ sealed interface CQCodeMessageItem {
         @SerialName("cache")
         val cache: Int? = null,
     ): CQCodeMessageItem {
-        override val type: Type = Type.Record
+        override val _type: Type = Type.record
     }
 
     // 短视频
@@ -124,36 +160,39 @@ sealed interface CQCodeMessageItem {
         @SerialName("file")
         val file: String,
     ): CQCodeMessageItem {
-        override val type: Type = Type.Video
+        override val _type: Type = Type.video
     }
 }
 
-
-private val types: Map<String, CQCodeMessageItem.Type> by lazy {
-    with(hashMapOf<String, CQCodeMessageItem.Type>()) {
-        for (value in CQCodeMessageItem.Type.entries) {
-            put(value.name.lowercase(), value)
-        }
-        return@with this
-    }
+fun CQCodeMessageItem.asMessage(): CQCodeMessage {
+    return CQCodeMessage(ArrayDeque(listOf(this)))
 }
-internal val String.asCQCodeMessageItemType: CQCodeMessageItem.Type get() {
-    return with(lowercase()) {
-        types[this] ?: throw SerializationException("Not a valid CQCodeMessageItem.Type: $this")
-    }
-}
-object CQCodeMessageItemTypeSerializer: KSerializer<CQCodeMessageItem.Type> {
-    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-    override val descriptor: SerialDescriptor = buildSerialDescriptor(
-        "io.github.mystere.serialization.cqcode.CQCodeMessageItem.Type",
-        SerialKind.ENUM,
-    )
 
-    override fun deserialize(decoder: Decoder): CQCodeMessageItem.Type {
-        return decoder.decodeString().asCQCodeMessageItemType
-    }
-
-    override fun serialize(encoder: Encoder, value: CQCodeMessageItem.Type) {
-        encoder.encodeString(value.name.lowercase())
-    }
-}
+//private val types: Map<String, CQCodeMessageItem.Type> by lazy {
+//    with(hashMapOf<String, CQCodeMessageItem.Type>()) {
+//        for (value in CQCodeMessageItem.Type.entries) {
+//            put(value.name.lowercase(), value)
+//        }
+//        return@with this
+//    }
+//}
+//internal val String.asCQCodeMessageItemType: CQCodeMessageItem.Type get() {
+//    return with(lowercase()) {
+//        types[this] ?: throw SerializationException("Not a valid CQCodeMessageItem.Type: $this")
+//    }
+//}
+//object CQCodeMessageItemTypeSerializer: KSerializer<CQCodeMessageItem.Type> {
+//    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+//    override val descriptor: SerialDescriptor = buildSerialDescriptor(
+//        "io.github.mystere.serialization.cqcode.CQCodeMessageItem.Type",
+//        SerialKind.ENUM,
+//    )
+//
+//    override fun deserialize(decoder: Decoder): CQCodeMessageItem.Type {
+//        return decoder.decodeString().asCQCodeMessageItemType
+//    }
+//
+//    override fun serialize(encoder: Encoder, value: CQCodeMessageItem.Type) {
+//        encoder.encodeString(value.name.lowercase())
+//    }
+//}

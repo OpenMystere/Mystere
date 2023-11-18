@@ -21,7 +21,8 @@ kotlin {
         // TODO: clikt
 //        linuxArm64(),
         linuxX64(),
-        mingwX64(),
+        // TODO: ktor-server
+//        mingwX64(),
     ).forEach {
         it.binaries.executable {
             baseName = "mystere"
@@ -47,6 +48,7 @@ kotlin {
                 implementation(mystere.yamlkt)
 
                 implementation(project(":mystere-core"))
+                implementation(project(":mystere-util"))
                 implementation(project(":mystere-qq"))
 
                 implementation(project(":onebot-api"))
@@ -103,11 +105,11 @@ kotlin {
         }
 
         // windows
-        val mingwX64Main by getting {
-            dependencies {
-
-            }
-        }
+//        val mingwX64Main by getting {
+//            dependencies {
+//
+//            }
+//        }
     }
 }
 
@@ -122,7 +124,7 @@ buildkonfig {
     packageName = findProperty("mystere.app.pkgName")!!.toString()
 
     defaultConfigs {
-        buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", findProperty("mystere.app.version")!!.toString())
-//        buildConfigField(FieldSpec.Type.STRING, "COMMIT", VersionGen.GIT_HEAD)
+        buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", MYSTERE_APP)
+        buildConfigField(FieldSpec.Type.STRING, "COMMIT", GIT_HEAD)
     }
 }

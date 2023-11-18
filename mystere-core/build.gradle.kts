@@ -1,3 +1,5 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
+
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.kotlin.plugin.serialization)
@@ -40,6 +42,7 @@ kotlin {
                 implementation(mystere.kotlinx.coroutines.core)
 
                 implementation(project(":mystere-util"))
+                implementation(project(":onebot-api"))
             }
         }
 
@@ -112,6 +115,7 @@ buildkonfig {
     packageName = findProperty("mystere.lib.core.pkgName")!!.toString()
 
     defaultConfigs {
-
+        buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", MYSTERE_LIB)
+        buildConfigField(FieldSpec.Type.STRING, "COMMIT", GIT_HEAD)
     }
 }

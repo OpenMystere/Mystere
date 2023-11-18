@@ -1,6 +1,7 @@
 package io.github.mystere.qq
 
 import io.github.mystere.core.IMystereBot
+import io.github.mystere.onebot.IOneBotConnection
 import io.github.mystere.qq.qqapi.dto.AppAccessTokenReqDto
 import io.github.mystere.qq.qqapi.http.QQAuthAPI
 import io.github.mystere.qq.qqapi.http.QQBotAPI
@@ -41,8 +42,12 @@ data class QQBot internal constructor(
         )
     }
 
-    override fun connect() {
+    private var _OneBotConnection: IOneBotConnection? = null
+    private val OneBotConnection: IOneBotConnection get() = _OneBotConnection!!
+
+    override fun connect(connection: IOneBotConnection) {
         scope.launch(Dispatchers.IO) {
+            _OneBotConnection = connection
             while (true) {
                 if (accessTokenExpire >= 0) {
                     delay(max(accessTokenExpire - 55, accessTokenExpire) * 1000L)
@@ -67,8 +72,8 @@ data class QQBot internal constructor(
                     websocket = QQBotWebsocketConnection(
                         log = log,
                         url = QQBotAPI.gateway().url,
-                    ) {
-                        accessToken
+                    ) provider@{
+                        return@provider accessToken
                     }
                 }
             }

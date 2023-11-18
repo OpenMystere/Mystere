@@ -1,18 +1,24 @@
 package io.github.mystere.serialization.cqcode
 
 import kotlin.test.Test
-import kotlin.test.assertIs
-import kotlin.test.assertTrue
-import kotlin.test.assertEquals
 
 class CQCodeTest {
     @Test
-    fun singleFaceTest() {
-        fromString("[CQ:face,id=142]") {
-            assertSize(1)
-            assertEquals(0, CQCodeMessageItem.Face(
-                id = 142L
-            ))
-        }
-    }
+    fun faceTest() = Test(
+        "faceTest",
+        CQCodeMessageItem.Face(
+            id = 142L
+        )
+    )
+
+    @Test
+    fun imageTest() = Test(
+        "imageTest",
+        CQCodeMessageItem.Image(
+            file = "http://baidu.com/1.jpg"
+        ) + CQCodeMessageItem.Image(
+            file = "http://baidu.com/2.jpg",
+            type = CQCodeMessageItem.Image.Type.flash,
+        )
+    )
 }

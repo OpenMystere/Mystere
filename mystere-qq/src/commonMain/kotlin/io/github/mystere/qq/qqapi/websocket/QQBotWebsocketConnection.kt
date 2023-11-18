@@ -1,15 +1,15 @@
 package io.github.mystere.qq.qqapi.websocket
 
+import io.github.mystere.core.Platform
+import io.github.mystere.qq.BuildKonfig
 import io.github.mystere.qq.qqapi.websocket.message.Intent
 import io.github.mystere.qq.qqapi.websocket.message.OpCode10
 import io.github.mystere.qq.qqapi.websocket.message.OpCode2
-import io.github.mystere.qq.util.JsonGlobal
-import io.github.mystere.qq.util.WebsocketClient
-import io.github.mystere.qq.util.withLogging
+import io.github.mystere.util.JsonGlobal
+import io.github.mystere.util.WebsocketClient
 import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.client.*
 import io.ktor.client.plugins.websocket.*
-import io.ktor.serialization.kotlinx.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.*
@@ -30,15 +30,7 @@ class QQBotWebsocketConnection internal constructor(
         CoroutineScope(Dispatchers.IO)
     }
 
-    private val WebsocketClient: HttpClient by lazy {
-        WebsocketClient()
-            .config {
-                install(WebSockets) {
-                    contentConverter = KotlinxWebsocketSerializationConverter(JsonGlobal)
-                }
-            }
-            .withLogging(log)
-    }
+    private val WebsocketClient: HttpClient by lazy { WebsocketClient() }
 
     private var s: Long? = null
     init {
@@ -54,9 +46,8 @@ class QQBotWebsocketConnection internal constructor(
                         token = "QQBot ${accessTokenProvider()}",
                         intents = Intent.DEFAULT,
                         properties = buildJsonObject {
-                            // TODO: 搭配 buildkonfing 动态版本名
-                            put("\$client", JsonPrimitive("Mystere v${"1.0.0-alpha01"}"))
-                            put("\$platform", JsonPrimitive(0))
+                            put("\$client", JsonPrimitive("Mystere v${BuildKonfig.VERSION_NAME}(${BuildKonfig.COMMIT})"))
+                            put("\$platform", JsonPrimitive(Platform.name))
                         },
                     ),
                     serializer = OpCode2.IdentifyPayload.serializer(),

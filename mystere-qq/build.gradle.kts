@@ -1,9 +1,12 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
+
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.kotlin.plugin.serialization)
     alias(mystere.plugins.ksp)
     alias(mystere.plugins.ktorfit)
     alias(mystere.plugins.buildkonfig)
+    alias(mystere.plugins.sqldelight)
 }
 
 kotlin {
@@ -19,7 +22,7 @@ kotlin {
     macosX64()
 //    linuxArm64()
     linuxX64()
-    mingwX64()
+//    mingwX64()
 
     applyDefaultHierarchyTemplate()
 
@@ -41,6 +44,10 @@ kotlin {
                 implementation(mystere.kotlinx.coroutines.core)
 
                 implementation(project(":mystere-core"))
+                implementation(project(":mystere-util"))
+
+                implementation(project(":onebot-api"))
+                implementation(project(":onebot-v11"))
             }
         }
 
@@ -49,6 +56,7 @@ kotlin {
             dependencies {
                 implementation(mystere.ktor.client.cio)
                 implementation(mystere.slf4j.api)
+                implementation(mystere.sqldelight.driver.sqlite.jvm)
             }
         }
 
@@ -87,10 +95,17 @@ kotlin {
         }
 
         // windows
-        val mingwX64Main by getting {
-            dependsOn(commonMain)
+//        val mingwX64Main by getting {
+//            dependsOn(commonMain)
+//            dependencies {
+//                implementation(mystere.ktor.client.winhttp)
+//            }
+//        }
+
+        // native
+        val nativeMain by getting {
             dependencies {
-                implementation(mystere.ktor.client.winhttp)
+                implementation(mystere.sqldelight.driver.sqlite.native)
             }
         }
     }
@@ -105,7 +120,7 @@ dependencies {
         add("kspMacosArm64", this)
         add("kspMacosX64", this)
         add("kspMacosArm64", this)
-        add("kspMingwX64", this)
+//        add("kspMingwX64", this)
     }
 }
 
@@ -113,6 +128,16 @@ buildkonfig {
     packageName = findProperty("mystere.lib.qq.pkgName")!!.toString()
 
     defaultConfigs {
+        buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", MYSTERE_LIB)
+        buildConfigField(FieldSpec.Type.STRING, "COMMIT", GIT_HEAD)
+    }
+}
 
+sqldelight {
+    databases {
+        val MystereQQDatabase by creating {
+            packageName.set("io.github.mystere.sqlite")
+            generateAsync.set(true)
+        }
     }
 }

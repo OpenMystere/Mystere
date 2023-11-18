@@ -5,4 +5,5 @@ plugins {
     alias(mystere.plugins.ktorfit) apply false
     alias(mystere.plugins.ksp) apply false
     alias(mystere.plugins.buildkonfig) apply false
+    alias(mystere.plugins.sqldelight) apply false
 }

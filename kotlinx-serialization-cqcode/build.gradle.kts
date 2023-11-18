@@ -1,3 +1,5 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
+
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.kotlin.plugin.serialization)
@@ -92,6 +94,6 @@ buildkonfig {
     packageName = findProperty("mystere.lib.serialization.cqcode.pkgName")!!.toString()
 
     defaultConfigs {
-
+        buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", MYSTERE_LIB)
     }
 }

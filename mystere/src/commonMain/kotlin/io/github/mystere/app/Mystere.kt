@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.parameters.options.*
 import io.github.mystere.app.util.runBlockingWithCancellation
 import io.github.mystere.core.IMystereBot
 import io.github.mystere.core.MystereCore
-import io.github.mystere.core.util.logger
+import io.github.mystere.util.logger
 import io.github.mystere.qq.QQBot
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.io.buffered
@@ -47,27 +47,28 @@ object Mystere: CliktCommand(), AutoCloseable {
     private val bots = hashMapOf<String, IMystereBot>()
 
     override fun run() {
+        log.info { "Mystere v${BuildKonfig.VERSION_NAME}(${BuildKonfig.COMMIT}) starting..." }
         if (_debug || Config.debug) {
             MystereCore.forceDebug()
         }
         if (MystereCore.Debug) {
-            log.info { "Debug mode on!" }
+            log.debug { "Debug mode on!" }
         }
         if (Config.bots.isEmpty()) {
             log.warn { "No bot added!" }
             return
         }
-        for (bots in Config.bots) {
-            val type = bots.getStringOrNull("type")
+        for (bot in Config.bots) {
+            val type = bot.getStringOrNull("type")
                 ?.lowercase() ?: continue
             when (type) {
                 "qq" -> QQBot.create(Yaml.decodeFromString(
                     QQBot.Config.serializer(),
-                    bots.toString(),
+                    bot["detail"].toString(),
                 ))
                 else -> continue
             }.let {
-                this.bots[it.botId] = it
+                bots[it.botId] = it
             }
         }
         for (service in Config.services) {

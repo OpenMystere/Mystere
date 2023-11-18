@@ -1,3 +1,5 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
+
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.buildkonfig)
@@ -25,6 +27,12 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(mystere.kotlin.logging)
+                implementation(mystere.ktor.client.core)
+                implementation(mystere.ktor.plugin.logging)
+                implementation(mystere.ktor.client.content.negotiation)
+                implementation(mystere.ktor.plugin.serialization.kotlinx.json)
+                implementation(mystere.kotlinx.serialization.core)
+                implementation(mystere.kotlinx.serialization.json)
             }
         }
 
@@ -33,6 +41,7 @@ kotlin {
             dependencies {
                 implementation(mystere.slf4j.api)
                 implementation(mystere.logback.classic)
+                implementation(mystere.ktor.client.cio)
             }
         }
 
@@ -49,7 +58,7 @@ kotlin {
         }
         val macosMain by getting {
             dependencies {
-
+                implementation(mystere.ktor.client.cio)
             }
         }
 
@@ -66,14 +75,14 @@ kotlin {
         }
         val linuxMain by getting {
             dependencies {
-
+                implementation(mystere.ktor.client.cio)
             }
         }
 
         // windows
-        val mingwX64Main by getting {
+        val mingwMain by getting {
             dependencies {
-
+                implementation(mystere.ktor.client.winhttp)
             }
         }
     }
@@ -83,6 +92,7 @@ buildkonfig {
     packageName = findProperty("mystere.lib.util.pkgName")!!.toString()
 
     defaultConfigs {
-
+        buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", MYSTERE_LIB)
+        buildConfigField(FieldSpec.Type.STRING, "COMMIT", GIT_HEAD)
     }
 }

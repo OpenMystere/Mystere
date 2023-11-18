@@ -3,8 +3,8 @@ package io.github.mystere.serialization.cqcode
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
@@ -34,15 +34,12 @@ data class CQCodeMessage internal constructor(
 }
 
 object CQCodeMessageSerializer: KSerializer<CQCodeMessage> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor(
-        "io.github.mystere.serializer.cqcode.CQCodeMessage",
-    ) {
-    }
+    override val descriptor: SerialDescriptor = listSerialDescriptor<CQCodeMessageItem>()
 
     override fun deserialize(decoder: Decoder): CQCodeMessage {
         try {
-            if (decoder is JsonDecoder) {
-                when (val element = decoder.decodeJsonElement()) {
+            when (decoder) {
+                is JsonDecoder -> when (val element = decoder.decodeJsonElement()) {
                     is JsonPrimitive -> {
                         if (element.isString) {
                             return CQCode.decodeFromString(element.content)
@@ -53,6 +50,7 @@ object CQCodeMessageSerializer: KSerializer<CQCodeMessage> {
                     }
                     else -> { }
                 }
+                is CQCodeMessageDecoder -> return decoder.decodeCQCodeMessage()
             }
             throw SerializationException("Unsupported decoder type: ${decoder::class}")
         } catch (e: Exception) {
@@ -66,10 +64,14 @@ object CQCodeMessageSerializer: KSerializer<CQCodeMessage> {
                 is JsonEncoder -> {
                     encoder.encodeJsonElement(buildJsonArray {
                         for (item in value.chain) {
-                            add(CQCodeJson.encodeToJsonElement(item))
+                            add(buildJsonObject {
+                                put("type", JsonPrimitive(item._type.name))
+                                put("data", item._type.encodeToJsonElement(CQCodeJson, item))
+                            })
                         }
                     })
                 }
+                is CQCodeMessageEncoder -> encoder.encodeCQCodeMessage(value)
                 else -> throw SerializationException("Unsupported encoder type: ${encoder::class}")
             }
         } catch (e: Exception) {
