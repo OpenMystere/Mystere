@@ -37,7 +37,6 @@ object OneBotV11Connection {
         }
     }
 
-    @Deprecated("不打算真正实现")
     data class Http(
         override val url: String,
     ) : IOneBotConnection.IConfig {
