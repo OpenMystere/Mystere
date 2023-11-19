@@ -1,5 +1,6 @@
 package io.github.mystere.qq.qqapi.dto
 
+import io.github.mystere.qq.qqapi.websocket.message.QQMessageContent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -11,6 +12,7 @@ data class AppAccessTokenReqDto(
     val clientSecret: String,
 )
 
+
 @Serializable
 data class AppAccessTokenRespDto(
     @SerialName("access_token")
@@ -18,6 +20,7 @@ data class AppAccessTokenRespDto(
     @SerialName("expires_in")
     val expiresIn: Int,
 )
+
 
 @Serializable
 data class GatewayRespDto(

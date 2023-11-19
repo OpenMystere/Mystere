@@ -20,7 +20,7 @@ object OpCode2 {
         val shared: List<Int> = listOf(0, 1),
         @SerialName("properties")
         val properties: JsonObject = buildJsonObject { },
-    )
+    ): OpCodeData
 }
 
 @Serializable(with = Intent.Serializer::class)

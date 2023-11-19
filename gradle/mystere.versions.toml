@@ -2,7 +2,7 @@
 agp = "8.1.1"
 kotlin = "1.9.20"
 ktor = "2.3.5"
-ktorfit = "1.9.1"
+ktorfit = "1.10.1"
 ksp = "1.9.20-1.0.14"
 buildkonfig = "0.14.0"
 sqldelight = "2.0.0"

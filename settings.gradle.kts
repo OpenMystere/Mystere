@@ -39,5 +39,6 @@ include(":mystere")
 include(":mystere-core")
 include(":mystere-util")
 include(":mystere-qq")
+include(":qq-sdk")
 
 include(":kotlinx-serialization-cqcode")

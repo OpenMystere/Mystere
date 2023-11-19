@@ -1,17 +1,19 @@
 package io.github.mystere.qq.qqapi.websocket
 
 import io.github.mystere.core.Platform
+import io.github.mystere.core.lazyMystereScope
 import io.github.mystere.qq.BuildKonfig
 import io.github.mystere.qq.qqapi.websocket.message.Intent
 import io.github.mystere.qq.qqapi.websocket.message.OpCode10
 import io.github.mystere.qq.qqapi.websocket.message.OpCode2
 import io.github.mystere.util.JsonGlobal
-import io.github.mystere.util.WebsocketClient
+import io.github.mystere.util.UniWebsocketClient
 import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.client.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -24,23 +26,22 @@ import kotlinx.serialization.json.*
 class QQBotWebsocketConnection internal constructor(
     private val log: KLogger,
     private val url: String,
+    private val channel: Channel<QQBotWebsocketPayload>,
     private val accessTokenProvider: () -> String,
 ): AutoCloseable {
-    private val scope: CoroutineScope by lazy {
-        CoroutineScope(Dispatchers.IO)
-    }
+    private val scope: CoroutineScope by lazyMystereScope()
 
-    private val WebsocketClient: HttpClient by lazy { WebsocketClient() }
+    private val WebsocketClient: HttpClient by lazy { UniWebsocketClient() }
+    private var Connection: DefaultClientWebSocketSession? = null
 
     private var s: Long? = null
     init {
         scope.launch(Dispatchers.Default) {
             var WebsocketConnectJob: Job? = null
-            var Connection: DefaultClientWebSocketSession? = null
             while (true) {
                 Connection?.close()
                 Connection = WebsocketClient.webSocketSession(url)
-                Connection.sendWithLog(QQBotWebsocketPayload(
+                Connection!!.sendWithLog(QQBotWebsocketPayload(
                     opCode = QQBotWebsocketPayload.OpCode.Identify,
                     data = OpCode2.IdentifyPayload(
                         token = "QQBot ${accessTokenProvider()}",
@@ -58,7 +59,7 @@ class QQBotWebsocketConnection internal constructor(
                     try {
                         while (true) {
                             log.debug { "waiting for new WebSocket message..." }
-                            val rawMessage = Connection.incoming.receive() as Frame.Text
+                            val rawMessage = Connection!!.incoming.receive() as Frame.Text
                             log.debug { "new WebSocket message!" }
                             val payload = try {
                                 JsonGlobal.decodeFromString(
@@ -73,7 +74,7 @@ class QQBotWebsocketConnection internal constructor(
                             }
                             s = payload.s
                             try {
-                                processMessage(Connection, payload)
+                                processMessage(Connection!!, payload)
                             } catch (e: Exception) {
                                 log.warn { "failed during process WebSocket message! (type: ${payload.type})" }
                                 continue
@@ -110,7 +111,13 @@ class QQBotWebsocketConnection internal constructor(
                     }
                 }
             }
-            else -> { }
+            QQBotWebsocketPayload.OpCode.HeartbeatACK -> {
+
+            }
+            else -> {
+                log.debug { "request processing qq event: ${message.type} (id: ${message.id}, opcode: ${message.opCode})!" }
+                channel.trySend(message)
+            }
         }
     }
 
@@ -125,6 +132,10 @@ class QQBotWebsocketConnection internal constructor(
         log.debug { "send WebSocket message: $message" }
         send(message)
     }
+
+    suspend fun sendPayload(payload: QQBotWebsocketPayload) {
+        Connection?.sendSerialized(payload)
+    }
 }
 
 @Serializable
@@ -133,6 +144,8 @@ data class QQBotWebsocketPayload(
     val opCode: OpCode,
     @SerialName("s")
     val s: Long? = null,
+    @SerialName("id")
+    val id: String? = null,
     @SerialName("t")
     val type: String? = "",
     @SerialName("d")
@@ -179,7 +192,11 @@ fun <T: Any> QQBotWebsocketPayload(
     serializer: KSerializer<T>,
 ) = QQBotWebsocketPayload(
     opCode, s, type,
-    JsonGlobal.encodeToJsonElement(
+    data = JsonGlobal.encodeToJsonElement(
         serializer, data
     )
 )
+
+inline fun <reified T: @Serializable Any> QQBotWebsocketPayload.withData(block: T.() -> Unit) {
+    block.invoke(JsonGlobal.decodeFromJsonElement(data))
+}

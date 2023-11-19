@@ -5,19 +5,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.logging.*
 
-fun HttpClient.withLogging(
-    tag: String = "HttpClient",
-): HttpClient = config {
-    withLogging(KotlinLogging.logger(tag))
-}
-
-fun HttpClient.withLogging(
-    log: KLogger,
-    debug: Boolean = false,
-): HttpClient = config {
-    withLogging(log, debug)
-}
-
 fun HttpClientConfig<*>.withLogging(
     log: KLogger,
     debug: Boolean = false,

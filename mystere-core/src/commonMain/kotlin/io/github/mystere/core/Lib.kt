@@ -1,9 +1,6 @@
 package io.github.mystere.core
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.newCoroutineContext
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -33,5 +30,8 @@ val MystereScope: CoroutineScope by lazy {
 }
 
 fun MystereScope(context: CoroutineContext = Dispatchers.IO): CoroutineScope {
-    return CoroutineScope(MystereScope.newCoroutineContext(context))
+    return CoroutineScope(MystereScope.coroutineContext + Job())
+}
+fun lazyMystereScope(context: CoroutineContext = Dispatchers.IO) = lazy {
+    MystereScope(context)
 }

@@ -20,7 +20,7 @@ kotlin {
     }
     macosArm64()
     macosX64()
-//    linuxArm64()
+    linuxArm64()
     linuxX64()
 //    mingwX64()
 
@@ -41,10 +41,13 @@ kotlin {
                 implementation(mystere.ktor.plugin.serialization.kotlinx.json)
                 implementation(mystere.ktorfit.lib.light)
 
+                implementation(mystere.kotlinx.io.core)
                 implementation(mystere.kotlinx.coroutines.core)
+                implementation(mystere.kotlinx.datetime)
 
                 implementation(project(":mystere-core"))
                 implementation(project(":mystere-util"))
+                implementation(project(":kotlinx-serialization-cqcode"))
 
                 implementation(project(":onebot-api"))
                 implementation(project(":onebot-v11"))
@@ -84,11 +87,11 @@ kotlin {
 
             }
         }
-//        val linuxArm64Main by getting {
-//            dependencies {
-//
-//            }
-//        }
+        val linuxArm64Main by getting {
+            dependencies {
+
+            }
+        }
         val linuxMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)
@@ -116,7 +119,7 @@ dependencies {
     with(mystere.ktorfit.ksp) {
         add("kspCommonMainMetadata", this)
         add("kspJvm", this)
-//        add("kspLinuxArm64", this)
+        add("kspLinuxArm64", this)
         add("kspLinuxX64", this)
         add("kspMacosArm64", this)
         add("kspMacosX64", this)

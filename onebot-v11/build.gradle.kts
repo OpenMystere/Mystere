@@ -17,7 +17,7 @@ kotlin {
     }
     macosArm64()
     macosX64()
-//    linuxArm64()
+    linuxArm64()
     linuxX64()
 //    mingwX64()
 
@@ -77,11 +77,11 @@ kotlin {
 
             }
         }
-//        val linuxArm64Main by getting {
-//            dependencies {
-//
-//            }
-//        }
+        val linuxArm64Main by getting {
+            dependencies {
+
+            }
+        }
         val linuxMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)

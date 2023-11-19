@@ -33,6 +33,22 @@ data class CQCodeMessage internal constructor(
     }
 }
 
+operator fun CQCodeMessage?.plus(next: CQCodeMessage): CQCodeMessage {
+    return if (this == null) {
+        next
+    } else {
+        return this + next
+    }
+}
+operator fun CQCodeMessage?.plus(next: CQCodeMessageItem): CQCodeMessage {
+    return if (this == null) {
+        next.asMessage()
+    } else {
+        return this + next
+    }
+}
+
+
 object CQCodeMessageSerializer: KSerializer<CQCodeMessage> {
     override val descriptor: SerialDescriptor = listSerialDescriptor<CQCodeMessageItem>()
 

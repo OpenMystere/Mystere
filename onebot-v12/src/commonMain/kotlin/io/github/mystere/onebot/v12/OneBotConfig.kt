@@ -1,6 +1,8 @@
 package io.github.mystere.onebot.v12
 
+import io.github.mystere.onebot.IOneBotAction
 import io.github.mystere.onebot.IOneBotConnection
+import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -14,7 +16,7 @@ object OneBotV12Connection {
         @SerialName("reconnect-interval")
         val reconnectInterval: Int = 3000,
     ) : IOneBotConnection.IConfig {
-        override fun createConnection(): IOneBotConnection {
+        override fun createConnection(actionChannel: Channel<IOneBotAction>): IOneBotConnection {
             TODO("Not yet implemented")
         }
     }
@@ -26,7 +28,7 @@ object OneBotV12Connection {
         @SerialName("access-token")
         val accessToken: String,
     ) : IOneBotConnection.IConfig {
-        override fun createConnection(): IOneBotConnection {
+        override fun createConnection(actionChannel: Channel<IOneBotAction>): IOneBotConnection {
             TODO("Not yet implemented")
         }
     }
@@ -36,7 +38,7 @@ object OneBotV12Connection {
         @SerialName("url")
         override val url: String,
     ) : IOneBotConnection.IConfig {
-        override fun createConnection(): IOneBotConnection {
+        override fun createConnection(actionChannel: Channel<IOneBotAction>): IOneBotConnection {
             TODO("Not yet implemented")
         }
     }
@@ -46,7 +48,7 @@ object OneBotV12Connection {
         @SerialName("url")
         override val url: String,
     ) : IOneBotConnection.IConfig {
-        override fun createConnection(): IOneBotConnection {
+        override fun createConnection(actionChannel: Channel<IOneBotAction>): IOneBotConnection {
             TODO("Not yet implemented")
         }
     }

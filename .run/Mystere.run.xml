@@ -4,7 +4,7 @@
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$/mystere" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="-DmainClass=io.github.mystere.app.MystereKt" />
+      <option name="scriptParameters" value="-DmainClass=io.github.mystere.app.MystereKt --stacktrace" />
       <option name="taskDescriptions">
         <list />
       </option>

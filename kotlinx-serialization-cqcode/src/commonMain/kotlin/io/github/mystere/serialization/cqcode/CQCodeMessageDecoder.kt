@@ -87,12 +87,8 @@ class CQCodeMessageDecoder(
                 }
                 else -> {
                     val startIndex = index
-                    try {
-                        while (chars[index] != '[') {
-                            index += 1
-                        }
-                    } catch (e: IndexOutOfBoundsException) {
-                        throw SerializationException("Not a valid CQCode: $origin")
+                    while (index < chars.size && chars[index] != '[') {
+                        index += 1
                     }
                     result.addLast(origin.substring(startIndex, index))
                     index += 1

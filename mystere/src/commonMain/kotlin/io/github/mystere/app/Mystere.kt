@@ -105,7 +105,7 @@ object Mystere: CliktCommand(), AutoCloseable {
                     else -> throw IllegalArgumentException("Unknown OneBot v12 connection type: ${connect.type}")
                 }
                 else -> throw IllegalArgumentException("Unknown OneBot version: ${connect.version}")
-            }.createConnection()
+            }
             val botInstance = when (type) {
                 "qq" -> QQBot.create(
                     YamlGlobal.decodeFromString(

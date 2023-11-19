@@ -8,5 +8,5 @@ object OpCode10 {
     data class QQHelloMessage(
         @SerialName("heartbeat_interval")
         val heartbeatInterval: Long,
-    )
+    ): OpCodeData
 }

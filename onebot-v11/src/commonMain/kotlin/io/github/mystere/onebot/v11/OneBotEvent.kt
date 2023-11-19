@@ -11,7 +11,8 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     @SerialName("post_type")
     val postType: PostType
     @SerialName("self_id")
-    val selfId: Long
+    val selfId: String
+
     @SerialName("time")
     val time: Long
 
@@ -24,10 +25,10 @@ sealed interface IOneBotV11Event: IOneBotEvent {
 /************ 消息（message） ***********/
 
 enum class MessageType {
-    private, group,
+    private, group, guild,
 }
 enum class MessageSubType {
-    friend, group, other
+    friend, group, channel, other
 }
 enum class Sex {
     male, female, unknown
@@ -36,7 +37,7 @@ enum class Sex {
 // 私聊消息
 @Serializable
 data class MessagePrivate(
-    override val selfId: Long,
+    override val selfId: String,
     @SerialName("sub_type")
     val subType: MessageSubType,
     @SerialName("message_id")
@@ -73,31 +74,37 @@ data class MessagePrivate(
 // 消息
 @Serializable
 data class Message(
-    override val selfId: Long,
+    override val selfId: String,
+    @SerialName("message_type")
+    val messageType: MessageType = MessageType.group,
     @SerialName("sub_type")
     val subType: MessageSubType,
     @SerialName("message_id")
-    val messageId: Int,
+    val messageId: String,
     @SerialName("message")
     val message: CQCodeMessage,
     @SerialName("raw_message")
-    val rawIMessage: String,
+    val rawMessage: String,
     @SerialName("font")
     val font: Int,
     @SerialName("sender")
     val sender: Sender,
     @SerialName("user_id")
-    val userId: Long = sender.userId,
+    val userId: String = sender.userId.toString(),
+    @SerialName("guild_id")
+    val guildId: String? = null,
+    @SerialName("channel_id")
+    val channelId: String? = null,
 ): IOneBotV11Event {
-    @SerialName("message_type")
-    val messageType: MessageType = MessageType.group
     override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.message
     override val time: Long = Clock.System.now().toEpochMilliseconds()
 
     @Serializable
     data class Sender(
         @SerialName("user_id")
-        val userId: Long,
+        val userId: String,
+        @SerialName("tiny_id")
+        val tinyId: String? = null,
         @SerialName("card")
         val card: String? = null,
         @SerialName("nickname")
@@ -122,7 +129,7 @@ enum class LifecycleSubType {
 }
 @Serializable
 data class MetaLifecycle(
-    override val selfId: Long,
+    override val selfId: String,
     @SerialName("sub_type")
     val subType: LifecycleSubType,
 ): IOneBotV11Event {
@@ -142,7 +149,7 @@ data class HeartbeatStatus(
 )
 @Serializable
 data class MetaHeartbeat(
-    override val selfId: Long,
+    override val selfId: String,
     @SerialName("state")
     val state: HeartbeatStatus,
 ): IOneBotV11Event {
@@ -173,7 +180,7 @@ data class FileMeta(
 )
 @Serializable
 data class NoticeGroupFileUpload(
-    override val selfId: Long,
+    override val selfId: String,
     @SerialName("group_id")
     val groupId: Long,
     @SerialName("user_id")

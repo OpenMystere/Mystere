@@ -9,9 +9,9 @@ import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-expect fun HttpClient(): HttpClient
+expect fun UniHttpClient(config: HttpClientConfig<*>.() -> Unit = { }): HttpClient
 expect fun _WebsocketClient(): HttpClient
-fun WebsocketClient(config: WebSockets.Config.() -> Unit = {
+fun UniWebsocketClient(config: WebSockets.Config.() -> Unit = {
     contentConverter = KotlinxWebsocketSerializationConverter(JsonGlobal)
 }): HttpClient = _WebsocketClient().config {
     install(WebSockets, config)
@@ -25,20 +25,16 @@ val JsonGlobal = Json {
     useArrayPolymorphism = true
 }
 
-val HttpClient.withJsonContent: HttpClient get() {
-    return config {
-        install(createClientPlugin("JsonContent") {
-            onRequest { request, _ ->
-                request.contentType(ContentType.Application.Json)
-            }
-        })
-    }
+fun HttpClientConfig<*>.withJsonContent() {
+    install(createClientPlugin("JsonContent") {
+        onRequest { request, _ ->
+            request.contentType(ContentType.Application.Json)
+        }
+    })
 }
 
-val HttpClient.withContentNegotiation: HttpClient get() {
-    return config {
-        install(ContentNegotiation) {
-            json(JsonGlobal)
-        }
+fun HttpClientConfig<*>.withContentNegotiation(json: Json = JsonGlobal) {
+    install(ContentNegotiation) {
+        json(json)
     }
 }

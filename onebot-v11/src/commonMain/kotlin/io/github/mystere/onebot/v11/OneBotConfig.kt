@@ -1,7 +1,9 @@
 package io.github.mystere.onebot.v11
 
+import io.github.mystere.onebot.IOneBotAction
 import io.github.mystere.onebot.IOneBotConnection
 import io.github.mystere.onebot.v11.connection.ReverseWebSocketConnection
+import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -19,8 +21,8 @@ object OneBotV11Connection {
         @SerialName("heartbeat")
         val heartbeat: Int = 20_000,
     ) : IOneBotConnection.IConfig {
-        override fun createConnection(): IOneBotConnection {
-            return ReverseWebSocketConnection(this)
+        override fun createConnection(actionChannel: Channel<IOneBotAction>): IOneBotConnection {
+            return ReverseWebSocketConnection(this, actionChannel)
         }
     }
 
@@ -29,7 +31,7 @@ object OneBotV11Connection {
         @SerialName("url")
         override val url: String,
     ) : IOneBotConnection.IConfig {
-        override fun createConnection(): IOneBotConnection {
+        override fun createConnection(actionChannel: Channel<IOneBotAction>): IOneBotConnection {
             TODO("Not yet implemented")
         }
     }
@@ -43,7 +45,7 @@ object OneBotV11Connection {
         @SerialName("event-url")
         val eventUrl: String? = null,
     ) : IOneBotConnection.IConfig {
-        override fun createConnection(): IOneBotConnection {
+        override fun createConnection(actionChannel: Channel<IOneBotAction>): IOneBotConnection {
             TODO("Not yet implemented")
         }
     }
@@ -53,7 +55,7 @@ object OneBotV11Connection {
         @SerialName("url")
         override val url: String
     ) : IOneBotConnection.IConfig {
-        override fun createConnection(): IOneBotConnection {
+        override fun createConnection(actionChannel: Channel<IOneBotAction>): IOneBotConnection {
             TODO("Not yet implemented")
         }
     }
