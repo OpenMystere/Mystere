@@ -24,11 +24,12 @@ Mystere 是一个基于 Kotlin/Native、实现了 OneBot 协议、对接 [QQ 开
 | onebot-v12     | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ❌ [5]                     | ❌ [1]  |
 | sdk-qq         | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
 
-1. There are currently no plans to support this target.
-2. Waiting for linuxArm64 support in module `mystere-sqlite`.
-3. Waiting for mingwX64 support in module `ontbot-v11`, `ontbot-v12`.
-4. Waiting for linuxArm64 support in [app.cash.sqldelight:native-driver](https://github.com/cashapp/sqldelight): [Add all native targets to the runtime - Issue #4255 - cashapp/sqldelight](https://github.com/cashapp/sqldelight/issues/4255).
-5. Waiting for mingwX64 support in [io.ktor:ktor-server-cio](https://github.com/ktorio/ktor): [Native server | Ktor](https://ktor.io/docs/native-server.html).
+1. 暂无计划支持其他目标。
+2. 等待模块 `mystere-sqlite` 对 linuxArm64 提供支持。
+3. 等待模块 `ontbot-v11`、`ontbot-v12` 对 mingwX64 提供支持。
+4. 等待 [app.cash.sqldelight:native-driver](https://github.com/cashapp/sqldelight) 对 linuxArm64 提供支持：[Add all native targets to the runtime - Issue #4255 - cashapp/sqldelight](https://github.com/cashapp/sqldelight/issues/4255).
+5. 等待 [io.ktor:ktor-server-cio](https://github.com/ktorio/ktor) 对 mingwX64 提供支持：[Native server | Ktor](https://ktor.io/docs/native-server.html).
+
 
 ## 鸣谢
 
