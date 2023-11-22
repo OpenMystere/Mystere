@@ -1,15 +1,13 @@
-package io.github.mystere.qq.qqapi.websocket.message
+package io.github.mystere.qqsdk.qqapi.websocket.message
 
-import io.github.mystere.onebot.v12.cqcode.CQCodeV12MessageItem
-import io.github.mystere.serialization.cqcode.CQCode
-import io.github.mystere.serialization.cqcode.CQCodeMessage
-import io.github.mystere.serialization.cqcode.CQCodeMessageItem
-import io.github.mystere.serialization.cqcode.asMessage
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
@@ -23,7 +21,7 @@ object OpCode0 {
         @SerialName("channel_id")
         val channelId: String,
         @SerialName("content")
-        val content: QQMessageContent,
+        val content: String,
         @SerialName("guild_id")
         val guildId: String,
         @SerialName("id")
@@ -87,60 +85,6 @@ object OpCode0 {
             @SerialName("username")
             val username: String,
         )
-    }
-}
-
-
-@Serializable(with = QQMessageContentSerializer::class)
-class QQMessageContent(
-    private val delegate: List<CQCodeMessageItem>,
-): List<CQCodeMessageItem> by delegate {
-    val asCQCodeMessage: CQCodeMessage get() {
-        var message: CQCodeMessage? = null
-        for (item in delegate) {
-            if (message == null) {
-                message = item.asMessage()
-            } else {
-                message += item
-            }
-        }
-        return message!!
-    }
-}
-
-object QQMessageContentSerializer: KSerializer<QQMessageContent> {
-    override val descriptor: SerialDescriptor = listSerialDescriptor<CQCodeMessageItem>()
-
-    private val at = "<@!?(.+)>".toRegex()
-    private val subChanel = "<#(.+)>".toRegex()
-    private val emoji = "<emoji:(.+)>".toRegex()
-    override fun deserialize(decoder: Decoder): QQMessageContent {
-        return QQMessageContent(ArrayDeque(
-            CQCode.decodeFromString(
-                decoder.decodeString()
-                    .replace("\\u003c", "<")
-                    .replace("\\u003e", ">")
-                    .replace("@everyone", "[CQ:at,qq=all]")
-                    .replace(at) { matchResult ->
-                        val userId = matchResult.groupValues[1]
-                        return@replace "[CQ:mention,user_id=$userId]"
-                    }
-                    .replace(subChanel, "")
-                    .replace(emoji, "")
-            )
-        ))
-    }
-
-    override fun serialize(encoder: Encoder, value: QQMessageContent) {
-        encoder.encodeString(StringBuilder().also {
-            for (item in value) {
-                when (item) {
-                    is CQCodeV12MessageItem.MentionAll -> it.append("@everyone")
-                    is CQCodeV12MessageItem.Mention -> it.append("\\u003c@${item.userId}\\u003e")
-                    is CQCodeMessageItem.Text -> it.append(item.text)
-                }
-            }
-        }.toString())
     }
 }
 

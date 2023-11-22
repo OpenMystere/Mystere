@@ -32,7 +32,7 @@ fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
 internal class ReverseWebSocketConnection(
     override val originConfig: ReverseWebSocket,
     ownBotId: String,
-    actionChannel: Channel<IOneBotAction>,
+    actionChannel: Channel<OneBotV11Action>,
 ): IOneBotV11Connection(originConfig, ownBotId, actionChannel) {
     private val log = KotlinLogging.logger("OneBotV11Connection(ownBotId: $ownBotId)")
 
@@ -68,7 +68,6 @@ internal class ReverseWebSocketConnection(
                         }
                     } else {
                         throw OneBotConnectionException("url not set or apiUrl and eventUrl both not set!")
-                        return@launch
                     }
                     while (true) {
                         log.debug { "waiting for new onebot action" }

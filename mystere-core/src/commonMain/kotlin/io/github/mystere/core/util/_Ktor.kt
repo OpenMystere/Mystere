@@ -1,5 +1,7 @@
 package io.github.mystere.core.util
 
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.api.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -7,6 +9,8 @@ import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.websocket.*
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 expect fun UniHttpClient(config: HttpClientConfig<*>.() -> Unit = { }): HttpClient
@@ -37,4 +41,10 @@ fun HttpClientConfig<*>.withContentNegotiation(json: Json = JsonGlobal) {
     install(ContentNegotiation) {
         json(json)
     }
+}
+
+suspend inline fun <reified T: Any> DefaultClientWebSocketSession.sendWithLog(log: KLogger, data: T) {
+    val message = JsonGlobal.encodeToString(data)
+    log.debug { "send WebSocket message: $message" }
+    send(Frame.Text(message))
 }

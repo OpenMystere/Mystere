@@ -1,12 +1,12 @@
-package io.github.mystere.qq
+package io.github.mystere.qqsdk
 
 import io.github.mystere.core.IMystereBot
 import io.github.mystere.core.lazyMystereScope
-import io.github.mystere.qq.qqapi.dto.AppAccessTokenReqDto
-import io.github.mystere.qq.qqapi.http.QQAuthAPI
-import io.github.mystere.qq.qqapi.http.QQBotAPI
-import io.github.mystere.qq.qqapi.websocket.QQBotWebsocketConnection
-import io.github.mystere.qq.qqapi.websocket.QQBotWebsocketPayload
+import io.github.mystere.qqsdk.qqapi.dto.AppAccessTokenReqDto
+import io.github.mystere.qqsdk.qqapi.http.QQAuthAPI
+import io.github.mystere.qqsdk.qqapi.http.QQBotAPI
+import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketConnection
+import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel

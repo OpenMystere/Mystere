@@ -4,7 +4,6 @@ import io.github.mystere.core.lazyMystereScope
 import io.github.mystere.onebot.IOneBotAction
 import io.github.mystere.onebot.IOneBotEvent
 import io.github.mystere.onebot.v12.OneBotV12Action
-import io.github.mystere.onebot.v12.OneBotV12Connection
 import io.github.mystere.core.util.JsonGlobal
 import io.github.mystere.core.util.UniWebsocketClient
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -30,9 +29,9 @@ fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
 }
 
 internal class ReverseWebSocketConnection(
-    override val originConfig: OneBotV12Connection.ReverseWebSocket,
+    override val originConfig: ReverseWebSocket,
     ownBotId: String,
-    actionChannel: Channel<IOneBotAction>,
+    actionChannel: Channel<OneBotV12Action>,
 ): IOneBotV12Connection(originConfig, ownBotId, actionChannel) {
     private val log = KotlinLogging.logger("OneBotV12Connection(ownBotId: $ownBotId)")
 

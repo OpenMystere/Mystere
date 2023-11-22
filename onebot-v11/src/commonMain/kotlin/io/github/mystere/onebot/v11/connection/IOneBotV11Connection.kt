@@ -1,7 +1,7 @@
 package io.github.mystere.onebot.v11.connection
 
-import io.github.mystere.onebot.IOneBotAction
 import io.github.mystere.onebot.IOneBotConnection
+import io.github.mystere.onebot.v11.OneBotV11Action
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,9 +9,14 @@ import kotlinx.serialization.Serializable
 abstract class IOneBotV11Connection internal constructor(
     originConfig: IConfig,
     ownBotId: String,
-    actionChannel: Channel<IOneBotAction>,
-): IOneBotConnection(originConfig, ownBotId, actionChannel) {
-    interface IConfig: IOneBotConnection.IConfig
+    actionChannel: Channel<OneBotV11Action>,
+): IOneBotConnection<OneBotV11Action>(originConfig, ownBotId, actionChannel) {
+    interface IConfig: IOneBotConnection.IConfig<OneBotV11Action> {
+        override fun createConnection(
+            ownBotId: String,
+            actionChannel: Channel<OneBotV11Action>
+        ): IOneBotV11Connection
+    }
 
     @Serializable
     data class ReverseWebSocket(
@@ -26,7 +31,9 @@ abstract class IOneBotV11Connection internal constructor(
         @SerialName("heartbeat")
         val heartbeat: Int = 20_000,
     ) : IConfig {
-        override fun createConnection(ownBotId: String, actionChannel: Channel<IOneBotAction>): IOneBotConnection {
+        override fun createConnection(
+            ownBotId: String, actionChannel: Channel<OneBotV11Action>,
+        ): IOneBotV11Connection {
             return ReverseWebSocketConnection(this, ownBotId, actionChannel)
         }
     }
@@ -36,7 +43,9 @@ abstract class IOneBotV11Connection internal constructor(
         @SerialName("url")
         override val url: String,
     ) : IConfig {
-        override fun createConnection(ownBotId: String, actionChannel: Channel<IOneBotAction>): IOneBotConnection {
+        override fun createConnection(
+            ownBotId: String, actionChannel: Channel<OneBotV11Action>,
+        ): IOneBotV11Connection {
             TODO("Not yet implemented")
         }
     }
@@ -50,7 +59,9 @@ abstract class IOneBotV11Connection internal constructor(
         @SerialName("event-url")
         val eventUrl: String? = null,
     ) : IConfig {
-        override fun createConnection(ownBotId: String, actionChannel: Channel<IOneBotAction>): IOneBotConnection {
+        override fun createConnection(
+            ownBotId: String, actionChannel: Channel<OneBotV11Action>,
+        ): IOneBotV11Connection {
             TODO("Not yet implemented")
         }
     }
@@ -60,7 +71,9 @@ abstract class IOneBotV11Connection internal constructor(
         @SerialName("url")
         override val url: String
     ) : IConfig {
-        override fun createConnection(ownBotId: String, actionChannel: Channel<IOneBotAction>): IOneBotConnection {
+        override fun createConnection(
+            ownBotId: String, actionChannel: Channel<OneBotV11Action>,
+        ): IOneBotV11Connection {
             TODO("Not yet implemented")
         }
     }

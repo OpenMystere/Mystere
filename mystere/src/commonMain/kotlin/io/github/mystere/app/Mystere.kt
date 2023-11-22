@@ -2,14 +2,15 @@ package io.github.mystere.app
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
-import io.github.mystere.app.bots.qq.IMystereQQBot
+import io.github.mystere.qq.IMystereQQBot
 import io.github.mystere.app.util.YamlGlobal
 import io.github.mystere.app.util.runBlockingWithCancellation
 import io.github.mystere.core.*
 import io.github.mystere.core.util.logger
 import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
-import io.github.mystere.qq.QQBot
+import io.github.mystere.qqsdk.QQBot
+import io.github.mystere.sqlite.MystereDatabaseConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.io.buffered

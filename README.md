@@ -9,26 +9,32 @@ Mystere 是一个基于 Kotlin/Native、实现了 OneBot 协议、对接 [QQ 开
 
 项目名称取自[《Synduality Noir》](https://synduality-noir.com/)中的 [诺瓦尔（Noir）](https://zh.moegirl.org.cn/%E8%AF%BA%E7%93%A6%E5%B0%94) 里人格 米丝缇（Mystere），希望此项目能如米丝媂一样强大。
 
-本项目需要您在 [QQ 开放平台](https://q.qq.com) 创建自己的机器人才能使用。
+## 机器人平台支持
+
+### QQ
+
+QQ 机器人支持需要您在 [QQ 开放平台](https://q.qq.com) 创建自己的机器人才能使用。
 
 
-## 多平台兼容性
+## 跨平台兼容性
 
 |                | jvm<br />Java | linuxX64<br />Linux x64 | linuxArm64<br />Linux Arm64 | macosX64<br />macOS x64 | macosArm64<br />macOS Arm64 | mingwX64<br />Windows x64 | others |
 |----------------|---------------|-------------------------|-----------------------------|-------------------------|-----------------------------|---------------------------|--------|
 | mystere        | ✔️            | ✔️                      | ❌ [2]                       | ✔️                      | ✔️                          | ❌ [3]                     | ❌ [1]  |
 | mystere-core   | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
 | mystere-sqlite | ✔️            | ✔️                      | ❌ [4]                       | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
+| mystere-qq     | ✔️            | ✔️                      | ❌ [2]                       | ✔️                      | ✔️                          | ❌ [3]                     | ❌ [1]  |
 | onebot-api     | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
 | ontbot-v11     | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ❌ [5]                     | ❌ [1]  |
 | onebot-v12     | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ❌ [5]                     | ❌ [1]  |
 | sdk-qq         | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
 
 1. 暂无计划支持其他目标。
-2. 等待模块 `mystere-sqlite` 对 linuxArm64 提供支持。
+2. 等待模块 `mystere-sqlite` 对 linuxArm64 提供支持；<br/>
+   等待 [com.github.ajalt.clikt:clikt](https://github.com/ajalt/clikt) 对 linuxArm64 提供支持：[arm64 - Issue #404 - ajalt/clikt](https://github.com/ajalt/clikt/issues/404)。
 3. 等待模块 `ontbot-v11`、`ontbot-v12` 对 mingwX64 提供支持。
-4. 等待 [app.cash.sqldelight:native-driver](https://github.com/cashapp/sqldelight) 对 linuxArm64 提供支持：[Add all native targets to the runtime - Issue #4255 - cashapp/sqldelight](https://github.com/cashapp/sqldelight/issues/4255).
-5. 等待 [io.ktor:ktor-server-cio](https://github.com/ktorio/ktor) 对 mingwX64 提供支持：[Native server | Ktor](https://ktor.io/docs/native-server.html).
+4. 等待 [app.cash.sqldelight:native-driver](https://github.com/cashapp/sqldelight) 对 linuxArm64 提供支持：[Add all native targets to the runtime - Issue #4255 - cashapp/sqldelight](https://github.com/cashapp/sqldelight/issues/4255)。
+5. 等待 [io.ktor:ktor-server-cio](https://github.com/ktorio/ktor) 对 mingwX64 提供支持：[Native server | Ktor](https://ktor.io/docs/native-server.html)。
 
 
 ## 鸣谢

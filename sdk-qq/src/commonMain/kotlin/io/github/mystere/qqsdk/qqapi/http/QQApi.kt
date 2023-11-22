@@ -1,4 +1,4 @@
-package io.github.mystere.qq.qqapi.http
+package io.github.mystere.qqsdk.qqapi.http
 
 import de.jensklingenberg.ktorfit.Ktorfit
 import io.github.mystere.core.MystereCore

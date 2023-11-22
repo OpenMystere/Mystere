@@ -30,8 +30,8 @@ data class OneBotV11Action(
 
 
     @Serializable
-    data object SendPrivateMsg: OneBotV11Action.Param {
-        override val action: OneBotV11Action.Action = OneBotV11Action.Action.send_private_msg
+    data object SendPrivateMsg: Param {
+        override val action: Action = Action.send_private_msg
     }
 
     @Serializable
@@ -42,8 +42,8 @@ data class OneBotV11Action(
         val channelId: String,
         @SerialName("message")
         val message: CQCodeMessage,
-    ): OneBotV11Action.Param {
-        override val action: OneBotV11Action.Action = OneBotV11Action.Action.send_guild_channel_msg
+    ): Param {
+        override val action: Action = Action.send_guild_channel_msg
     }
 }
 

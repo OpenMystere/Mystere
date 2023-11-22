@@ -1,11 +1,11 @@
-package io.github.mystere.qq.qqapi.websocket
+package io.github.mystere.qqsdk.qqapi.websocket
 
 import io.github.mystere.core.Platform
 import io.github.mystere.core.lazyMystereScope
-import io.github.mystere.qq.BuildKonfig
-import io.github.mystere.qq.qqapi.websocket.message.Intent
-import io.github.mystere.qq.qqapi.websocket.message.OpCode10
-import io.github.mystere.qq.qqapi.websocket.message.OpCode2
+import io.github.mystere.qqsdk.BuildKonfig
+import io.github.mystere.qqsdk.qqapi.websocket.message.Intent
+import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode10
+import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode2
 import io.github.mystere.core.util.JsonGlobal
 import io.github.mystere.core.util.UniWebsocketClient
 import io.github.oshai.kotlinlogging.KLogger
@@ -23,7 +23,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 
 @OptIn(ExperimentalStdlibApi::class)
-class QQBotWebsocketConnection internal constructor(
+class QQBotWebsocketConnection(
     private val log: KLogger,
     private val url: String,
     private val channel: Channel<QQBotWebsocketPayload>,

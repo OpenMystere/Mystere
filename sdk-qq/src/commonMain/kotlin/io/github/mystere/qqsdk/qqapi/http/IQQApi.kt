@@ -1,11 +1,10 @@
-package io.github.mystere.qq.qqapi.http
+package io.github.mystere.qqsdk.qqapi.http
 
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.POST
-import io.github.mystere.qq.qqapi.dto.*
-import io.github.mystere.qq.qqapi.websocket.message.QQMessageContent
-import io.github.mystere.serialization.cqcode.CQCodeMessage
+import io.github.mystere.qqsdk.qqapi.dto.*
+import io.github.mystere.qqsdk.qqapi.websocket.message.QQMessageContent
 import io.github.mystere.serialization.cqcode.CQCodeMessageItem
 import io.github.mystere.core.util.JsonGlobal
 import io.ktor.client.request.forms.*
@@ -47,7 +46,7 @@ suspend fun IQQBotAPI.channelsMessage(
     markdown: MessageMarkdown? = null,
 ) {
     _channelsMessage(channelId, MultiPartFormDataContent(formData {
-        content?.let { append("content", JsonGlobal.encodeToString(QQMessageContent(content))) }
+        content?.let { append("content", content) }
         embed?.let { append("embed", JsonGlobal.encodeToString(embed)) }
         ark?.let { append("ark", JsonGlobal.encodeToString(ark)) }
         messageReference?.let { append("messageReference", JsonGlobal.encodeToString(messageReference)) }

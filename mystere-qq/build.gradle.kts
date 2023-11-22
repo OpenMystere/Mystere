@@ -15,20 +15,11 @@ kotlin {
             }
         }
     }
-    listOf(
-        macosArm64(),
-        macosX64(),
-        // TODO: clikt
-//        linuxArm64(),
-        linuxX64(),
-        // TODO: ktor-server
-//        mingwX64(),
-    ).forEach {
-        it.binaries.executable {
-            baseName = "mystere"
-            entryPoint = "io.github.mystere.app.main"
-        }
-    }
+    macosArm64()
+    macosX64()
+//    linuxArm64()
+    linuxX64()
+//    mingwX64()
 
     applyDefaultHierarchyTemplate()
 
@@ -36,17 +27,28 @@ kotlin {
         // common
         val commonMain by getting {
             dependencies {
+                implementation(mystere.kotlin.reflect)
+                implementation(mystere.kotlin.stdlib)
+                implementation(mystere.kotlin.logging)
+
+                implementation(mystere.ktor.client.core)
+                implementation(mystere.ktor.client.content.negotiation)
+                implementation(mystere.ktor.client.auth)
+                implementation(mystere.ktor.plugin.serialization.kotlinx.json)
+
                 implementation(mystere.kotlinx.coroutines.core)
                 implementation(mystere.kotlinx.io.core)
                 implementation(mystere.clikt)
                 implementation(mystere.yamlkt)
 
+                implementation(project(":kotlinx-serialization-cqcode"))
+
                 implementation(project(":mystere-core"))
                 implementation(project(":mystere-sqlite"))
-                implementation(project(":mystere-qq"))
 
                 implementation(project(":sdk-qq"))
 
+                implementation(project(":onebot-api"))
                 implementation(project(":onebot-v11"))
                 implementation(project(":onebot-v12"))
             }
@@ -97,7 +99,7 @@ tasks.configureEach {
 }
 
 buildkonfig {
-    packageName = findProperty("mystere.app.pkgName")!!.toString()
+    packageName = findProperty("mystere.lib.qq.pkgName")!!.toString()
 
     defaultConfigs {
         buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", MYSTERE_APP)

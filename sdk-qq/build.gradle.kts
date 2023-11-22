@@ -6,7 +6,6 @@ plugins {
     alias(mystere.plugins.ksp)
     alias(mystere.plugins.ktorfit)
     alias(mystere.plugins.buildkonfig)
-    alias(mystere.plugins.sqldelight)
 }
 
 kotlin {
@@ -83,7 +82,7 @@ kotlin {
         // native
         val nativeMain by getting {
             dependencies {
-                implementation(mystere.sqldelight.driver.sqlite.native)
+
             }
         }
     }
@@ -103,7 +102,7 @@ dependencies {
 }
 
 buildkonfig {
-    packageName = findProperty("mystere.lib.qq.pkgName")!!.toString()
+    packageName = findProperty("mystere.lib.qqsdk.pkgName")!!.toString()
 
     defaultConfigs {
         buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", MYSTERE_LIB)

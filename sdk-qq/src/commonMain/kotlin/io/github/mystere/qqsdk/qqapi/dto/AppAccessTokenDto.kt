@@ -1,6 +1,5 @@
-package io.github.mystere.qq.qqapi.dto
+package io.github.mystere.qqsdk.qqapi.dto
 
-import io.github.mystere.qq.qqapi.websocket.message.QQMessageContent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

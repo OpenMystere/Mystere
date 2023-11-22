@@ -4,22 +4,22 @@ import io.ktor.client.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.KSerializer
 
-abstract class IOneBotConnection(
-    open val originConfig: IConfig,
+abstract class IOneBotConnection<ChaT: IOneBotAction>(
+    open val originConfig: IConfig<ChaT>,
     val ownBotId: String,
-    val actionChannel: Channel<IOneBotAction>,
+    val actionChannel: Channel<ChaT>,
 ) {
     abstract suspend fun connect(httpClient: HttpClientConfig<*>.() -> Unit)
     abstract suspend fun <T: IOneBotEvent> onReceiveEvent(event: T, serializer: KSerializer<T>)
 
 
-    interface IConfig {
+    interface IConfig<ChaT: IOneBotAction> {
         val url: String?
 
         fun createConnection(
             ownBotId: String,
-            actionChannel: Channel<IOneBotAction>,
-        ): IOneBotConnection
+            actionChannel: Channel<ChaT>,
+        ): IOneBotConnection<ChaT>
     }
 }
 

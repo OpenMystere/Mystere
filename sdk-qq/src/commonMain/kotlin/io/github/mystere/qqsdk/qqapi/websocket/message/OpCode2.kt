@@ -1,4 +1,4 @@
-package io.github.mystere.qq.qqapi.websocket.message
+package io.github.mystere.qqsdk.qqapi.websocket.message
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
