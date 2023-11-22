@@ -1,6 +1,6 @@
 package io.github.mystere.serialization.cqcode
 
-import io.github.mystere.util.logger
+import io.github.mystere.core.util.logger
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -32,10 +32,10 @@ sealed class CQCode(
     }
     fun decodeFromString(string: String): CQCodeMessage {
         try {
-            if (string.startsWith("[{\"") && string.endsWith("\"}]")) {
-                return CQCodeJson.decodeFromString(CQCodeMessage.serializer(), string)
+            return if (string.startsWith("[{\"") && string.endsWith("\"}]")) {
+                CQCodeJson.decodeFromString(CQCodeMessage.serializer(), string)
             } else {
-                return CQCodeMessage.serializer()
+                CQCodeMessage.serializer()
                     .deserialize(CQCodeMessageDecoder(string, serializersModule))
             }
         } catch (e: Exception) {

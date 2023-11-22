@@ -48,8 +48,7 @@ kotlin {
                 implementation(mystere.yamlkt)
 
                 implementation(project(":mystere-core"))
-                implementation(project(":mystere-util"))
-                implementation(project(":mystere-qq"))
+                implementation(project(":sdk-qq"))
 
                 implementation(project(":onebot-api"))
                 implementation(project(":onebot-v11"))

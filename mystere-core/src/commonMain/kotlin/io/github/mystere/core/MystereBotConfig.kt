@@ -1,17 +1,14 @@
 package io.github.mystere.core
 
-import io.github.mystere.onebot.IOneBotAction
-import io.github.mystere.onebot.IOneBotConnection
+import kotlinx.coroutines.channels.Channel
 
 
-interface IMystereBot {
+interface IMystereBot<T: Any> {
     val botId: String
-    val connectionConfig: IOneBotConnection.IConfig
+    val EventChannel: Channel<T>
 
     fun connect()
     fun disconnect()
-
-    fun sendAction(action: IOneBotAction)
 
     override fun equals(other: Any?): Boolean
     override fun hashCode(): Int

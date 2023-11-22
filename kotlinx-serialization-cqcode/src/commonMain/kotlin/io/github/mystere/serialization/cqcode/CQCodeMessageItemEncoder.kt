@@ -6,6 +6,7 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.modules.SerializersModule
 
 class CQCodeMessageItemEncoder(
+    private val type: CQCodeMessageItem.Type<*>,
     override val serializersModule: SerializersModule,
 ): ICQCodeEncoder {
     private val args = hashMapOf<String, String>()
@@ -24,7 +25,7 @@ class CQCodeMessageItemEncoder(
             return args[""]!!
         }
         return StringBuilder().also {
-            it.append("[CQ:${args["_type"]}")
+            it.append("[CQ:${type.name.lowercase()}")
             for ((key, value) in args) {
                 it.append(",$key=$value")
             }

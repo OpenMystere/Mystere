@@ -4,13 +4,12 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 
 @Serializable(with = CQCodeMessageSerializer::class)
-data class CQCodeMessage internal constructor(
+data class CQCodeMessage(
     internal val chain: ArrayDeque<CQCodeMessageItem> = ArrayDeque()
 ): List<CQCodeMessageItem> by chain {
     operator fun plus(next: CQCodeMessage): CQCodeMessage {
@@ -31,6 +30,11 @@ data class CQCodeMessage internal constructor(
             }
         }.toString()
     }
+}
+
+
+fun CQCodeMessageItem.asMessage(): CQCodeMessage {
+    return CQCodeMessage(ArrayDeque(listOf(this)))
 }
 
 operator fun CQCodeMessage?.plus(next: CQCodeMessage): CQCodeMessage {
@@ -58,11 +62,17 @@ object CQCodeMessageSerializer: KSerializer<CQCodeMessage> {
                 is JsonDecoder -> when (val element = decoder.decodeJsonElement()) {
                     is JsonPrimitive -> {
                         if (element.isString) {
-                            return CQCode.decodeFromString(element.content)
+                            return deserialize(CQCodeMessageDecoder(element.content, decoder.serializersModule))
                         }
                     }
                     is JsonArray -> {
-                        return CQCode.decodeFromJson(element)
+                        val result = ArrayDeque<CQCodeMessageItem>()
+                        for (item in element) {
+                            item as JsonObject
+                            val type = CQCodeMessageItem.Type.valueOf(item["type"]?.jsonPrimitive!!.content)
+                            result.add(type.decodeFromJsonElement(CQCodeJson, item["data"]!!.jsonObject))
+                        }
+                        return CQCodeMessage(result)
                     }
                     else -> { }
                 }
@@ -81,8 +91,8 @@ object CQCodeMessageSerializer: KSerializer<CQCodeMessage> {
                     encoder.encodeJsonElement(buildJsonArray {
                         for (item in value.chain) {
                             add(buildJsonObject {
-                                put("type", JsonPrimitive(item._type.name))
-                                put("data", item._type.encodeToJsonElement(CQCodeJson, item))
+                                put("type", JsonPrimitive(item._rawType.name))
+                                put("data", item._rawType.encodeToJsonElement(CQCodeJson, item))
                             })
                         }
                     })

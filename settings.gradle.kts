@@ -37,8 +37,8 @@ include(":onebot-v12")
 
 include(":mystere")
 include(":mystere-core")
-include(":mystere-util")
-include(":mystere-qq")
-include(":qq-sdk")
+include(":mystere-sqlite")
+
+include(":sdk-qq")
 
 include(":kotlinx-serialization-cqcode")

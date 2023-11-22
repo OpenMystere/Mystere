@@ -31,7 +31,7 @@ kotlin {
                 implementation(mystere.kotlin.stdlib)
                 implementation(mystere.kotlinx.serialization.core)
                 implementation(mystere.kotlinx.serialization.json)
-                implementation(project(":mystere-util"))
+                implementation(project(":mystere-core"))
             }
         }
         val commonTest by getting {
@@ -48,16 +48,6 @@ kotlin {
         }
 
         // macos
-        val macosArm64Main by getting {
-            dependencies {
-
-            }
-        }
-        val macosX64Main by getting {
-            dependencies {
-
-            }
-        }
         val macosMain by getting {
             dependencies {
 
@@ -65,16 +55,6 @@ kotlin {
         }
 
         // linux
-        val linuxX64Main by getting {
-            dependencies {
-
-            }
-        }
-        val linuxArm64Main by getting {
-            dependencies {
-
-            }
-        }
         val linuxMain by getting {
             dependencies {
 
@@ -95,5 +75,6 @@ buildkonfig {
 
     defaultConfigs {
         buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", MYSTERE_LIB)
+        buildConfigField(FieldSpec.Type.STRING, "COMMIT", GIT_HEAD)
     }
 }

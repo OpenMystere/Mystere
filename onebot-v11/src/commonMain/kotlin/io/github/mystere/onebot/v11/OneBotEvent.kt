@@ -37,6 +37,7 @@ enum class Sex {
 // 私聊消息
 @Serializable
 data class MessagePrivate(
+    @SerialName("self_id")
     override val selfId: String,
     @SerialName("sub_type")
     val subType: MessageSubType,
@@ -55,7 +56,9 @@ data class MessagePrivate(
 ): IOneBotV11Event {
     @SerialName("message_type")
     val messageType: MessageType = MessageType.private
+    @SerialName("post_type")
     override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.message
+    @SerialName("time")
     override val time: Long = Clock.System.now().toEpochMilliseconds()
 
     @Serializable
@@ -74,6 +77,7 @@ data class MessagePrivate(
 // 消息
 @Serializable
 data class Message(
+    @SerialName("self_id")
     override val selfId: String,
     @SerialName("message_type")
     val messageType: MessageType = MessageType.group,
@@ -86,23 +90,25 @@ data class Message(
     @SerialName("raw_message")
     val rawMessage: String,
     @SerialName("font")
-    val font: Int,
+    val font: Int? = null,
     @SerialName("sender")
     val sender: Sender,
     @SerialName("user_id")
-    val userId: String = sender.userId.toString(),
+    val userId: String,
     @SerialName("guild_id")
     val guildId: String? = null,
     @SerialName("channel_id")
     val channelId: String? = null,
 ): IOneBotV11Event {
+    @SerialName("post_type")
     override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.message
+    @SerialName("time")
     override val time: Long = Clock.System.now().toEpochMilliseconds()
 
     @Serializable
     data class Sender(
         @SerialName("user_id")
-        val userId: String,
+        val userId: Long,
         @SerialName("tiny_id")
         val tinyId: String? = null,
         @SerialName("card")
@@ -129,13 +135,16 @@ enum class LifecycleSubType {
 }
 @Serializable
 data class MetaLifecycle(
+    @SerialName("self_id")
     override val selfId: String,
     @SerialName("sub_type")
     val subType: LifecycleSubType,
 ): IOneBotV11Event {
     @SerialName("meta_event_type")
     val metaEventType: MetaEventType = MetaEventType.lifecycle
+    @SerialName("post_type")
     override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.meta_event
+    @SerialName("time")
     override val time: Long = Clock.System.now().toEpochMilliseconds()
 }
 
@@ -149,13 +158,16 @@ data class HeartbeatStatus(
 )
 @Serializable
 data class MetaHeartbeat(
+    @SerialName("self_id")
     override val selfId: String,
     @SerialName("state")
     val state: HeartbeatStatus,
 ): IOneBotV11Event {
     @SerialName("meta_event_type")
     val metaEventType: MetaEventType = MetaEventType.heartbeat
+    @SerialName("post_type")
     override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.meta_event
+    @SerialName("time")
     override val time: Long = Clock.System.now().toEpochMilliseconds()
 }
 

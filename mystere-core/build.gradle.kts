@@ -19,7 +19,7 @@ kotlin {
     }
     macosArm64()
     macosX64()
-//    linuxArm64()
+    linuxArm64()
     linuxX64()
     mingwX64()
 
@@ -29,6 +29,7 @@ kotlin {
         // common
         val commonMain by getting {
             dependencies {
+                api(mystere.kotlin.logging)
                 implementation(mystere.kotlin.reflect)
                 implementation(mystere.kotlin.stdlib)
 
@@ -41,7 +42,7 @@ kotlin {
 
                 implementation(mystere.kotlinx.coroutines.core)
 
-                implementation(project(":mystere-util"))
+                implementation(project(":mystere-core"))
                 implementation(project(":onebot-api"))
             }
         }
@@ -51,20 +52,11 @@ kotlin {
             dependencies {
                 implementation(mystere.ktor.client.cio)
                 implementation(mystere.slf4j.api)
+                implementation(mystere.logback.classic)
             }
         }
 
         // macos
-        val macosArm64Main by getting {
-            dependencies {
-
-            }
-        }
-        val macosX64Main by getting {
-            dependencies {
-
-            }
-        }
         val macosMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)
@@ -72,16 +64,6 @@ kotlin {
         }
 
         // linux
-        val linuxX64Main by getting {
-            dependencies {
-
-            }
-        }
-//        val linuxArm64Main by getting {
-//            dependencies {
-//
-//            }
-//        }
         val linuxMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)
@@ -89,10 +71,17 @@ kotlin {
         }
 
         // windows
-        val mingwX64Main by getting {
+        val mingwMain by getting {
             dependsOn(commonMain)
             dependencies {
                 implementation(mystere.ktor.client.winhttp)
+            }
+        }
+
+        // native
+        val nativeMain by getting {
+            dependencies {
+
             }
         }
     }
@@ -102,7 +91,7 @@ dependencies {
     with(mystere.ktorfit.ksp) {
         add("kspCommonMainMetadata", this)
         add("kspJvm", this)
-//        add("kspLinuxArm64", this)
+        add("kspLinuxArm64", this)
         add("kspLinuxX64", this)
         add("kspMacosArm64", this)
         add("kspMacosX64", this)

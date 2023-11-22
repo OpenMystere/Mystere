@@ -14,11 +14,13 @@ class CQCodeMessageEncoder(
     fun encodeCQCodeMessage(value: CQCodeMessage) {
         with(beginStructure(listSerialDescriptor<CQCodeMessageItem>())) {
             for (index in 0 until value.size) {
-                when (val item = value[index]) {
-                    is CQCodeMessageItem.Text -> encodeStringElement(serialDescriptor<String>(), index, item.text)
+                when(val item = value[index]) {
+                    is CQCodeMessageItem.Text -> {
+                        encodeStringElement(serialDescriptor<String>(), index, item.rawText!!)
+                    }
                     else -> {
-                        val encoder = CQCodeMessageItemEncoder(serializersModule)
-                        item._type.serialize(encoder, item)
+                        val encoder = CQCodeMessageItemEncoder(item._rawType, serializersModule)
+                        item._rawType.serialize(encoder, item)
                         encodeStringElement(serialDescriptor<String>(), index, encoder.encodeFinalResult())
                     }
                 }

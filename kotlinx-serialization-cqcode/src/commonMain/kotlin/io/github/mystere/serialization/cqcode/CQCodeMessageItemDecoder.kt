@@ -1,6 +1,6 @@
 package io.github.mystere.serialization.cqcode
 
-import io.github.mystere.util.logger
+import io.github.mystere.core.util.logger
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
@@ -9,7 +9,7 @@ import kotlinx.serialization.modules.SerializersModule
 
 class CQCodeMessageItemDecoder(
     private val origin: String,
-    private val type: CQCodeMessageItem.Type,
+    private val type: CQCodeMessageItem.Type<*>,
     override val serializersModule: SerializersModule,
 ): ICQCodeDecoder {
     private val log by logger()
@@ -75,9 +75,11 @@ class CQCodeMessageItemDecoder(
             previousValue: T?
         ): T {
             val name = descriptor.getElementName(index)
-            return deserializer.deserialize(CQCodeMessageItemDecoder(
-                args[name]!!, CQCodeMessageItem.Type.text, serializersModule
-            ))
+            return deserializer.deserialize(
+                CQCodeMessageItemDecoder(
+                args[name]!!, CQCodeMessageItem.Type.Text, serializersModule
+            )
+            )
         }
     }
 }

@@ -2,14 +2,13 @@ package io.github.mystere.app
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
+import io.github.mystere.app.bots.qq.IMystereQQBot
 import io.github.mystere.app.util.YamlGlobal
 import io.github.mystere.app.util.runBlockingWithCancellation
-import io.github.mystere.core.MystereScope
-import io.github.mystere.core.IMystereBot
-import io.github.mystere.core.MystereCore
-import io.github.mystere.onebot.v11.OneBotV11Connection
-import io.github.mystere.onebot.v12.OneBotV12Connection
-import io.github.mystere.util.logger
+import io.github.mystere.core.*
+import io.github.mystere.core.util.logger
+import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
+import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
 import io.github.mystere.qq.QQBot
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
@@ -48,7 +47,7 @@ object Mystere: CliktCommand(), AutoCloseable {
         )
     }
 
-    private val bots = hashMapOf<String, IMystereBot>()
+    private val bots = hashMapOf<String, IMystereBot<*>>()
 
     override fun run() = runBlocking {
         log.info { "Mystere v${BuildKonfig.VERSION_NAME}(${BuildKonfig.COMMIT}) starting..." }
@@ -62,44 +61,53 @@ object Mystere: CliktCommand(), AutoCloseable {
             log.warn { "No bot added!" }
             return@runBlocking
         }
+
+        MystereDatabaseConfig.init(YamlGlobal.decodeFromString(
+            when (Config.database.type) {
+                MystereConfig.DatabaseConfig.Type.sqlite ->
+                    MystereDatabaseConfig.SqliteDetail.serializer()
+            },
+            YamlGlobal.encodeToString(Config.database.detail),
+        ))
+
         for (bot in Config.bots) {
             val type = bot.type.lowercase()
             val connect = bot.connect
             val connection = when (connect.version) {
                 11 -> when (connect.type) {
                     "re-ws" -> YamlGlobal.decodeFromString(
-                        OneBotV11Connection.ReverseWebSocket.serializer(),
+                        IOneBotV11Connection.ReverseWebSocket.serializer(),
                         YamlGlobal.encodeToString(connect.detail),
                     )
                     "ws" -> YamlGlobal.decodeFromString(
-                        OneBotV11Connection.WebSocket.serializer(),
+                        IOneBotV11Connection.WebSocket.serializer(),
                         YamlGlobal.encodeToString(connect.detail),
                     )
                     "http-post" -> YamlGlobal.decodeFromString(
-                        OneBotV11Connection.HttpPost.serializer(),
+                        IOneBotV11Connection.HttpPost.serializer(),
                         YamlGlobal.encodeToString(connect.detail),
                     )
                     "http" -> YamlGlobal.decodeFromString(
-                        OneBotV11Connection.Http.serializer(),
+                        IOneBotV11Connection.Http.serializer(),
                         YamlGlobal.encodeToString(connect.detail),
                     )
                     else -> throw IllegalArgumentException("Unknown OneBot v11 connection type: ${connect.type}")
                 }
                 12 -> when (connect.type) {
                     "re-ws" -> YamlGlobal.decodeFromString(
-                        OneBotV12Connection.ReverseWebSocket.serializer(),
+                        IOneBotV12Connection.ReverseWebSocket.serializer(),
                         YamlGlobal.encodeToString(connect.detail),
                     )
                     "ws" -> YamlGlobal.decodeFromString(
-                        OneBotV12Connection.WebSocket.serializer(),
+                        IOneBotV12Connection.WebSocket.serializer(),
                         YamlGlobal.encodeToString(connect.detail),
                     )
                     "http-hook" -> YamlGlobal.decodeFromString(
-                        OneBotV12Connection.HttpWebhook.serializer(),
+                        IOneBotV12Connection.HttpWebhook.serializer(),
                         YamlGlobal.encodeToString(connect.detail),
                     )
                     "http" -> YamlGlobal.decodeFromString(
-                        OneBotV12Connection.Http.serializer(),
+                        IOneBotV12Connection.Http.serializer(),
                         YamlGlobal.encodeToString(connect.detail),
                     )
                     else -> throw IllegalArgumentException("Unknown OneBot v12 connection type: ${connect.type}")
@@ -107,7 +115,7 @@ object Mystere: CliktCommand(), AutoCloseable {
                 else -> throw IllegalArgumentException("Unknown OneBot version: ${connect.version}")
             }
             val botInstance = when (type) {
-                "qq" -> QQBot.create(
+                "qq" -> IMystereQQBot.create(
                     YamlGlobal.decodeFromString(
                         QQBot.Config.serializer(),
                         YamlGlobal.encodeToString(bot.detail),
@@ -154,6 +162,8 @@ data class MystereConfig(
     val debug: Boolean = false,
     @SerialName("bots")
     val bots: List<BotConfig> = listOf(),
+    @SerialName("database")
+    val database: DatabaseConfig,
 ) {
     @Serializable
     data class BotConfig(
@@ -173,4 +183,15 @@ data class MystereConfig(
         @SerialName("detail")
         val detail: YamlMap,
     )
+    @Serializable
+    data class DatabaseConfig(
+        @SerialName("type")
+        val type: Type,
+        @SerialName("detail")
+        val detail: YamlMap,
+    ) {
+        enum class Type {
+            sqlite,
+        }
+    }
 }

@@ -30,7 +30,7 @@ val MystereScope: CoroutineScope by lazy {
 }
 
 fun MystereScope(context: CoroutineContext = Dispatchers.IO): CoroutineScope {
-    return CoroutineScope(MystereScope.coroutineContext + Job())
+    return CoroutineScope(MystereScope.newCoroutineContext(context) + Job())
 }
 fun lazyMystereScope(context: CoroutineContext = Dispatchers.IO) = lazy {
     MystereScope(context)

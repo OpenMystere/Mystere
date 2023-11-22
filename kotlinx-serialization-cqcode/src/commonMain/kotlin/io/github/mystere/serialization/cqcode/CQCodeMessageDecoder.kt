@@ -1,14 +1,11 @@
 package io.github.mystere.serialization.cqcode
 
-import io.github.mystere.util.logger
+import io.github.mystere.core.util.logger
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.modules.SerializersModule
 
 class CQCodeMessageDecoder(
@@ -26,11 +23,7 @@ class CQCodeMessageDecoder(
                 }
                 val string = decodeStringElement(CQCodeMessageSerializer.descriptor, index)
                 try {
-                    if (string.startsWith("{\"") && string.endsWith("\"}")) {
-                        val element = CQCodeJson.decodeFromString<JsonObject>(string)
-                        val type = io.github.mystere.serialization.cqcode.CQCodeMessageItem.Type.valueOf(element["type"]?.jsonPrimitive!!.content)
-                        result[index] = type.decodeFromJsonElement(CQCodeJson, element["data"]!!.jsonObject)
-                    } else if (string.contains("\\[(.*?)]".toRegex())) {
+                    if (string.contains("\\[(.*?)]".toRegex())) {
                         if (!string.startsWith("[CQ:") || !string.endsWith("]")) {
                             throw SerializationException("Not a valid CQCode item: $string")
                         }
@@ -43,12 +36,10 @@ class CQCodeMessageDecoder(
                             .takeIf { it != "text" }
                             ?.lowercase()
                             ?: throw SerializationException("Not a valid CQCode: $string")
-                        result[index] = with(io.github.mystere.serialization.cqcode.CQCodeMessageItem.Type.valueOf(type)) {
-                            deserialize(
-                                CQCodeMessageItemDecoder(
+                        result[index] = with(CQCodeMessageItem.Type.valueOf(type)) {
+                            deserialize(CQCodeMessageItemDecoder(
                                 string, this, serializersModule
-                            )
-                            )
+                            ))
                         }
                     } else {
                         result[index] = CQCodeMessageItem.Text(string)
