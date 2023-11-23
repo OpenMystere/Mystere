@@ -19,6 +19,9 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 
 fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
@@ -87,9 +90,9 @@ internal class ReverseWebSocketConnection(
         }
     }
 
-    override suspend fun <T: IOneBotEvent> onReceiveEvent(event: T, serializer: KSerializer<T>) {
+    override suspend fun onReceiveEvent(event: JsonElement) {
         log.info { "receive event: ${event::class}" }
-        val rawEvent = JsonGlobal.encodeToString(serializer, event)
+        val rawEvent = JsonGlobal.encodeToString(event)
         log.debug { "receive event: $rawEvent" }
         EventWebsocket.send(Frame.Text(rawEvent))
     }

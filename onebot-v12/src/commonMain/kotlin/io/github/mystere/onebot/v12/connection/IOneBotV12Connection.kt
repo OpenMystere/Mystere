@@ -1,21 +1,28 @@
 package io.github.mystere.onebot.v12.connection
 
+import io.github.mystere.core.util.JsonGlobal
 import io.github.mystere.onebot.IOneBotConnection
+import io.github.mystere.onebot.v12.IOneBotV12Event
 import io.github.mystere.onebot.v12.OneBotV12Action
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.encodeToJsonElement
 
 abstract class IOneBotV12Connection internal constructor(
     originConfig: IConfig,
     ownBotId: String,
     actionChannel: Channel<OneBotV12Action>,
 ): IOneBotConnection<OneBotV12Action>(originConfig, ownBotId, actionChannel) {
+    suspend fun onReceiveEvent(event: IOneBotV12Event) {
+        onReceiveEvent(JsonGlobal.encodeToJsonElement(event))
+    }
+
     interface IConfig: IOneBotConnection.IConfig<OneBotV12Action> {
         override fun createConnection(
             ownBotId: String,
             actionChannel: Channel<OneBotV12Action>
-        ): IOneBotV12Connection
+        ): IOneBotConnection<OneBotV12Action>
     }
 
     @Serializable
@@ -28,8 +35,9 @@ abstract class IOneBotV12Connection internal constructor(
         val reconnectInterval: Long = 3000,
     ) : IConfig {
         override fun createConnection(
-            ownBotId: String, actionChannel: Channel<OneBotV12Action>,
-        ): IOneBotV12Connection {
+            ownBotId: String,
+            actionChannel: Channel<OneBotV12Action>
+        ): IOneBotConnection<OneBotV12Action> {
             return ReverseWebSocketConnection(this, ownBotId, actionChannel)
         }
     }

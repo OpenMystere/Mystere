@@ -42,7 +42,6 @@ kotlin {
 
                 implementation(mystere.kotlinx.coroutines.core)
 
-                implementation(project(":mystere-core"))
                 implementation(project(":onebot-api"))
             }
         }

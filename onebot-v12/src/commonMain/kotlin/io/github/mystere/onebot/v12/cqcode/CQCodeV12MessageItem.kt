@@ -1,59 +1,76 @@
 package io.github.mystere.onebot.v12.cqcode
 
-import io.github.mystere.serialization.cqcode.CQCodeMessageItem
+import io.github.mystere.serialization.cqcode.ICQCodeMessageItem
+import io.github.mystere.serialization.cqcode.ICQCodeMessageItemEncoder
+import io.github.mystere.serialization.cqcode.ICQCodeMessageItemOperator
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.modules.SerializersModule
+import kotlin.reflect.KClass
 
 /**
  * CQ 码元素
  * @see <a href="https://12.onebot.dev/interface/message/segments/">消息段 - OneBot 12 标准</a>
  */
-object CQCodeV12MessageItem {
+@Serializable
+sealed class CQCodeV12MessageItem(
+    @Transient
+    private val _typeEnum: Type = Type.text
+): ICQCodeMessageItem, ICQCodeMessageItemOperator<CQCodeV12MessageItem, CQCodeV12Message> {
+    // 纯文本
+    @Serializable
+    data class Text(
+        @SerialName("text")
+        val text: String
+    ): CQCodeV12MessageItem()
+
     // 提及（即 @）
     @Serializable
     data class Mention(
         @SerialName("user_id")
         val userId: String,
-    ): CQCodeMessageItem(CQCodeV12MessageItem.Type.Mention)
+    ): CQCodeV12MessageItem(Type.mention)
 
     // 提及所有人
     @Serializable
-    data object MentionAll: CQCodeMessageItem(CQCodeV12MessageItem.Type.MentionAll)
+    data object MentionAll: CQCodeV12MessageItem(Type.mention_all)
 
     // 图片
     @Serializable
     data class Image(
         @SerialName("file_id")
         val fileId: String,
-    ): CQCodeMessageItem(CQCodeV12MessageItem.Type.Image)
+    ): CQCodeV12MessageItem(Type.image)
 
     // 语音
     @Serializable
     data class Voice(
         @SerialName("file_id")
         val fileId: String,
-    ): CQCodeMessageItem(CQCodeV12MessageItem.Type.Voice)
+    ): CQCodeV12MessageItem(Type.voice)
 
     // 音频
     @Serializable
     data class Audio(
         @SerialName("file_id")
         val fileId: String,
-    ): CQCodeMessageItem(CQCodeV12MessageItem.Type.Audio)
+    ): CQCodeV12MessageItem(Type.audio)
 
     // 音频
     @Serializable
     data class Video(
         @SerialName("file_id")
         val fileId: String,
-    ): CQCodeMessageItem(CQCodeV12MessageItem.Type.Video)
+    ): CQCodeV12MessageItem(Type.video)
 
     // 音频
     @Serializable
     data class File(
         @SerialName("file_id")
         val fileId: String,
-    ): CQCodeMessageItem(CQCodeV12MessageItem.Type.File)
+    ): CQCodeV12MessageItem(Type.file)
 
     // 位置
     @Serializable
@@ -66,7 +83,7 @@ object CQCodeV12MessageItem {
         val title: String? = null,
         @SerialName("content")
         val content: String? = null,
-    ): CQCodeMessageItem(CQCodeV12MessageItem.Type.Location)
+    ): CQCodeV12MessageItem(Type.location)
 
     // 回复
     @Serializable
@@ -75,18 +92,34 @@ object CQCodeV12MessageItem {
         val messageId: String,
         @SerialName("user_id")
         val userId: String? = null,
-    ): CQCodeMessageItem(CQCodeV12MessageItem.Type.Reply)
+    ): CQCodeV12MessageItem(Type.reply)
 
+    // 子频道
+    @Serializable
+    data class SubChannel(
+        @SerialName("id")
+        val id: String,
+    ): CQCodeV12MessageItem(Type.sub_channel)
 
-    object Type {
-        object Mention: CQCodeMessageItem.Type<CQCodeV12MessageItem.Mention>(CQCodeV12MessageItem.Mention.serializer())
-        object MentionAll: CQCodeMessageItem.Type<CQCodeV12MessageItem.MentionAll>(CQCodeV12MessageItem.MentionAll.serializer())
-        object Image: CQCodeMessageItem.Type<CQCodeV12MessageItem.Image>(CQCodeV12MessageItem.Image.serializer())
-        object Voice: CQCodeMessageItem.Type<CQCodeV12MessageItem.Voice>(CQCodeV12MessageItem.Voice.serializer())
-        object Audio: CQCodeMessageItem.Type<CQCodeV12MessageItem.Audio>(CQCodeV12MessageItem.Audio.serializer())
-        object Video: CQCodeMessageItem.Type<CQCodeV12MessageItem.Video>(CQCodeV12MessageItem.Video.serializer())
-        object File: CQCodeMessageItem.Type<CQCodeV12MessageItem.File>(CQCodeV12MessageItem.File.serializer())
-        object Location: CQCodeMessageItem.Type<CQCodeV12MessageItem.Location>(CQCodeV12MessageItem.Location.serializer())
-        object Reply: CQCodeMessageItem.Type<CQCodeV12MessageItem.Reply>(CQCodeV12MessageItem.Reply.serializer())
+    @Transient
+    override val _type: String = _typeEnum.name
+    override fun ArrayDeque<CQCodeV12MessageItem>.asMessage(): CQCodeV12Message {
+        return CQCodeV12Message(this)
+    }
+
+    enum class Type(
+        override val `class`: KClass<out CQCodeV12MessageItem>
+    ): ICQCodeMessageItem.Type {
+        text(Text::class),
+        mention(Mention::class),
+        mention_all(MentionAll::class),
+        image(Image::class),
+        voice(Voice::class),
+        audio(Audio::class),
+        video(Video::class),
+        file(File::class),
+        location(Location::class),
+        reply(Reply::class),
+        sub_channel(SubChannel::class),
     }
 }

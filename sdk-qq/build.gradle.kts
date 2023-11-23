@@ -45,7 +45,6 @@ kotlin {
                 implementation(mystere.kotlinx.datetime)
 
                 implementation(project(":mystere-core"))
-                implementation(project(":kotlinx-serialization-cqcode"))
             }
         }
 

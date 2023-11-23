@@ -1,7 +1,7 @@
 package io.github.mystere.onebot.v11
 
 import io.github.mystere.onebot.IOneBotEvent
-import io.github.mystere.serialization.cqcode.CQCodeMessage
+import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import kotlinx.datetime.Clock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -43,7 +43,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("message_id")
         val messageId: Int,
         @SerialName("message")
-        val message: CQCodeMessage,
+        val message: CQCodeV11Message,
         @SerialName("raw_message")
         val rawIMessage: String,
         @SerialName("font")
@@ -56,7 +56,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("message_type")
         val messageType: MessageType = MessageType.private
         @SerialName("post_type")
-        override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.message
+        override val postType: PostType = PostType.message
         @SerialName("time")
         override val time: Long = Clock.System.now().toEpochMilliseconds()
 
@@ -85,7 +85,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("message_id")
         val messageId: String,
         @SerialName("message")
-        val message: CQCodeMessage,
+        val message: CQCodeV11Message,
         @SerialName("raw_message")
         val rawMessage: String,
         @SerialName("font")
@@ -100,7 +100,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val channelId: String? = null,
     ): IOneBotV11Event {
         @SerialName("post_type")
-        override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.message
+        override val postType: PostType = PostType.message
         @SerialName("time")
         override val time: Long = Clock.System.now().toEpochMilliseconds()
 
@@ -142,7 +142,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("meta_event_type")
         val metaEventType: MetaEventType = MetaEventType.lifecycle
         @SerialName("post_type")
-        override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.meta_event
+        override val postType: PostType = PostType.meta_event
         @SerialName("time")
         override val time: Long = Clock.System.now().toEpochMilliseconds()
     }
@@ -165,7 +165,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("meta_event_type")
         val metaEventType: MetaEventType = MetaEventType.heartbeat
         @SerialName("post_type")
-        override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.meta_event
+        override val postType: PostType = PostType.meta_event
         @SerialName("time")
         override val time: Long = Clock.System.now().toEpochMilliseconds()
     }
@@ -201,7 +201,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     ): IOneBotV11Event {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.group_upload
-        override val postType: IOneBotV11Event.PostType = IOneBotV11Event.PostType.notice
+        override val postType: PostType = PostType.notice
         override val time: Long = Clock.System.now().toEpochMilliseconds()
     }
 }

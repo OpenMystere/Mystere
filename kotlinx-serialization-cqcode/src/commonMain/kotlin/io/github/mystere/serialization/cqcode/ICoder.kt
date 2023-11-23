@@ -16,17 +16,19 @@ interface ICQCodeEncoder: Encoder {
     override fun encodeByte(value: Byte) = encodeUnsupported()
     override fun encodeChar(value: Char) = encodeUnsupported()
     override fun encodeDouble(value: Double) = encodeUnsupported()
-    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = encodeUnsupported()
     override fun encodeFloat(value: Float) = encodeUnsupported()
     override fun encodeInline(descriptor: SerialDescriptor) = this
     override fun encodeInt(value: Int) = encodeUnsupported()
     override fun encodeLong(value: Long) = encodeUnsupported()
     @ExperimentalSerializationApi
-    override fun encodeNotNullMark() = encodeUnsupported()
+    override fun encodeNotNullMark() { }
     @ExperimentalSerializationApi
     override fun encodeNull() { }
     override fun encodeShort(value: Short) = encodeUnsupported()
     override fun encodeString(value: String)
+    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
+        encodeUnsupported()
+    }
 
     interface Composited: CompositeEncoder {
         override fun encodeBooleanElement(descriptor: SerialDescriptor, index: Int, value: Boolean) {
@@ -58,7 +60,7 @@ interface ICQCodeEncoder: Encoder {
         }
 
         override fun encodeShortElement(descriptor: SerialDescriptor, index: Int, value: Short) {
-            throw UnsupportedOperationException()
+            encodeStringElement(descriptor, index, value.toString())
         }
 
         @ExperimentalSerializationApi

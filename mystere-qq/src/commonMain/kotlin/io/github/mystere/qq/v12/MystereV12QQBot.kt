@@ -1,41 +1,43 @@
 package io.github.mystere.qq.v12
 
+import io.github.mystere.core.util.JsonGlobal
 import io.github.mystere.qq.IMystereQQBot
 import io.github.mystere.onebot.v12.IOneBotV12Event
 import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
-import io.github.mystere.onebot.v12.connection.applySelfIdHeader
-import io.github.mystere.onebot.v12.cqcode.CQCodeV12MessageItem
+import io.github.mystere.onebot.v12.cqcode.CQCodeV11V12MessageItem
 import io.github.mystere.qqsdk.QQBot
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.mystere.qqsdk.qqapi.websocket.withData
-import io.github.mystere.serialization.cqcode.CQCode
-import io.github.mystere.serialization.cqcode.CQCodeMessage
+import io.github.mystere.onebot.v11.cqcode.CQCodeV11
+import io.github.mystere.serialization.cqcode.CQCodeV11Message
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
-import io.github.mystere.serialization.cqcode.plus
+import io.github.mystere.onebot.v11.cqcode.plus
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 
 class MystereV12QQBot(
     config: QQBot.Config,
     connectionConfig: IOneBotV12Connection.IConfig,
-): IMystereQQBot<OneBotV12Action>(config, connectionConfig) {
+): IMystereQQBot<OneBotV12Action, IOneBotV12Event>(config, connectionConfig) {
     override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
 
     override suspend fun processQQEvent(event: QQBotWebsocketPayload) {
         when (event.opCode) {
             QQBotWebsocketPayload.OpCode.Dispatch -> when (event.type) {
                 "AT_MESSAGE_CREATE" -> event.withData<OpCode0.AtMessageCreate> {
-                    val cqMsg: CQCodeMessage = with(this) {
-                        var message: CQCodeMessage? = null
+                    val cqMsg: CQCodeV11Message = with(this) {
+                        var message: CQCodeV11Message? = null
                         for (item in content.asV12MessageContent()) {
                             message = message.plus(item)
                         }
                         for (attachment in attachments) {
                             if (attachment.contentType.startsWith("image")) {
                                 message = message.plus(
-                                    CQCodeV12MessageItem.Image(
+                                    CQCodeV11V12MessageItem.Image(
                                         fileId = "",
                                     )
                                 )
@@ -43,27 +45,29 @@ class MystereV12QQBot(
                         }
                         return@with message!!
                     }
-                    sendOneBotEvent(
-                        IOneBotV12Event.Message(
-                            selfId = config.appId,
-                            messageType = IOneBotV12Event.MessageType.guild,
-                            subType = IOneBotV12Event.MessageSubType.channel,
-                            messageId = id,
-                            message = cqMsg,
-                            rawMessage = CQCode.encodeToString(cqMsg),
-                            font = 0,
-                            sender = IOneBotV12Event.Message.Sender(
-                                userId = author.id
-                            ),
-                            guildId = guildId,
-                            channelId = channelId,
+                    sendOneBotEvent(IOneBotV12Event.Message(
+                        selfId = config.appId,
+                        messageType = IOneBotV12Event.MessageType.guild,
+                        subType = IOneBotV12Event.MessageSubType.channel,
+                        messageId = id,
+                        message = cqMsg,
+                        rawMessage = CQCodeV11.encodeToString(cqMsg),
+                        font = 0,
+                        sender = IOneBotV12Event.Message.Sender(
                             userId = author.id
-                        ), IOneBotV12Event.Message.serializer()
-                    )
+                        ),
+                        guildId = guildId,
+                        channelId = channelId,
+                        userId = author.id
+                    ))
                 }
             }
             else -> { }
         }
+    }
+
+    override suspend fun IOneBotV12Event.encodeToJsonElement(): JsonElement {
+        return JsonGlobal.encodeToJsonElement(this)
     }
 
     override suspend fun processOneBotAction(action: OneBotV12Action) {

@@ -4,8 +4,6 @@ import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.POST
 import io.github.mystere.qqsdk.qqapi.dto.*
-import io.github.mystere.qqsdk.qqapi.websocket.message.QQMessageContent
-import io.github.mystere.serialization.cqcode.CQCodeMessageItem
 import io.github.mystere.core.util.JsonGlobal
 import io.ktor.client.request.forms.*
 import kotlinx.io.buffered
@@ -44,6 +42,7 @@ suspend fun IQQBotAPI.channelsMessage(
     messageReference: MessageReference? = null,
     eventId: String? = null,
     markdown: MessageMarkdown? = null,
+    images: List<String> = emptyList(),
 ) {
     _channelsMessage(channelId, MultiPartFormDataContent(formData {
         content?.let { append("content", content) }
@@ -52,26 +51,20 @@ suspend fun IQQBotAPI.channelsMessage(
         messageReference?.let { append("messageReference", JsonGlobal.encodeToString(messageReference)) }
         eventId?.let { append("eventId", eventId) }
         markdown?.let { append("markdown", JsonGlobal.encodeToString(markdown)) }
-        for (item in content ?: return@formData) {
-            when (item) {
-                is CQCodeMessageItem.Image -> when {
-                    item.file.startsWith("file:///") -> {
-                        val path = with(item.file.substring(8)) {
-                            if (contains(":")) {
-                                this
-                            } else {
-                                "/$this"
-                            }
-                        }
-                        append("file_image", SystemFileSystem.source(Path(path)).buffered().readByteArray())
+        for (item in images) {
+            when  {
+                item.startsWith("file:///") -> {
+                    val path = with(item.substring(8)) {
+                        if (contains(":")) this else "/$this"
                     }
-                    item.file.startsWith("http://") -> {
-                        append("image", item.file)
-                    }
-                    item.file.startsWith("base64://") -> {
-                        val base64Content = item.file.substring(9)
-                        append("file_image", Base64.decode(base64Content))
-                    }
+                    append("file_image", SystemFileSystem.source(Path(path)).buffered().readByteArray())
+                }
+                item.startsWith("https://") || item.startsWith("http://") -> {
+                    append("image", item)
+                }
+                item.startsWith("base64://") -> {
+                    val base64Content = item.substring(9)
+                    append("file_image", Base64.decode(base64Content))
                 }
             }
         }

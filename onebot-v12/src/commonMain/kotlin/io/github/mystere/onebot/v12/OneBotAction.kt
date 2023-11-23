@@ -1,12 +1,13 @@
 package io.github.mystere.onebot.v12
 
 import io.github.mystere.onebot.IOneBotAction
-import io.github.mystere.serialization.cqcode.CQCodeMessage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonElement
 import io.github.mystere.core.util.JsonGlobal
+import io.github.mystere.onebot.v12.cqcode.CQCodeV12Message
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 
 @Serializable
@@ -20,6 +21,7 @@ data class OneBotV12Action(
     @SerialName("echo")
     val echo: JsonElement? = null,
 ): IOneBotAction {
+    @Serializable
     sealed interface Param: IOneBotAction.Param {
         @Transient
         override val action: Action
@@ -39,8 +41,8 @@ data class OneBotV12Action(
 
 
     @Serializable
-    data object SendPrivateMsg: OneBotV12Action.Param {
-        override val action: OneBotV12Action.Action = OneBotV12Action.Action.send_private_msg
+    data object SendPrivateMsg: Param {
+        override val action: Action = Action.send_private_msg
     }
 
     @Serializable
@@ -50,10 +52,14 @@ data class OneBotV12Action(
         @SerialName("channel_id")
         val channelId: String,
         @SerialName("message")
-        val message: CQCodeMessage,
-    ): OneBotV12Action.Param {
-        override val action: OneBotV12Action.Action = OneBotV12Action.Action.send_guild_channel_msg
+        val message: CQCodeV12Message,
+    ): Param {
+        override val action: Action = Action.send_guild_channel_msg
     }
+}
+
+inline fun <reified T: OneBotV12Action.Param> OneBotV12Action.withParams(crossinline block: T.() -> Unit) {
+    block.invoke(JsonGlobal.decodeFromJsonElement(params))
 }
 
 inline fun <reified T: OneBotV12Action.Param> OneBotV12Action(

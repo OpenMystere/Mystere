@@ -26,7 +26,7 @@ val JsonGlobal = Json {
     ignoreUnknownKeys = true
     encodeDefaults = true
     explicitNulls = false
-    useArrayPolymorphism = true
+    classDiscriminator = "_ktx"
 }
 
 fun HttpClientConfig<*>.withJsonContent() {

@@ -29,12 +29,12 @@ data class QQBot internal constructor(
 
     private var websocket: QQBotWebsocketConnection? = null
 
-    private val QQAuthAPI by lazy {
+    private val AuthAPI by lazy {
         QQAuthAPI(
             logger = log,
         )
     }
-    private val QQBotAPI by lazy {
+    val BotAPI by lazy {
         QQBotAPI(
             logger = log,
             appId = config.appId,
@@ -53,7 +53,7 @@ data class QQBot internal constructor(
                     continue
                 }
                 try {
-                    QQAuthAPI.getAppAccessToken(
+                    AuthAPI.getAppAccessToken(
                         AppAccessTokenReqDto(
                             config.appId, config.clientSecret
                         )
@@ -71,7 +71,7 @@ data class QQBot internal constructor(
                 if (websocket == null) {
                     websocket = QQBotWebsocketConnection(
                         log = log,
-                        url = QQBotAPI.gateway().url,
+                        url = BotAPI.gateway().url,
                         channel = EventChannel,
                     ) provider@{
                         return@provider accessToken

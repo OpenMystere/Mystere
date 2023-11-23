@@ -30,6 +30,7 @@ kotlin {
                 implementation(mystere.kotlin.reflect)
                 implementation(mystere.kotlin.stdlib)
                 implementation(mystere.kotlinx.serialization.core)
+                implementation(mystere.kotlinx.serialization.json)
                 implementation(mystere.kotlinx.coroutines.core)
                 implementation(mystere.ktor.client.core)
             }

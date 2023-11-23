@@ -41,8 +41,6 @@ kotlin {
                 implementation(mystere.clikt)
                 implementation(mystere.yamlkt)
 
-                implementation(project(":kotlinx-serialization-cqcode"))
-
                 implementation(project(":mystere-core"))
                 implementation(project(":mystere-sqlite"))
 

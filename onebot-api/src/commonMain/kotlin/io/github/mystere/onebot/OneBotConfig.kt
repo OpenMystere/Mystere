@@ -2,7 +2,7 @@ package io.github.mystere.onebot
 
 import io.ktor.client.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.JsonElement
 
 abstract class IOneBotConnection<ChaT: IOneBotAction>(
     open val originConfig: IConfig<ChaT>,
@@ -10,7 +10,7 @@ abstract class IOneBotConnection<ChaT: IOneBotAction>(
     val actionChannel: Channel<ChaT>,
 ) {
     abstract suspend fun connect(httpClient: HttpClientConfig<*>.() -> Unit)
-    abstract suspend fun <T: IOneBotEvent> onReceiveEvent(event: T, serializer: KSerializer<T>)
+    abstract suspend fun onReceiveEvent(event: JsonElement)
 
 
     interface IConfig<ChaT: IOneBotAction> {

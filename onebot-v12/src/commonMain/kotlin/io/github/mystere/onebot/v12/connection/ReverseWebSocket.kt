@@ -6,6 +6,7 @@ import io.github.mystere.onebot.IOneBotEvent
 import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.core.util.JsonGlobal
 import io.github.mystere.core.util.UniWebsocketClient
+import io.github.mystere.onebot.v12.IOneBotV12Event
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.api.*
@@ -18,6 +19,8 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonElement
 
 
 fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
@@ -69,9 +72,11 @@ internal class ReverseWebSocketConnection(
         }
     }
 
-    override suspend fun <T: IOneBotEvent> onReceiveEvent(event: T, serializer: KSerializer<T>) {
+
+
+    override suspend fun onReceiveEvent(event: JsonElement) {
         log.info { "receive event: ${event::class}" }
-        val rawEvent = JsonGlobal.encodeToString(serializer, event)
+        val rawEvent = JsonGlobal.encodeToString(event)
         log.debug { "receive event: $rawEvent" }
         UniWebsocket?.send(Frame.Text(rawEvent))
     }

@@ -8,7 +8,7 @@ buildkonfig = "0.14.0"
 sqldelight = "2.0.0"
 
 kotlinx-coroutines = "1.7.3"
-kotlinx-serialization-json = "1.6.0"
+kotlinx-serialization = "1.6.1"
 kotlinx-serialization-message-pack = "0.0.2"
 kotlinx-io= "0.3.0"
 kotlinx-datetime= "0.4.1"
@@ -47,8 +47,8 @@ ktor-plugin-logging = { group = "io.ktor", name = "ktor-client-logging", version
 ktor-plugin-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 kotlinx-serialization-message-pack = { group = "com.wunderbee.kompack", name = "kompack-kotlin-serialization", version.ref = "ktor" }
-kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization-json" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 ktorfit-lib-light = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
 ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }

@@ -1,21 +1,40 @@
 package io.github.mystere.serialization.cqcode
 
 import io.github.mystere.core.util.logger
+import io.github.mystere.serialization.cqcode.raw.CQCodeRawMessage
+import io.github.mystere.serialization.cqcode.raw.CQCodeRawMessageDecoder
+import io.github.mystere.serialization.cqcode.raw.CQCodeRawMessageEncoder
 import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.getPolymorphicDescriptors
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
-internal val CQCodeJson = Json {
+const val CQCodeJsonClassDiscriminator: String = "_cqt"
+
+val CQCodeJson = Json {
     ignoreUnknownKeys = true
     explicitNulls = true
     useAlternativeNames = true
     useArrayPolymorphism = false
+    classDiscriminator = CQCodeJsonClassDiscriminator
 }
 
-sealed class CQCode(
-    override val serializersModule: SerializersModule
+fun CQCode(block: CQCode.MutableConfig.() -> Unit): CQCode {
+    return CQCode(CQCode.MutableConfig().also(block))
+}
+
+open class CQCode(
+    val config: Config,
 ): StringFormat {
+    override val serializersModule: SerializersModule = config.serializersModule
+    interface Config {
+        val serializersModule: SerializersModule
+    }
+    data class MutableConfig(
+        override var serializersModule: SerializersModule = EmptySerializersModule(),
+    ): Config
+
     private val log by logger()
 
     @Deprecated(
@@ -24,19 +43,19 @@ sealed class CQCode(
         level = DeprecationLevel.HIDDEN,
     )
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
-        return decodeFromString(string) as T
+        return decodeRawFromString(string) as T
     }
 
-    fun decodeFromJson(element: JsonArray): CQCodeMessage {
-        return CQCodeJson.decodeFromJsonElement<CQCodeMessage>(element)
+    fun decodeRawFromJson(element: JsonArray): CQCodeRawMessage {
+        return CQCodeJson.decodeFromJsonElement<CQCodeRawMessage>(element)
     }
-    fun decodeFromString(string: String): CQCodeMessage {
+    fun decodeRawFromString(string: String): CQCodeRawMessage {
         try {
             return if (string.startsWith("[{\"") && string.endsWith("\"}]")) {
-                CQCodeJson.decodeFromString(CQCodeMessage.serializer(), string)
+                CQCodeJson.decodeFromString(CQCodeRawMessage.serializer(), string)
             } else {
-                CQCodeMessage.serializer()
-                    .deserialize(CQCodeMessageDecoder(string, serializersModule))
+                CQCodeRawMessage.serializer()
+                    .deserialize(CQCodeRawMessageDecoder(string, serializersModule))
             }
         } catch (e: Exception) {
             throw SerializationException("Failed to decode content: $string", e)
@@ -49,20 +68,18 @@ sealed class CQCode(
         level = DeprecationLevel.HIDDEN,
     )
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
-        return encodeToString(value as CQCodeMessage)
+        return encodeToString(value as CQCodeRawMessage)
     }
-    fun encodeToJson(value: CQCodeMessage): JsonArray {
+    fun encodeToJson(value: CQCodeRawMessage): JsonArray {
         return CQCodeJson.encodeToJsonElement(value).jsonArray
     }
-    fun encodeToString(value: CQCodeMessage): String {
-        val encoder = CQCodeMessageEncoder(serializersModule)
+    fun encodeToString(value: CQCodeRawMessage): String {
+        val encoder = CQCodeRawMessageEncoder(serializersModule)
         encoder.encodeCQCodeMessage(value)
         return encoder.encodeFinalResult()
     }
 
     companion object: CQCode(
-        serializersModule = EmptySerializersModule(),
-    ) {
-
-    }
+        config = MutableConfig()
+    )
 }
