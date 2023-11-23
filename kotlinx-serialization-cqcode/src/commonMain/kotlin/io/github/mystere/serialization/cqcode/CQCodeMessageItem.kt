@@ -1,5 +1,6 @@
 package io.github.mystere.serialization.cqcode
 
+import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.core.util.logger
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
@@ -172,7 +173,7 @@ abstract class ICQCodeMessageItemEncoder<ItemT: ICQCodeMessageItem>(
         return StringBuilder().also {
             it.append("[CQ:${type.lowercase()}")
             for ((key, value) in args) {
-                if (key.isBlank()) {
+                if (key.isBlank() || key == MystereJsonClassDiscriminator || key.startsWith("_type")) {
                     continue
                 }
                 it.append(",$key=$value")

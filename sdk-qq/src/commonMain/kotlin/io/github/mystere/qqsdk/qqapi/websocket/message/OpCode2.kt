@@ -50,6 +50,7 @@ open class Intent private constructor(
         }
 
         val DEFAULT = GUILDS + PUBLIC_GUILD_MESSAGES + GUILD_MEMBERS
+        val PRIVATE = GUILD_MESSAGES + FORUMS_EVENT
     }
 
     @OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)

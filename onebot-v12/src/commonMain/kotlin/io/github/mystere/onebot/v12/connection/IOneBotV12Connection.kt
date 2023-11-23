@@ -1,6 +1,6 @@
 package io.github.mystere.onebot.v12.connection
 
-import io.github.mystere.core.util.JsonGlobal
+import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.IOneBotConnection
 import io.github.mystere.onebot.v12.IOneBotV12Event
 import io.github.mystere.onebot.v12.OneBotV12Action
@@ -15,7 +15,7 @@ abstract class IOneBotV12Connection internal constructor(
     actionChannel: Channel<OneBotV12Action>,
 ): IOneBotConnection<OneBotV12Action>(originConfig, ownBotId, actionChannel) {
     suspend fun onReceiveEvent(event: IOneBotV12Event) {
-        onReceiveEvent(JsonGlobal.encodeToJsonElement(event))
+        onReceiveEvent(MystereJson.encodeToJsonElement(event))
     }
 
     interface IConfig: IOneBotConnection.IConfig<OneBotV12Action> {

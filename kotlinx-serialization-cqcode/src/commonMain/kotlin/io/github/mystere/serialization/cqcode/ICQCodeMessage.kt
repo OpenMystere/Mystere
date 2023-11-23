@@ -1,5 +1,7 @@
 package io.github.mystere.serialization.cqcode
 
+import io.github.mystere.core.util.MystereJson
+import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.core.util.logger
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -38,6 +40,44 @@ abstract class ICQCodeMessage<ItemT: ICQCodeMessageItem> protected constructor(
     }
 }
 
+interface ICQCodeMessageOperator<ItemT: ICQCodeMessageItem, MsgT: ICQCodeMessage<ItemT>> {
+    operator fun plus(item: ItemT): MsgT {
+        return ArrayDeque<ItemT>().also {
+            it.addAll(asItemT())
+            it.addLast(item)
+        }.asMessage()
+    }
+
+    operator fun plus(chain: MsgT): MsgT {
+        return ArrayDeque<ItemT>().also {
+            it.addAll(asItemT())
+            it.addAll(chain)
+        }.asMessage()
+    }
+
+    fun ArrayDeque<ItemT>.asMessage(): MsgT
+    fun asMessage(): MsgT {
+        return ArrayDeque<ItemT>().also { it.addAll(asItemT()) }.asMessage()
+    }
+
+    fun asItemT(): MsgT {
+        try {
+            @Suppress("UNCHECKED_CAST")
+            return this as MsgT
+        } catch (e: ClassCastException) {
+            throw IllegalStateException("You should always use ICQCodeMessageOperator with ICQCodeMessage!")
+        }
+    }
+}
+
+operator fun <ItemT: ICQCodeMessageItem, MsgT: ICQCodeMessage<ItemT>> ICQCodeMessageOperator<ItemT, MsgT>?.plus(item: ItemT): MsgT {
+    return this?.plus(item) ?: (item as ICQCodeMessageItemOperator<ItemT, MsgT>).asMessage()
+}
+
+operator fun <ItemT: ICQCodeMessageItem, MsgT: ICQCodeMessage<ItemT>> ICQCodeMessageOperator<ItemT, MsgT>?.plus(items: MsgT): MsgT {
+    return this?.plus(items) ?: (items as ICQCodeMessageOperator<ItemT, MsgT>).asMessage()
+}
+
 abstract class ICQCodeMessageSerializer<T: ICQCodeMessage<ItemT>, ItemT: ICQCodeMessageItem>: KSerializer<T> {
     abstract override val descriptor: SerialDescriptor
 
@@ -57,12 +97,12 @@ abstract class ICQCodeMessageSerializer<T: ICQCodeMessage<ItemT>, ItemT: ICQCode
                             val type = item["type"]?.jsonPrimitive!!.content
                             val obj = item["data"]!!.jsonObject
                             result.add(decodeFromJsonElement(
-                                CQCodeJson, type,
+                                MystereJson, type,
                                 buildJsonObject {
                                     put("type", JsonPrimitive(type))
                                     putJsonObject("data") {
                                         getCQMessageItemTypeDefiner(type)?.let {
-                                            put(CQCodeJsonClassDiscriminator, JsonPrimitive(it.qualifiedName))
+                                            put(MystereJsonClassDiscriminator, JsonPrimitive(it.qualifiedName))
                                         }
                                         for ((key, value) in obj) {
                                             put(key, value)
@@ -96,8 +136,8 @@ abstract class ICQCodeMessageSerializer<T: ICQCodeMessage<ItemT>, ItemT: ICQCode
                     encoder.encodeJsonElement(buildJsonArray {
                         for (item in value) {
                             add(buildJsonObject {
-                                for ((key, item) in encodeItemToJsonElement(CQCodeJson, item).jsonObject) {
-                                    if (key == CQCodeJsonClassDiscriminator) {
+                                for ((key, item) in encodeItemToJsonElement(MystereJson, item).jsonObject) {
+                                    if (key == MystereJsonClassDiscriminator || key.startsWith("_type")) {
                                         continue
                                     }
                                     put(key, item)

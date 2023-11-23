@@ -1,7 +1,7 @@
 package io.github.mystere.onebot.v12
 
 import io.github.mystere.onebot.IOneBotActionResp
-import io.github.mystere.core.util.JsonGlobal
+import io.github.mystere.core.util.MystereJson
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -108,7 +108,7 @@ inline fun <reified T: OneBotV12ActionResp.Data> OneBotV12ActionResp(
 ) = OneBotV12ActionResp(
     status = status,
     retcode = retcode,
-    data = JsonGlobal.encodeToJsonElement(data),
+    data = MystereJson.encodeToJsonElement(data),
     message = message,
     echo = echo,
 )

@@ -2,10 +2,12 @@ package io.github.mystere.qqsdk.qqapi.http
 
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.Multipart
 import de.jensklingenberg.ktorfit.http.POST
 import io.github.mystere.qqsdk.qqapi.dto.*
-import io.github.mystere.core.util.JsonGlobal
+import io.github.mystere.core.util.MystereJson
 import io.ktor.client.request.forms.*
+import io.ktor.http.*
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -40,31 +42,34 @@ suspend fun IQQBotAPI.channelsMessage(
     embed: MessageEmbed? = null,
     ark: MessageArk? = null,
     messageReference: MessageReference? = null,
-    eventId: String? = null,
+    msgId: String? = null,
     markdown: MessageMarkdown? = null,
     images: List<String> = emptyList(),
 ) {
     _channelsMessage(channelId, MultiPartFormDataContent(formData {
-        content?.let { append("content", content) }
-        embed?.let { append("embed", JsonGlobal.encodeToString(embed)) }
-        ark?.let { append("ark", JsonGlobal.encodeToString(ark)) }
-        messageReference?.let { append("messageReference", JsonGlobal.encodeToString(messageReference)) }
-        eventId?.let { append("eventId", eventId) }
-        markdown?.let { append("markdown", JsonGlobal.encodeToString(markdown)) }
+        content?.let { append("content", it) }
+        embed?.let { append("embed", MystereJson.encodeToString(it)) }
+        ark?.let { append("ark", MystereJson.encodeToString(it)) }
+        messageReference?.let { append("message_reference", MystereJson.encodeToString(it)) }
+        markdown?.let { append("markdown", MystereJson.encodeToString(it)) }
+        msgId?.let { append("msg_id", it) }
         for (item in images) {
             when  {
                 item.startsWith("file:///") -> {
                     val path = with(item.substring(8)) {
                         if (contains(":")) this else "/$this"
                     }
-                    append("file_image", SystemFileSystem.source(Path(path)).buffered().readByteArray())
+                    append(
+                        "file_image", SystemFileSystem.source(Path(path)).buffered().readByteArray(),
+                    )
                 }
                 item.startsWith("https://") || item.startsWith("http://") -> {
                     append("image", item)
                 }
                 item.startsWith("base64://") -> {
-                    val base64Content = item.substring(9)
-                    append("file_image", Base64.decode(base64Content))
+                    append(
+                        "file_image", Base64.decode(item.substring(9)),
+                    )
                 }
             }
         }

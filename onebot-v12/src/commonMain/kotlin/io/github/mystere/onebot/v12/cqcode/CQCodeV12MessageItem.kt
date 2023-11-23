@@ -1,13 +1,10 @@
 package io.github.mystere.onebot.v12.cqcode
 
 import io.github.mystere.serialization.cqcode.ICQCodeMessageItem
-import io.github.mystere.serialization.cqcode.ICQCodeMessageItemEncoder
 import io.github.mystere.serialization.cqcode.ICQCodeMessageItemOperator
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
 /**
@@ -97,8 +94,8 @@ sealed class CQCodeV12MessageItem(
     // 子频道
     @Serializable
     data class SubChannel(
-        @SerialName("id")
-        val id: String,
+        @SerialName("channel_id")
+        val channelId: String,
     ): CQCodeV12MessageItem(Type.sub_channel)
 
     @Transient

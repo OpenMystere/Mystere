@@ -2,6 +2,7 @@ package io.github.mystere.serialization.cqcode.raw
 
 import io.github.mystere.serialization.cqcode.ICQCodeMessage
 import io.github.mystere.serialization.cqcode.ICQCodeMessageDecoder
+import io.github.mystere.serialization.cqcode.ICQCodeMessageOperator
 import io.github.mystere.serialization.cqcode.ICQCodeMessageSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -15,7 +16,11 @@ import kotlinx.serialization.modules.SerializersModule
 @Serializable(with = CQCodeRawMessageSerializer::class)
 class CQCodeRawMessage(
     chain: ArrayDeque<CQCodeRawMessageItem>
-): ICQCodeMessage<CQCodeRawMessageItem>(chain)
+): ICQCodeMessage<CQCodeRawMessageItem>(chain), ICQCodeMessageOperator<CQCodeRawMessageItem, CQCodeRawMessage> {
+    override fun ArrayDeque<CQCodeRawMessageItem>.asMessage(): CQCodeRawMessage {
+        return CQCodeRawMessage(this)
+    }
+}
 
 
 object CQCodeRawMessageSerializer: ICQCodeMessageSerializer<CQCodeRawMessage, CQCodeRawMessageItem>() {

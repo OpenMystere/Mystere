@@ -1,6 +1,6 @@
 package io.github.mystere.onebot.v11
 
-import io.github.mystere.core.util.JsonGlobal
+import io.github.mystere.core.util.MystereJson
 import io.ktor.serialization.kotlinx.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
@@ -17,7 +17,7 @@ class WebsocketConnectionTest {
         runBlocking {
             embeddedServer(CIO, 5710) {
                 install(WebSockets) {
-                    contentConverter = KotlinxWebsocketSerializationConverter(JsonGlobal)
+                    contentConverter = KotlinxWebsocketSerializationConverter(MystereJson)
                 }
                 routing {
                     webSocket("/") {

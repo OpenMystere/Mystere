@@ -2,6 +2,8 @@ package io.github.mystere.qq
 
 import io.github.mystere.core.IMystereBot
 import io.github.mystere.core.lazyMystereScope
+import io.github.mystere.core.util.MystereJson
+import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.onebot.IOneBotAction
 import io.github.mystere.onebot.IOneBotConnection
 import io.github.mystere.onebot.IOneBotEvent
@@ -17,11 +19,16 @@ import io.github.mystere.qqsdk.qqapi.http.QQAuthAPI
 import io.github.mystere.qqsdk.qqapi.http.QQBotAPI
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketConnection
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
+import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
+import io.github.mystere.qqsdk.qqapi.websocket.withData
 import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.client.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 
 abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent>(
@@ -31,6 +38,8 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent>(
     override val botId: String = config.appId
     protected abstract val log: KLogger
     private val coroutineScope: CoroutineScope by lazyMystereScope()
+
+    protected var botUser: OpCode0.Ready.User? = null
 
     private val mQQBot: QQBot by lazy { QQBot.create(config, EventChannel) }
     protected val QQBotApi: IQQBotAPI get() = mQQBot.BotAPI
@@ -46,7 +55,13 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent>(
         coroutineScope.launch(Dispatchers.IO) {
             for (payload: QQBotWebsocketPayload in EventChannel) {
                 try {
-                    processQQEvent(payload)
+                    if (payload.opCode == QQBotWebsocketPayload.OpCode.Dispatch && payload.type == "READY") {
+                        payload.withData<OpCode0.Ready> {
+                            botUser = user
+                        }
+                    } else {
+                        processQQEvent(payload)
+                    }
                 } catch (e: Exception) {
                     log.warn(e) { "process qq event error" }
                 }
@@ -66,7 +81,16 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent>(
     override val EventChannel: Channel<QQBotWebsocketPayload> = Channel()
     protected abstract suspend fun processQQEvent(event: QQBotWebsocketPayload)
     protected suspend fun sendOneBotEvent(event: EventT) {
-        OneBotConnection.onReceiveEvent(event.encodeToJsonElement())
+        OneBotConnection.onReceiveEvent(
+            buildJsonObject {
+                for ((key, value) in event.encodeToJsonElement().jsonObject) {
+                    if (key == MystereJsonClassDiscriminator) {
+                        continue
+                    }
+                    put(key, value)
+                }
+            }
+        )
     }
     protected open suspend fun EventT.encodeToJsonElement(): JsonElement {
         throw NotImplementedError("Please implement this extension method in your instance of IMystereQQBot: " +

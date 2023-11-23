@@ -1,11 +1,9 @@
 package io.github.mystere.onebot.v11.connection
 
 import io.github.mystere.core.lazyMystereScope
-import io.github.mystere.onebot.IOneBotAction
-import io.github.mystere.onebot.IOneBotEvent
 import io.github.mystere.onebot.OneBotConnectionException
 import io.github.mystere.onebot.v11.OneBotV11Action
-import io.github.mystere.core.util.JsonGlobal
+import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.UniWebsocketClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
@@ -18,10 +16,8 @@ import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 
 
 fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
@@ -92,7 +88,7 @@ internal class ReverseWebSocketConnection(
 
     override suspend fun onReceiveEvent(event: JsonElement) {
         log.info { "receive event: ${event::class}" }
-        val rawEvent = JsonGlobal.encodeToString(event)
+        val rawEvent = MystereJson.encodeToString(event)
         log.debug { "receive event: $rawEvent" }
         EventWebsocket.send(Frame.Text(rawEvent))
     }

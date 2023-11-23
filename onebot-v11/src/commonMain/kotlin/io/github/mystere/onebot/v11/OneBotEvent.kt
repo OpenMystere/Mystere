@@ -96,6 +96,8 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val userId: String,
         @SerialName("guild_id")
         val guildId: String? = null,
+        @SerialName("self_tiny_id")
+        val selfTinyId: String? = null,
         @SerialName("channel_id")
         val channelId: String? = null,
     ): IOneBotV11Event {

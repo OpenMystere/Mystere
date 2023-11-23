@@ -1,5 +1,7 @@
 package io.github.mystere.onebot.v12.cqcode
 
+import io.github.mystere.core.util.MystereJson
+import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.serialization.cqcode.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -14,7 +16,11 @@ import kotlin.reflect.KClass
 @Serializable(with = CQCodeV12MessageSerializer::class)
 class CQCodeV12Message(
     chain: ArrayDeque<CQCodeV12MessageItem>,
-): ICQCodeMessage<CQCodeV12MessageItem>(chain)
+): ICQCodeMessage<CQCodeV12MessageItem>(chain), ICQCodeMessageOperator<CQCodeV12MessageItem, CQCodeV12Message> {
+    override fun ArrayDeque<CQCodeV12MessageItem>.asMessage(): CQCodeV12Message {
+        return CQCodeV12Message(this)
+    }
+}
 
 object CQCodeV12MessageSerializer: ICQCodeMessageSerializer<CQCodeV12Message, CQCodeV12MessageItem>() {
     override val descriptor: SerialDescriptor = listSerialDescriptor<CQCodeV12MessageItem>()
@@ -58,7 +64,7 @@ object CQCodeV12MessageSerializer: ICQCodeMessageSerializer<CQCodeV12Message, CQ
             put("type", item._type)
             putJsonObject("data") {
                 for ((key, value) in json.encodeToJsonElement(item).jsonObject) {
-                    if (key.startsWith("_type") || key == CQCodeJsonClassDiscriminator) {
+                    if (key.startsWith("_type") || key == MystereJsonClassDiscriminator) {
                         continue
                     }
                     put(key, value)
@@ -73,12 +79,12 @@ object CQCodeV12MessageSerializer: ICQCodeMessageSerializer<CQCodeV12Message, CQ
 }
 
 fun CQCode.decodeV12FromJson(json: JsonArray): CQCodeV12Message {
-    return CQCodeJson.decodeFromJsonElement(json)
+    return MystereJson.decodeFromJsonElement(json)
 }
 fun CQCode.decodeV12FromString(string: String): CQCodeV12Message {
     try {
         return if (string.startsWith("[{\"") && string.endsWith("\"}]")) {
-            CQCodeJson.decodeFromString(CQCodeV12Message.serializer(), string)
+            MystereJson.decodeFromString(CQCodeV12Message.serializer(), string)
         } else {
             CQCodeV12Message.serializer()
                 .deserialize(CQCodeV12MessageDecoder(
@@ -92,7 +98,7 @@ fun CQCode.decodeV12FromString(string: String): CQCodeV12Message {
     }
 }
 fun CQCode.encodeToJson(value: CQCodeV12Message): JsonArray {
-    return CQCodeJson.encodeToJsonElement(value).jsonArray
+    return MystereJson.encodeToJsonElement(value).jsonArray
 }
 fun CQCode.encodeToString(value: CQCodeV12Message): String {
     val encoder = CQCodeV12MessageEncoder(serializersModule)

@@ -1,7 +1,6 @@
 package io.github.mystere.core.util
 
 import io.github.oshai.kotlinlogging.KLogger
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.api.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -16,17 +15,19 @@ import kotlinx.serialization.json.Json
 expect fun UniHttpClient(config: HttpClientConfig<*>.() -> Unit = { }): HttpClient
 expect fun _WebsocketClient(): HttpClient
 fun UniWebsocketClient(config: WebSockets.Config.() -> Unit = {
-    contentConverter = KotlinxWebsocketSerializationConverter(JsonGlobal)
+    contentConverter = KotlinxWebsocketSerializationConverter(MystereJson)
 }): HttpClient = _WebsocketClient().config {
     install(WebSockets, config)
 }
 
-val JsonGlobal = Json {
+const val MystereJsonClassDiscriminator: String = "_msty"
+
+val MystereJson = Json {
     isLenient = true
     ignoreUnknownKeys = true
     encodeDefaults = true
     explicitNulls = false
-    classDiscriminator = "_ktx"
+    classDiscriminator = MystereJsonClassDiscriminator
 }
 
 fun HttpClientConfig<*>.withJsonContent() {
@@ -37,14 +38,14 @@ fun HttpClientConfig<*>.withJsonContent() {
     })
 }
 
-fun HttpClientConfig<*>.withContentNegotiation(json: Json = JsonGlobal) {
+fun HttpClientConfig<*>.withContentNegotiation(json: Json = MystereJson) {
     install(ContentNegotiation) {
         json(json)
     }
 }
 
 suspend inline fun <reified T: Any> DefaultClientWebSocketSession.sendWithLog(log: KLogger, data: T) {
-    val message = JsonGlobal.encodeToString(data)
+    val message = MystereJson.encodeToString(data)
     log.debug { "send WebSocket message: $message" }
     send(Frame.Text(message))
 }

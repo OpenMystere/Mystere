@@ -6,7 +6,7 @@ import io.github.mystere.qqsdk.BuildKonfig
 import io.github.mystere.qqsdk.qqapi.websocket.message.Intent
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode10
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode2
-import io.github.mystere.core.util.JsonGlobal
+import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.UniWebsocketClient
 import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.client.*
@@ -26,6 +26,7 @@ import kotlinx.serialization.json.*
 class QQBotWebsocketConnection(
     private val log: KLogger,
     private val url: String,
+    private val isPrivate: Boolean,
     private val channel: Channel<QQBotWebsocketPayload>,
     private val accessTokenProvider: () -> String,
 ): AutoCloseable {
@@ -45,7 +46,13 @@ class QQBotWebsocketConnection(
                     opCode = QQBotWebsocketPayload.OpCode.Identify,
                     data = OpCode2.IdentifyPayload(
                         token = "QQBot ${accessTokenProvider()}",
-                        intents = Intent.DEFAULT,
+                        intents = Intent.DEFAULT.let {
+                            if (isPrivate) {
+                                return@let it + Intent.PRIVATE
+                            } else {
+                                return@let it
+                            }
+                        },
                         properties = buildJsonObject {
                             put("\$client", JsonPrimitive("Mystere v${BuildKonfig.VERSION_NAME}(${BuildKonfig.COMMIT})"))
                             put("\$platform", JsonPrimitive(Platform.name))
@@ -62,7 +69,7 @@ class QQBotWebsocketConnection(
                             val rawMessage = Connection!!.incoming.receive() as Frame.Text
                             log.debug { "new WebSocket message!" }
                             val payload = try {
-                                JsonGlobal.decodeFromString(
+                                MystereJson.decodeFromString(
                                     QQBotWebsocketPayload.serializer(),
                                     rawMessage.readText().also {
                                         log.debug { "new WebSocket message content: $it" }
@@ -106,7 +113,7 @@ class QQBotWebsocketConnection(
                             data = JsonPrimitive(s)
                         ))
                         delay(
-                            JsonGlobal.decodeFromJsonElement(
+                            MystereJson.decodeFromJsonElement(
                             OpCode10.QQHelloMessage.serializer(), message.data
                         ).heartbeatInterval)
                     }
@@ -129,7 +136,7 @@ class QQBotWebsocketConnection(
     }
 
     private suspend inline fun <reified T: Any> DefaultClientWebSocketSession.sendWithLog(data: T) {
-        val message = JsonGlobal.encodeToString(data)
+        val message = MystereJson.encodeToString(data)
         log.debug { "send WebSocket message: $message" }
         send(message)
     }
@@ -193,11 +200,11 @@ fun <T: Any> QQBotWebsocketPayload(
     serializer: KSerializer<T>,
 ) = QQBotWebsocketPayload(
     opCode, s, type,
-    data = JsonGlobal.encodeToJsonElement(
+    data = MystereJson.encodeToJsonElement(
         serializer, data
     )
 )
 
 inline fun <reified T: @Serializable Any> QQBotWebsocketPayload.withData(block: T.() -> Unit) {
-    block.invoke(JsonGlobal.decodeFromJsonElement(data))
+    block.invoke(MystereJson.decodeFromJsonElement(data))
 }

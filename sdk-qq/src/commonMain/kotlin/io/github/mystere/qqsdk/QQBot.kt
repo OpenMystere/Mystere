@@ -72,6 +72,7 @@ data class QQBot internal constructor(
                     websocket = QQBotWebsocketConnection(
                         log = log,
                         url = BotAPI.gateway().url,
+                        isPrivate = config.private,
                         channel = EventChannel,
                     ) provider@{
                         return@provider accessToken
@@ -91,6 +92,8 @@ data class QQBot internal constructor(
         val appId: String,
         @SerialName("client-secret")
         val clientSecret: String,
+        @SerialName("private")
+        val private: Boolean = false,
     )
 
     companion object {

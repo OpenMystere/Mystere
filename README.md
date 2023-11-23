@@ -1,13 +1,22 @@
 # Mystere
 
 [![Badge](https://img.shields.io/badge/OneBot-11-black)](https://github.com/botuniverse/onebot-11)
+[![Badge](https://img.shields.io/badge/OneBot-12-black)](https://github.com/botuniverse/onebot-12)
 
 
 ## 介绍
 
-Mystere 是一个基于 Kotlin/Native、实现了 OneBot 协议、对接 [QQ 开放平台](https://q.qq.com) 的机器人无头客户端。
+Mystere 是一个基于 Kotlin/Native、实现了 OneBot 协议的机器人无头客户端。
 
 项目名称取自[《Synduality Noir》](https://synduality-noir.com/)中的 [诺瓦尔（Noir）](https://zh.moegirl.org.cn/%E8%AF%BA%E7%93%A6%E5%B0%94) 里人格 米丝缇（Mystere），希望此项目能如米丝媂一样强大。
+
+项目支持以下目标运行（[查看详情](#跨平台兼容性)）：
+
++ jvm
++ linuxX64
++ macosX64
++ macosArm64
+
 
 ## 机器人平台支持
 

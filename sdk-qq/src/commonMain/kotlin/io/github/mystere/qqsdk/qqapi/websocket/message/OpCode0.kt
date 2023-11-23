@@ -13,6 +13,28 @@ import kotlinx.serialization.encoding.Encoder
 
 object OpCode0 {
     @Serializable
+    data class Ready(
+        @SerialName("version")
+        val version: Int,
+        @SerialName("session_id")
+        val seasonId: String,
+        @SerialName("user")
+        val user: User,
+    ) {
+        @Serializable
+        data class User(
+            @SerialName("id")
+            val id: String,
+            @SerialName("username")
+            val username: String,
+            @SerialName("bot")
+            val bot: Boolean,
+            @SerialName("status")
+            val status: Int,
+        )
+    }
+
+    @Serializable
     data class AtMessageCreate(
         @SerialName("attachments")
         val attachments: List<Attachment> = emptyList(),
@@ -29,7 +51,7 @@ object OpCode0 {
         @SerialName("member")
         val member: Member,
         @SerialName("mentions")
-        val mentions: List<Mentions>,
+        val mentions: List<Mentions> = emptyList(),
         @SerialName("seq")
         val seq: Int,
         @SerialName("seq_in_channel")

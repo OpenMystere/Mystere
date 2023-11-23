@@ -1,24 +1,14 @@
 package io.github.mystere.serialization.cqcode
 
+import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.logger
 import io.github.mystere.serialization.cqcode.raw.CQCodeRawMessage
 import io.github.mystere.serialization.cqcode.raw.CQCodeRawMessageDecoder
 import io.github.mystere.serialization.cqcode.raw.CQCodeRawMessageEncoder
 import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.getPolymorphicDescriptors
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-
-const val CQCodeJsonClassDiscriminator: String = "_cqt"
-
-val CQCodeJson = Json {
-    ignoreUnknownKeys = true
-    explicitNulls = true
-    useAlternativeNames = true
-    useArrayPolymorphism = false
-    classDiscriminator = CQCodeJsonClassDiscriminator
-}
 
 fun CQCode(block: CQCode.MutableConfig.() -> Unit): CQCode {
     return CQCode(CQCode.MutableConfig().also(block))
@@ -47,12 +37,12 @@ open class CQCode(
     }
 
     fun decodeRawFromJson(element: JsonArray): CQCodeRawMessage {
-        return CQCodeJson.decodeFromJsonElement<CQCodeRawMessage>(element)
+        return MystereJson.decodeFromJsonElement<CQCodeRawMessage>(element)
     }
     fun decodeRawFromString(string: String): CQCodeRawMessage {
         try {
             return if (string.startsWith("[{\"") && string.endsWith("\"}]")) {
-                CQCodeJson.decodeFromString(CQCodeRawMessage.serializer(), string)
+                MystereJson.decodeFromString(CQCodeRawMessage.serializer(), string)
             } else {
                 CQCodeRawMessage.serializer()
                     .deserialize(CQCodeRawMessageDecoder(string, serializersModule))
@@ -71,7 +61,7 @@ open class CQCode(
         return encodeToString(value as CQCodeRawMessage)
     }
     fun encodeToJson(value: CQCodeRawMessage): JsonArray {
-        return CQCodeJson.encodeToJsonElement(value).jsonArray
+        return MystereJson.encodeToJsonElement(value).jsonArray
     }
     fun encodeToString(value: CQCodeRawMessage): String {
         val encoder = CQCodeRawMessageEncoder(serializersModule)

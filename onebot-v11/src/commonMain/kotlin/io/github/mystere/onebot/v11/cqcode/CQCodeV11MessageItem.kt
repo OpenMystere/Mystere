@@ -1,12 +1,10 @@
 package io.github.mystere.onebot.v11.cqcode
 
-import io.github.mystere.serialization.cqcode.CQCodeJsonClassDiscriminator
 import io.github.mystere.serialization.cqcode.ICQCodeMessageItem
 import io.github.mystere.serialization.cqcode.ICQCodeMessageItemOperator
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlin.reflect.KClass
 
 /**
@@ -14,23 +12,28 @@ import kotlin.reflect.KClass
  * @see <a href="https://docs.go-cqhttp.org/cqcode/#%E6%B6%88%E6%81%AF%E7%B1%BB%E5%9E%8B">CQ 码 / CQ Code | go-cqhttp 帮助中心</a>
  */
 @Serializable
-sealed class CQCodeV11MessageItem(
+sealed interface CQCodeV11MessageItem:
+    ICQCodeMessageItem, ICQCodeMessageItemOperator<CQCodeV11MessageItem, CQCodeV11Message> {
     @Transient
-    private val _typeEnum: Type = Type.text
-): ICQCodeMessageItem, ICQCodeMessageItemOperator<CQCodeV11MessageItem, CQCodeV11Message> {
+    val _typeEnum: Type
+
     // 纯文本
     @Serializable
     data class Text(
         @SerialName("text")
         val text: String
-    ): CQCodeV11MessageItem()
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.text
+    }
 
     // QQ 表情
     @Serializable
     data class Face(
         @SerialName("id")
         val id: Long,
-    ): CQCodeV11MessageItem(Type.face)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.face
+    }
 
     // 图片
     @Serializable
@@ -42,12 +45,13 @@ sealed class CQCodeV11MessageItem(
         @SerialName("url")
         val url: String? = null,
         @SerialName("cache")
-        val cache: Int? = null,
+        val cache: Boolean? = null,
         @SerialName("proxy")
-        val proxy: Int? = null,
+        val proxy: Boolean? = null,
         @SerialName("timeout")
         val timeout: Int? = null,
-    ): CQCodeV11MessageItem(CQCodeV11MessageItem.Type.image) {
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: CQCodeV11MessageItem.Type = CQCodeV11MessageItem.Type.image
         enum class Type {
             flash,
         }
@@ -68,7 +72,9 @@ sealed class CQCodeV11MessageItem(
         val proxy: Int? = null,
         @SerialName("timeout")
         val timeout: Int? = null,
-    ): CQCodeV11MessageItem(Type.record)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.record
+    }
 
     // 短视频
     @Serializable
@@ -83,26 +89,36 @@ sealed class CQCodeV11MessageItem(
         val proxy: Int? = null,
         @SerialName("timeout")
         val timeout: Int? = null,
-    ): CQCodeV11MessageItem(Type.video)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.video
+    }
 
     // at
     @Serializable
     data class At(
         @SerialName("qq")
         val qq: String,
-    ): CQCodeV11MessageItem(Type.at)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.at
+    }
 
     // 猜拳魔法表情
     @Serializable
-    data object Rps: CQCodeV11MessageItem(Type.rps)
+    data object Rps: CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.rps
+    }
 
     // 掷骰子魔法表情
     @Serializable
-    data object Dice: CQCodeV11MessageItem(Type.dice)
+    data object Dice: CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.dice
+    }
 
     // 窗口抖动（戳一戳）
     @Serializable
-    data object Shake: CQCodeV11MessageItem(Type.shake)
+    data object Shake: CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.shake
+    }
 
     // 戳一戳
     @Serializable
@@ -116,14 +132,18 @@ sealed class CQCodeV11MessageItem(
         val id: String,
         @SerialName("name")
         val name: String? = null,
-    ): CQCodeV11MessageItem(Type.poke)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.poke
+    }
 
     // 匿名发消息
     @Serializable
     data class Anonymous(
         @SerialName("ignore")
         val ignore: Int? = null,
-    ): CQCodeV11MessageItem(Type.anonymous)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.anonymous
+    }
 
     // 链接分享
     @Serializable
@@ -136,7 +156,9 @@ sealed class CQCodeV11MessageItem(
         val content: String? = null,
         @SerialName("image")
         val image: String? = null,
-    ): CQCodeV11MessageItem(Type.share)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.share
+    }
 
     // 推荐
     @Serializable
@@ -145,7 +167,8 @@ sealed class CQCodeV11MessageItem(
         val type: Type,
         @SerialName("id")
         val id: String,
-    ): CQCodeV11MessageItem(CQCodeV11MessageItem.Type.contact) {
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: CQCodeV11MessageItem.Type = CQCodeV11MessageItem.Type.contact
         enum class Type {
             qq, group,
         }
@@ -176,7 +199,9 @@ sealed class CQCodeV11MessageItem(
         val title: String? = null,
         @SerialName("content")
         val content: String? = null,
-    ): CQCodeV11MessageItem(Type.location)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.location
+    }
 
     // 音乐分享
     @Serializable
@@ -195,7 +220,8 @@ sealed class CQCodeV11MessageItem(
         val content: String? = null,
         @SerialName("image")
         val image: String? = null,
-    ): CQCodeV11MessageItem(CQCodeV11MessageItem.Type.music) {
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: CQCodeV11MessageItem.Type = CQCodeV11MessageItem.Type.music
         enum class Type {
             qq, `163`, xm, custom
         }
@@ -229,14 +255,18 @@ sealed class CQCodeV11MessageItem(
     data class Reply(
         @SerialName("id")
         val id: String,
-    ): CQCodeV11MessageItem(Type.reply)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.reply
+    }
 
     // 合并转发
     @Serializable
     data class Forward(
         @SerialName("id")
         val id: String,
-    ): CQCodeV11MessageItem(Type.forward)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.forward
+    }
 
     // 合并转发节点
     @Serializable
@@ -249,7 +279,9 @@ sealed class CQCodeV11MessageItem(
         val nickname: String? = null,
         @SerialName("content")
         val content: CQCodeV11Message? = null,
-    ): CQCodeV11MessageItem(Type.node)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.node
+    }
     fun NodeFromId(
         id: String,
     ) = Node(
@@ -270,24 +302,30 @@ sealed class CQCodeV11MessageItem(
     data class Xml(
         @SerialName("data")
         val data: String,
-    ): CQCodeV11MessageItem(Type.xml)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.xml
+    }
 
     // JSON 消息
     @Serializable
     data class Json(
         @SerialName("data")
         val data: String,
-    ): CQCodeV11MessageItem(Type.json)
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.json
+    }
 
     // 子频道
     @Serializable
     data class SubChannel(
-        @SerialName("id")
-        val id: String,
-    ): CQCodeV11MessageItem(Type.sub_channel)
+        @SerialName("channel_id")
+        val channelId: String,
+    ): CQCodeV11MessageItem {
+        override val _typeEnum: Type = Type.sub_channel
+    }
 
     @Transient
-    override val _type: String = _typeEnum.name
+    override val _type: String get() = _typeEnum.name
     override fun ArrayDeque<CQCodeV11MessageItem>.asMessage(): CQCodeV11Message {
         return CQCodeV11Message(this)
     }

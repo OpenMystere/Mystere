@@ -1,5 +1,6 @@
 package io.github.mystere.serialization.cqcode.raw
 
+import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.logger
 import io.github.mystere.serialization.cqcode.*
 import kotlinx.serialization.KSerializer
@@ -36,7 +37,7 @@ object CQCodeRawMessageItemSerializer: KSerializer<CQCodeRawMessageItem> {
                 is JsonObject -> {
                     return CQCodeRawMessageItem(
                         element["type"]!!.jsonPrimitive.content,
-                        CQCodeJson.decodeFromJsonElement(element["data"]!!.jsonObject),
+                        MystereJson.decodeFromJsonElement(element["data"]!!.jsonObject),
                     )
                 }
                 is JsonPrimitive -> return deserialize(CQCodeRawMessageItemDecoder(
@@ -56,7 +57,7 @@ object CQCodeRawMessageItemSerializer: KSerializer<CQCodeRawMessageItem> {
             is JsonEncoder -> {
                 encoder.encodeJsonElement(buildJsonObject {
                     put("type", value._type)
-                    put("data", CQCodeJson.encodeToJsonElement(value.data))
+                    put("data", MystereJson.encodeToJsonElement(value.data))
                 })
             }
             is CQCodeRawMessageItemEncoder -> { }

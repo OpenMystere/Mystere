@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonElement
-import io.github.mystere.core.util.JsonGlobal
+import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.v12.cqcode.CQCodeV12Message
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
@@ -59,7 +59,7 @@ data class OneBotV12Action(
 }
 
 inline fun <reified T: OneBotV12Action.Param> OneBotV12Action.withParams(crossinline block: T.() -> Unit) {
-    block.invoke(JsonGlobal.decodeFromJsonElement(params))
+    block.invoke(MystereJson.decodeFromJsonElement(params))
 }
 
 inline fun <reified T: OneBotV12Action.Param> OneBotV12Action(
@@ -67,7 +67,7 @@ inline fun <reified T: OneBotV12Action.Param> OneBotV12Action(
     echo: JsonElement? = null
 ): OneBotV12Action {
     return OneBotV12Action(
-        params = JsonGlobal.encodeToJsonElement(params),
+        params = MystereJson.encodeToJsonElement(params),
         action = params.action,
         echo = echo,
     )
