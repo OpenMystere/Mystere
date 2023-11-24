@@ -53,6 +53,7 @@ suspend fun IQQBotAPI.channelsMessage(
         messageReference?.let { append("message_reference", MystereJson.encodeToString(it)) }
         markdown?.let { append("markdown", MystereJson.encodeToString(it)) }
         msgId?.let { append("msg_id", it) }
+        var size = 0
         for (item in images) {
             when  {
                 item.startsWith("file:///") -> {
@@ -61,6 +62,10 @@ suspend fun IQQBotAPI.channelsMessage(
                     }
                     append(
                         "file_image", SystemFileSystem.source(Path(path)).buffered().readByteArray(),
+                        headers = Headers.build {
+                            append(HttpHeaders.ContentDisposition, "filename=\"upload-${size++}.png\"")
+                            append(HttpHeaders.ContentType, "image/png")
+                        }
                     )
                 }
                 item.startsWith("https://") || item.startsWith("http://") -> {
@@ -69,6 +74,10 @@ suspend fun IQQBotAPI.channelsMessage(
                 item.startsWith("base64://") -> {
                     append(
                         "file_image", Base64.decode(item.substring(9)),
+                        headers = Headers.build {
+                            append(HttpHeaders.ContentDisposition, "filename=\"upload-${size++}.png\"")
+                            append(HttpHeaders.ContentType, "image/png")
+                        }
                     )
                 }
             }
