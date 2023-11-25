@@ -29,10 +29,22 @@ data class OneBotV11Action(
         send_guild_channel_msg,
     }
 
-
+    @Serializable
+    data class OriginEvent(
+        @SerialName("id")
+        val id: String,
+        @SerialName("type")
+        val type: IOneBotV11Event.PostType,
+        @SerialName("detail_type")
+        val detailType: String = "",
+        @SerialName("sub_type")
+        val subType: String = "",
+    )
 
     @Serializable
-    data object SendPrivateMsg: Param {
+    data class SendPrivateMsg(
+        val originEvent: OriginEvent? = null,
+    ): Param {
         override val action: Action = Action.send_private_msg
     }
 
@@ -44,8 +56,8 @@ data class OneBotV11Action(
         val channelId: String,
         @SerialName("message")
         val message: CQCodeV11Message,
-        @SerialName("reply_msg_id")
-        val replyMsgId: String? = null,
+        @SerialName("origin_event")
+        val originEvent: OriginEvent? = null,
     ): Param {
         override val action: Action = Action.send_guild_channel_msg
     }

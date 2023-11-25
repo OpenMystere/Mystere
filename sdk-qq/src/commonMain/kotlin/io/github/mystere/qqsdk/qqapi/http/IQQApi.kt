@@ -43,6 +43,7 @@ suspend fun IQQBotAPI.channelsMessage(
     ark: MessageArk? = null,
     messageReference: MessageReference? = null,
     msgId: String? = null,
+    eventId: String? = null,
     markdown: MessageMarkdown? = null,
     images: List<String> = emptyList(),
 ) {
@@ -53,6 +54,7 @@ suspend fun IQQBotAPI.channelsMessage(
         messageReference?.let { append("message_reference", MystereJson.encodeToString(it)) }
         markdown?.let { append("markdown", MystereJson.encodeToString(it)) }
         msgId?.let { append("msg_id", it) }
+        eventId?.let { append("event_id", it) }
         var size = 0
         for (item in images) {
             when  {

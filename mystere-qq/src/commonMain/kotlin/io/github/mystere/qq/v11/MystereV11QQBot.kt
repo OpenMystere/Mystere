@@ -80,12 +80,22 @@ class MystereV11QQBot(
 
             }
             OneBotV11Action.Action.send_guild_channel_msg -> action.withParams<OneBotV11Action.SendGuildChannelMsg> {
+                var originMessageId: String? = null
+                var originEventId: String? = null
+                originEvent?.let {
+                    if (it.type == IOneBotV11Event.PostType.message) {
+                        originMessageId = it.id
+                    } else {
+                        originEventId = it.id
+                    }
+                }
                 QQBotApi.channelsMessage(
                     channelId = channelId,
                     content = message.asQQMessageContent(),
                     images = message.asQQImageList(),
                     messageReference = message.asQQMessageReference(),
-                    msgId = replyMsgId,
+                    msgId = originMessageId,
+                    eventId = originEventId,
                 )
             }
         }
