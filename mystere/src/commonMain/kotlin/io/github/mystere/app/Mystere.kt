@@ -74,7 +74,7 @@ object Mystere: CliktCommand(), AutoCloseable {
         for (bot in Config.bots) {
             val type = bot.type.lowercase()
             val connect = bot.connect
-            val connection = when (connect.version) {
+            val connectionConfig = when (connect.version) {
                 11 -> when (connect.type) {
                     "re-ws" -> YamlGlobal.decodeFromString(
                         IOneBotV11Connection.ReverseWebSocket.serializer(),
@@ -121,7 +121,7 @@ object Mystere: CliktCommand(), AutoCloseable {
                         QQBot.Config.serializer(),
                         YamlGlobal.encodeToString(bot.detail),
                     ),
-                    connection,
+                    connectionConfig,
                 )
                 else -> throw IllegalArgumentException("Unknown bot type: $type")
             }
@@ -132,7 +132,7 @@ object Mystere: CliktCommand(), AutoCloseable {
         }
     }
 
-    override fun close() {
+    override fun close() = runBlocking {
         for ((_, bot) in bots) {
             bot.disconnect()
         }

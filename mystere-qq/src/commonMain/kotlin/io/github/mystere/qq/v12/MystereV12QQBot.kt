@@ -1,30 +1,28 @@
 package io.github.mystere.qq.v12
 
 import io.github.mystere.core.util.MystereJson
-import io.github.mystere.onebot.v11.cqcode.CQCodeV11MessageItem
-import io.github.mystere.qq.IMystereQQBot
 import io.github.mystere.onebot.v12.IOneBotV12Event
 import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
 import io.github.mystere.onebot.v12.cqcode.CQCodeV12Message
 import io.github.mystere.onebot.v12.cqcode.CQCodeV12MessageItem
 import io.github.mystere.onebot.v12.cqcode.encodeToString
-import io.github.mystere.qq.v11.asV11MessageContent
+import io.github.mystere.qq.IMystereQQBot
 import io.github.mystere.qqsdk.QQBot
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.mystere.qqsdk.qqapi.websocket.withData
 import io.github.mystere.serialization.cqcode.CQCode
+import io.github.mystere.serialization.cqcode.plus
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.json.JsonElement
-import io.github.mystere.serialization.cqcode.plus
 import kotlinx.serialization.json.encodeToJsonElement
 
 class MystereV12QQBot(
     config: QQBot.Config,
-    connectionConfig: IOneBotV12Connection.IConfig,
-): IMystereQQBot<OneBotV12Action, IOneBotV12Event>(config, connectionConfig) {
+    connection: IOneBotV12Connection,
+): IMystereQQBot<OneBotV12Action, IOneBotV12Event>(config, connection) {
     override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
 
     override suspend fun processQQEvent(event: QQBotWebsocketPayload) {
@@ -52,7 +50,7 @@ class MystereV12QQBot(
                         }
                         return@with message!!
                     }
-                    sendOneBotEvent(IOneBotV12Event.Message(
+                    OneBotConnection.send(IOneBotV12Event.Message(
                         selfId = config.appId,
                         messageType = IOneBotV12Event.MessageType.guild,
                         subType = IOneBotV12Event.MessageSubType.channel,

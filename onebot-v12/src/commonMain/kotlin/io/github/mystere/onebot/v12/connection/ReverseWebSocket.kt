@@ -19,19 +19,10 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonElement
 
 
-fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
-    install(createClientPlugin("OneBotV11-SelfIdHeader") {
-        onRequest { request, _ ->
-            request.header("X-Self-ID", selfId)
-        }
-    })
-}
-
 internal class ReverseWebSocketConnection(
-    override val originConfig: ReverseWebSocket,
     ownBotId: String,
-    actionChannel: Channel<OneBotV12Action>,
-): IOneBotV12Connection(originConfig, ownBotId, actionChannel) {
+    override val originConfig: ReverseWebSocket,
+): IOneBotV12Connection(ownBotId, originConfig) {
     private val log = KotlinLogging.logger("OneBotV12Connection(ownBotId: $ownBotId)")
 
     private var _WebsocketClient: HttpClient? = null
@@ -66,14 +57,21 @@ internal class ReverseWebSocketConnection(
                 delay(originConfig.reconnectInterval)
             }
         }
+        coroutineScope.launch(Dispatchers.IO) {
+            for (event in eventChannel) {
+                try {
+                    log.info { "receive event: ${event::class}" }
+                    val rawEvent = MystereJson.encodeToString(event)
+                    log.debug { "receive event: $rawEvent" }
+                    UniWebsocket?.send(Frame.Text(rawEvent))
+                } catch (e: Exception) {
+                    log.warn(e) { "event send error" }
+                }
+            }
+        }
     }
 
-
-
-    override suspend fun onReceiveEvent(event: JsonElement) {
-        log.info { "receive event: ${event::class}" }
-        val rawEvent = MystereJson.encodeToString(event)
-        log.debug { "receive event: $rawEvent" }
-        UniWebsocket?.send(Frame.Text(rawEvent))
+    override suspend fun disconnect() {
+        UniWebsocket?.cancel()
     }
 }

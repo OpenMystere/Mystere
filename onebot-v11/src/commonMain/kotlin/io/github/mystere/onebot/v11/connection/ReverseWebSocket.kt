@@ -16,6 +16,7 @@ import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonElement
 
@@ -29,10 +30,9 @@ fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
 }
 
 internal class ReverseWebSocketConnection(
-    override val originConfig: ReverseWebSocket,
     ownBotId: String,
-    actionChannel: Channel<OneBotV11Action>,
-): IOneBotV11Connection(originConfig, ownBotId, actionChannel) {
+    override val originConfig: ReverseWebSocket,
+): IOneBotV11Connection(ownBotId, originConfig) {
     private val log = KotlinLogging.logger("OneBotV11Connection(ownBotId: $ownBotId)")
 
     private var _WebsocketClient: HttpClient? = null
@@ -47,7 +47,10 @@ internal class ReverseWebSocketConnection(
     private val coroutineScope by lazyMystereScope()
 
     override suspend fun connect(httpClient: HttpClientConfig<*>.() -> Unit) {
-        _WebsocketClient = UniWebsocketClient().config(httpClient)
+        _WebsocketClient = UniWebsocketClient().config {
+            applySelfIdHeader(ownBotId)
+            httpClient()
+        }
         coroutineScope.launch(Dispatchers.IO) {
             while (true) {
                 try {
@@ -84,12 +87,23 @@ internal class ReverseWebSocketConnection(
                 delay(originConfig.reconnectInterval)
             }
         }
+        coroutineScope.launch(Dispatchers.IO) {
+            for (event in eventChannel) {
+                try {
+                    log.info { "receive event: ${event::class}" }
+                    val rawEvent = MystereJson.encodeToString(event)
+                    log.debug { "receive event: $rawEvent" }
+                    EventWebsocket.send(Frame.Text(rawEvent))
+                } catch (e: Exception) {
+                    log.warn(e) { "event send error" }
+                }
+            }
+        }
     }
 
-    override suspend fun onReceiveEvent(event: JsonElement) {
-        log.info { "receive event: ${event::class}" }
-        val rawEvent = MystereJson.encodeToString(event)
-        log.debug { "receive event: $rawEvent" }
-        EventWebsocket.send(Frame.Text(rawEvent))
+    override suspend fun disconnect() {
+        _UniWebsocket?.cancel()
+        _EventWebsocket?.cancel()
+        _ApiWebsocket?.cancel()
     }
 }

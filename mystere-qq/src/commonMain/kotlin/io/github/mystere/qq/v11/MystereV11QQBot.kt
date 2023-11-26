@@ -23,10 +23,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import io.github.mystere.serialization.cqcode.plus
 
-class MystereV11QQBot(
+class MystereV11QQBot internal constructor(
     config: QQBot.Config,
-    connectionConfig: IOneBotV11Connection.IConfig,
-): IMystereQQBot<OneBotV11Action, IOneBotV11Event>(config, connectionConfig) {
+    connection: IOneBotV11Connection,
+): IMystereQQBot<OneBotV11Action, IOneBotV11Event>(config, connection) {
     override val log: KLogger = KotlinLogging.logger("MystereV11QQBot(botId: ${config.appId})")
 
     override suspend fun processQQEvent(event: QQBotWebsocketPayload) {
@@ -48,7 +48,8 @@ class MystereV11QQBot(
                         }
                         return@with message
                     } ?: return@withData
-                    sendOneBotEvent(IOneBotV11Event.Message(
+                    OneBotConnection.send(IOneBotV11Event.Message(
+                        id = id,
                         selfId = config.appId,
                         messageType = IOneBotV11Event.MessageType.guild,
                         subType = IOneBotV11Event.MessageSubType.channel,
@@ -70,10 +71,6 @@ class MystereV11QQBot(
         }
     }
 
-    override suspend fun IOneBotV11Event.encodeToJsonElement(): JsonElement {
-        return MystereJson.encodeToJsonElement(this)
-    }
-
     override suspend fun processOneBotAction(action: OneBotV11Action) {
         when (action.action) {
             OneBotV11Action.Action.send_private_msg -> action.withParams<OneBotV11Action.SendPrivateMsg> {
@@ -82,12 +79,16 @@ class MystereV11QQBot(
             OneBotV11Action.Action.send_guild_channel_msg -> action.withParams<OneBotV11Action.SendGuildChannelMsg> {
                 var originMessageId: String? = null
                 var originEventId: String? = null
-                originEvent?.let {
-                    if (it.type == IOneBotV11Event.PostType.message) {
-                        originMessageId = it.id
+                if (originEvent != null) {
+                    if (originEvent!!.type == IOneBotV11Event.PostType.message) {
+                        log.debug { "send passive message,reply message_id: ${originEvent!!.id}" }
+                        originMessageId = originEvent!!.id
                     } else {
-                        originEventId = it.id
+                        log.debug { "send passive message, reply event_id: ${originEvent!!.id}" }
+                        originEventId = originEvent!!.id
                     }
+                } else {
+                    log.debug { "send proactive message" }
                 }
                 QQBotApi.channelsMessage(
                     channelId = channelId,
@@ -99,5 +100,9 @@ class MystereV11QQBot(
                 )
             }
         }
+    }
+
+    override suspend fun IOneBotV11Event.encodeToJsonElement(): JsonElement {
+        return MystereJson.encodeToJsonElement(this)
     }
 }

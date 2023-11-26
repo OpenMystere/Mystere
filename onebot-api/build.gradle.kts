@@ -33,6 +33,8 @@ kotlin {
                 implementation(mystere.kotlinx.serialization.json)
                 implementation(mystere.kotlinx.coroutines.core)
                 implementation(mystere.ktor.client.core)
+
+                implementation(project(":mystere-core"))
             }
         }
 
