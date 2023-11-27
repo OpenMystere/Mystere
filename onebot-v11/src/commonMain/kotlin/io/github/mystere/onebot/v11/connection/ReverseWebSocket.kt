@@ -15,10 +15,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.SendChannel
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.JsonElement
 
 
 fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
@@ -74,11 +71,11 @@ internal class ReverseWebSocketConnection(
                     while (true) {
                         log.debug { "waiting for new onebot action" }
                         val action = ApiWebsocket.receiveDeserialized<OneBotV11Action>()
-                        log.debug { "new onebot action! action: ${action.action}" }
+                        log.debug { "new onebot action! action: ${action.rawAction}" }
                         try {
                             actionChannel.send(action)
                         } catch (e: Exception) {
-                            log.warn(e) { "error during sending action ${action.action}" }
+                            log.warn(e) { "error during sending action ${action.rawAction}" }
                         }
                     }
                 } catch (e: Exception) {

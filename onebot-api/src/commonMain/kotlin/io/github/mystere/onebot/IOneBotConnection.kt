@@ -18,9 +18,8 @@ abstract class IOneBotConnection<ActionT: IOneBotAction, EventT: IOneBotEvent> p
 }
 
 interface IOneBotAction {
-    interface Param {
-        val action: Action
-    }
+    val action: Action
+    interface Param
     interface Action
 }
 interface IOneBotActionResp {

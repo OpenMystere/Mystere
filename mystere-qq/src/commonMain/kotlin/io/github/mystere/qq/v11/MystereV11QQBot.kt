@@ -3,15 +3,12 @@ package io.github.mystere.qq.v11
 import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.v11.IOneBotV11Event
 import io.github.mystere.onebot.v11.OneBotV11Action
-import io.github.mystere.onebot.v11.OneBotV11Referer
 import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11MessageItem
 import io.github.mystere.onebot.v11.cqcode.encodeToString
-import io.github.mystere.onebot.v11.withParams
 import io.github.mystere.qq.IMystereQQBot
 import io.github.mystere.qqsdk.QQBot
-import io.github.mystere.qqsdk.qqapi.dto.MessageReference
 import io.github.mystere.qqsdk.qqapi.http.channelsMessage
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
@@ -56,7 +53,7 @@ class MystereV11QQBot internal constructor(
                         messageId = id,
                         message = cqMsg,
                         rawMessage = CQCode.encodeToString(cqMsg),
-                        sender = IOneBotV11Event.Message.Sender(
+                        sender = IOneBotV11Event.Sender(
                             userId = author.id,
                             tinyId = author.id,
                         ),
@@ -72,11 +69,11 @@ class MystereV11QQBot internal constructor(
     }
 
     override suspend fun processOneBotAction(action: OneBotV11Action) {
-        when (action.action) {
-            OneBotV11Action.Action.send_private_msg -> action.withParams<OneBotV11Action.SendPrivateMsg> {
+        when (val params = action.params) {
+            is OneBotV11Action.SendPrivateMsg -> with(params) {
 
             }
-            OneBotV11Action.Action.send_guild_channel_msg -> action.withParams<OneBotV11Action.SendGuildChannelMsg> {
+            is OneBotV11Action.SendGuildChannelMsg -> with(params) {
                 var originMessageId: String? = null
                 var originEventId: String? = null
                 if (originEvent != null) {
@@ -99,6 +96,7 @@ class MystereV11QQBot internal constructor(
                     eventId = originEventId,
                 )
             }
+            else -> { }
         }
     }
 
