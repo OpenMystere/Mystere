@@ -30,7 +30,7 @@ data class OneBotV12ActionResp(
 
     @Serializable(with = RetCodeSerializer::class)
     sealed class RetCode(
-        override val rawCode: Long,
+        override val rawCode: Int,
     ): IOneBotActionResp.RetCode {
         // 0 成功（OK）
         data object Success: RetCode(0)
@@ -51,51 +51,60 @@ data class OneBotV12ActionResp(
         data object InternalHandlerError: RetCode(20002)
 
         // 3xxxx 动作执行错误（Execution Error）
-        sealed class ExecutionError(override val rawCode: Long): RetCode(rawCode)
+        sealed class ExecutionError(override val rawCode: Int): RetCode(rawCode)
         // 31xxx
-        data class DatabaseError(override val rawCode: Long): ExecutionError(rawCode)
+        data class DatabaseError(override val rawCode: Int): ExecutionError(rawCode)
         // 32xxx
-        data class FilesystemError(override val rawCode: Long): ExecutionError(rawCode)
+        data class FilesystemError(override val rawCode: Int): ExecutionError(rawCode)
         // 33xxx
-        data class NetworkError(override val rawCode: Long): ExecutionError(rawCode)
+        data class NetworkError(override val rawCode: Int): ExecutionError(rawCode)
         // 34xxx
-        data class PlatformError(override val rawCode: Long): ExecutionError(rawCode)
+        data class PlatformError(override val rawCode: Int): ExecutionError(rawCode)
         // 35xxx
-        data class LogicError(override val rawCode: Long): ExecutionError(rawCode)
+        data class LogicError(override val rawCode: Int): ExecutionError(rawCode)
         // 36xxx
-        data class IAmTired(override val rawCode: Long): ExecutionError(rawCode)
+        data class IAmTired(override val rawCode: Int): ExecutionError(rawCode)
 
-        data class Custom(override val rawCode: Long): RetCode(rawCode)
-
-        init {
-            if ((this !is Custom) && (this !is ExecutionError)) {
-                codes[rawCode] = this
-            }
-        }
+        data class Custom(override val rawCode: Int): RetCode(rawCode)
     }
 }
-private val codes: HashMap<Long, OneBotV12ActionResp.RetCode> = hashMapOf()
+private val codes: HashMap<Int, OneBotV12ActionResp.RetCode> = hashMapOf(
+    0 to OneBotV12ActionResp.RetCode.Success,
+
+    10001 to OneBotV12ActionResp.RetCode.BadRequest,
+    10002 to OneBotV12ActionResp.RetCode.UnsupportedAction,
+    10003 to OneBotV12ActionResp.RetCode.BadParam,
+    10004 to OneBotV12ActionResp.RetCode.UnsupportedParam,
+    10005 to OneBotV12ActionResp.RetCode.UnsupportedSegment,
+    10006 to OneBotV12ActionResp.RetCode.BadSegmentData,
+    10007 to OneBotV12ActionResp.RetCode.UnsupportedSegmentData,
+    10101 to OneBotV12ActionResp.RetCode.WhoAmI,
+    10102 to OneBotV12ActionResp.RetCode.UnknownSelf,
+
+    20001 to OneBotV12ActionResp.RetCode.BadHandler,
+    20002 to OneBotV12ActionResp.RetCode.InternalHandlerError,
+)
 object RetCodeSerializer: KSerializer<OneBotV12ActionResp.RetCode> {
     override val descriptor: SerialDescriptor = serialDescriptor<Long>()
 
     override fun deserialize(decoder: Decoder): OneBotV12ActionResp.RetCode {
-        with(decoder.decodeLong()) {
+        with(decoder.decodeInt()) {
             codes[this]?.let { return it }
-            val checkH2: Long = this / 1000
+            val checkH2: Int = this / 1000
             return when (checkH2) {
-                31L -> OneBotV12ActionResp.RetCode.DatabaseError(this)
-                32L -> OneBotV12ActionResp.RetCode.FilesystemError(this)
-                33L -> OneBotV12ActionResp.RetCode.NetworkError(this)
-                34L -> OneBotV12ActionResp.RetCode.PlatformError(this)
-                35L -> OneBotV12ActionResp.RetCode.LogicError(this)
-                36L -> OneBotV12ActionResp.RetCode.IAmTired(this)
+                31 -> OneBotV12ActionResp.RetCode.DatabaseError(this)
+                32 -> OneBotV12ActionResp.RetCode.FilesystemError(this)
+                33 -> OneBotV12ActionResp.RetCode.NetworkError(this)
+                34 -> OneBotV12ActionResp.RetCode.PlatformError(this)
+                35 -> OneBotV12ActionResp.RetCode.LogicError(this)
+                36 -> OneBotV12ActionResp.RetCode.IAmTired(this)
                 else -> OneBotV12ActionResp.RetCode.Custom(this)
             }
         }
     }
 
     override fun serialize(encoder: Encoder, value: OneBotV12ActionResp.RetCode) {
-        encoder.encodeLong(value.rawCode)
+        encoder.encodeInt(value.rawCode)
     }
 }
 

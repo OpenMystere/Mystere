@@ -5,7 +5,7 @@ import io.github.mystere.qq.QQMessageContent
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11MessageItem
 import io.github.mystere.onebot.v11.cqcode.decodeV11FromString
-import io.github.mystere.qqsdk.qqapi.dto.MessageReference
+import io.github.mystere.qqsdk.qqapi.data.MessageReference
 import io.github.mystere.serialization.cqcode.CQCode
 
 fun String.asV11MessageContent(): CQCodeV11Message {
@@ -33,7 +33,7 @@ fun CQCodeV11Message.asQQMessageContent(): String? {
                 else -> { }
             }
         }
-    }.toString()
+    }.toString().takeIf { it.isNotBlank() }
 }
 
 fun CQCodeV11Message.asQQImageList(): List<String> {

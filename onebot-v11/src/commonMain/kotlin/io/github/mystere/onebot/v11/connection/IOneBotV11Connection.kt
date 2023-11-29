@@ -3,19 +3,20 @@ package io.github.mystere.onebot.v11.connection
 import io.github.mystere.onebot.IOneBotConnection
 import io.github.mystere.onebot.v11.IOneBotV11Event
 import io.github.mystere.onebot.v11.OneBotV11Action
+import io.github.mystere.onebot.v11.OneBotV11ActionResp
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 abstract class IOneBotV11Connection internal constructor(
     ownBotId: String,
     originConfig: IConfig,
-): IOneBotConnection<OneBotV11Action, IOneBotV11Event>(
+): IOneBotConnection<OneBotV11Action, IOneBotV11Event, OneBotV11ActionResp>(
     ownBotId, originConfig,
 ) {
     interface IConfig: IOneBotConnection.IConfig<OneBotV11Action> {
         override fun createConnection(
             ownBotId: String,
-        ): IOneBotConnection<OneBotV11Action, IOneBotV11Event>
+        ): IOneBotConnection<OneBotV11Action, IOneBotV11Event, OneBotV11ActionResp>
     }
 
     @Serializable

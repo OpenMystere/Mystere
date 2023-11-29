@@ -1,5 +1,6 @@
 package io.github.mystere.qqsdk.qqapi.websocket.message
 
+import io.github.mystere.qqsdk.qqapi.data.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -35,79 +36,40 @@ object OpCode0 {
     }
 
     @Serializable
-    data class AtMessageCreate(
-        @SerialName("attachments")
-        val attachments: List<Attachment> = emptyList(),
-        @SerialName("author")
-        val author: Author,
-        @SerialName("channel_id")
-        val channelId: String,
-        @SerialName("content")
-        val content: String,
-        @SerialName("guild_id")
-        val guildId: String,
+    data class Message(
         @SerialName("id")
         val id: String,
-        @SerialName("member")
-        val member: Member,
+        @SerialName("channel_id")
+        val channelId: String,
+        @SerialName("guild_id")
+        val guildId: String,
+        @SerialName("content")
+        val content: String,
+        @SerialName("timestamp")
+        val timestamp: Timestamp,
+        @SerialName("editedTimestamp")
+        val editedTimestamp: Timestamp,
+        @SerialName("mention_everyone")
+        val mentionEveryone: Boolean,
+        @SerialName("author")
+        val author: User,
+        @SerialName("attachments")
+        val attachments: List<MessageAttachment>,
+        @SerialName("embeds")
+        val embeds: List<MessageEmbed>,
         @SerialName("mentions")
-        val mentions: List<Mentions> = emptyList(),
+        val mentions: List<User>,
+        @SerialName("member")
+        val member: List<Member>,
+        @SerialName("ark")
+        val ark: List<MessageArk>,
         @SerialName("seq")
         val seq: Int,
         @SerialName("seq_in_channel")
-        val seqInChannel: String,
-        @SerialName("timestamp")
-        val timestamp: Timestamp,
-    ): OpCodeData {
-        @Serializable
-        data class Attachment(
-            @SerialName("id")
-            val id: String,
-            @SerialName("content_type")
-            val contentType: String,
-            @SerialName("filename")
-            val filename: String,
-            @SerialName("url")
-            val url: String,
-            @SerialName("height")
-            val height: Int? = null,
-            @SerialName("width")
-            val width: Int? = null,
-            @SerialName("size")
-            val size: Long? = null,
-        )
-        @Serializable
-        data class Author(
-            @SerialName("avatar")
-            val avatar: String,
-            @SerialName("bot")
-            val bot: Boolean,
-            @SerialName("id")
-            val id: String,
-            @SerialName("username")
-            val username: String,
-        )
-        @Serializable
-        data class Member(
-            @SerialName("joined_at")
-            val joinedAt: Timestamp,
-            @SerialName("nick")
-            val nick: String,
-            @SerialName("roles")
-            val roles: List<Int>,
-        )
-        @Serializable
-        data class Mentions(
-            @SerialName("avatar")
-            val avatar: String,
-            @SerialName("bot")
-            val bot: Boolean,
-            @SerialName("id")
-            val id: String,
-            @SerialName("username")
-            val username: String,
-        )
-    }
+        val seqInChannel: Int,
+        @SerialName("message_reference")
+        val messageReference: MessageReference,
+    ): OpCodeData
 }
 
 typealias Timestamp = @Serializable(with = TimestampSerializer::class) Long

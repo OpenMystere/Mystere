@@ -47,6 +47,11 @@ kotlin {
                 implementation(project(":mystere-core"))
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(mystere.kotlin.test)
+            }
+        }
 
         // jvm
         val jvmMain by getting {

@@ -4,6 +4,7 @@ import io.github.mystere.core.lazyMystereScope
 import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.UniWebsocketClient
+import io.github.mystere.onebot.v12.OneBotV12ActionResp
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.api.*
@@ -68,6 +69,17 @@ internal class ReverseWebSocketConnection(
                     log.warn(e) { "event send error" }
                 }
             }
+        }
+    }
+
+    override suspend fun response(respBody: OneBotV12ActionResp) {
+        try {
+            log.info { "receive response body: ${respBody::class}" }
+            val rawBody = MystereJson.encodeToString(respBody)
+            log.debug { "receive response body: $rawBody" }
+            UniWebsocket?.send(Frame.Text(rawBody))
+        } catch (e: Exception) {
+            log.warn(e) { "response body send error" }
         }
     }
 

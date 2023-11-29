@@ -14,10 +14,10 @@ import io.github.mystere.qqsdk.qqapi.websocket.withData
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.JsonElement
 
-abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent> protected constructor(
+abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT: IOneBotActionResp> protected constructor(
     protected val config: QQBot.Config,
-    connection: IOneBotConnection<ActionT, EventT>,
-): IOneBot<EventT, ActionT>(config.appId, connection) {
+    connection: IOneBotConnection<ActionT, EventT, RespT>,
+): IOneBot<EventT, ActionT, RespT>(config.appId, connection) {
     protected var botUser: OpCode0.Ready.User? = null
 
     private val mQQBot: QQBot by lazy { QQBot.create(config) }
@@ -49,10 +49,13 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent> prote
                     processOneBotAction(action)
                 } catch (e: Exception) {
                     log.warn(e) { "process onebot action error" }
+                    onProcessOneBotActionInternalError(e, action)
                 }
             }
         }
     }
+
+    protected abstract suspend fun onProcessOneBotActionInternalError(e: Exception, originAction: ActionT)
 
     protected abstract suspend fun processQQEvent(event: QQBotWebsocketPayload)
     protected open suspend fun EventT.encodeToJsonElement(): JsonElement {
@@ -68,7 +71,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent> prote
     }
 
     final override fun equals(other: Any?): Boolean {
-        return if (other is IMystereQQBot<*, *>) other.botId == botId else false
+        return if (other is IMystereQQBot<*, *, *>) other.botId == botId else false
     }
 
     final override fun hashCode(): Int {
@@ -79,7 +82,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent> prote
         fun create(
             config: QQBot.Config,
             connection: IMystereBotConnection<*, *>,
-        ): IMystereQQBot<*, *> {
+        ): IMystereQQBot<*, *, *> {
             return when (connection) {
                 is IOneBotV11Connection -> MystereV11QQBot(config, connection)
                 is IOneBotV12Connection -> MystereV12QQBot(config, connection)
@@ -89,7 +92,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent> prote
         fun create(
             config: QQBot.Config,
             connectionConfig: IMystereBotConnection.IConfig<*>,
-        ): IMystereQQBot<*, *> {
+        ): IMystereQQBot<*, *, *> {
             return create(config, connectionConfig.createConnection(config.appId))
         }
     }

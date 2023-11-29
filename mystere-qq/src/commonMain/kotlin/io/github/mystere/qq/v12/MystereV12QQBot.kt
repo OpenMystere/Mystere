@@ -1,8 +1,10 @@
 package io.github.mystere.qq.v12
 
 import io.github.mystere.core.util.MystereJson
+import io.github.mystere.onebot.IOneBotActionResp
 import io.github.mystere.onebot.v12.IOneBotV12Event
 import io.github.mystere.onebot.v12.OneBotV12Action
+import io.github.mystere.onebot.v12.OneBotV12ActionResp
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
 import io.github.mystere.onebot.v12.cqcode.CQCodeV12Message
 import io.github.mystere.onebot.v12.cqcode.CQCodeV12MessageItem
@@ -22,13 +24,13 @@ import kotlinx.serialization.json.encodeToJsonElement
 class MystereV12QQBot(
     config: QQBot.Config,
     connection: IOneBotV12Connection,
-): IMystereQQBot<OneBotV12Action, IOneBotV12Event>(config, connection) {
+): IMystereQQBot<OneBotV12Action, IOneBotV12Event, OneBotV12ActionResp>(config, connection) {
     override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
 
     override suspend fun processQQEvent(event: QQBotWebsocketPayload) {
         when (event.opCode) {
             QQBotWebsocketPayload.OpCode.Dispatch -> when (event.type) {
-                "MESSAGE_CREATE" -> event.withData<OpCode0.AtMessageCreate> {
+                "MESSAGE_CREATE" -> event.withData<OpCode0.Message> {
                     val cqMsg: CQCodeV12Message = with(this) {
                         var message: CQCodeV12Message? = null
 //                        var firstAtSelfFilted = false
@@ -69,6 +71,15 @@ class MystereV12QQBot(
             }
             else -> { }
         }
+    }
+
+    override suspend fun onProcessOneBotActionInternalError(e: Exception, originAction: OneBotV12Action) {
+        OneBotConnection.response(OneBotV12ActionResp(
+            status = IOneBotActionResp.Status.failed,
+            retcode = OneBotV12ActionResp.RetCode.InternalHandlerError,
+            message = "Mystere internal error.",
+            echo = originAction.echo,
+        ))
     }
 
     override suspend fun IOneBotV12Event.encodeToJsonElement(): JsonElement {

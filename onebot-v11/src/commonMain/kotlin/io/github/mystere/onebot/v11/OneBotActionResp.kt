@@ -28,19 +28,15 @@ data class OneBotV11ActionResp(
 ): IOneBotActionResp {
     @Serializable(with = RetCodeSerializer::class)
     sealed class RetCode(
-        override val rawCode: Long,
+        override val rawCode: Int,
     ): IOneBotActionResp.RetCode {
         data object BadRequest: RetCode(1400)
         data object Unauthorized: RetCode(1401)
         data object Forbidden: RetCode(1403)
         data object NotFound: RetCode(1404)
-        data class Custom(override val rawCode: Long): RetCode(rawCode)
-
-        init {
-            if (this !is Custom) {
-                codes[rawCode] = this
-            }
-        }
+        data object NotAcceptable: RetCode(1406)
+        data object OK: RetCode(0)
+        data class Custom(override val rawCode: Int): RetCode(rawCode)
     }
     @Serializable
     sealed interface Data: IOneBotActionResp.Data
@@ -483,18 +479,25 @@ data class OneBotV11ActionResp(
         }
     }
 }
-private val codes: HashMap<Long, OneBotV11ActionResp.RetCode> = hashMapOf()
+private val codes: HashMap<Int, OneBotV11ActionResp.RetCode> = hashMapOf(
+    0 to OneBotV11ActionResp.RetCode.OK,
+    1400 to OneBotV11ActionResp.RetCode.BadRequest,
+    1401 to OneBotV11ActionResp.RetCode.Unauthorized,
+    1403 to OneBotV11ActionResp.RetCode.Forbidden,
+    1404 to OneBotV11ActionResp.RetCode.NotFound,
+    1406 to OneBotV11ActionResp.RetCode.NotAcceptable,
+)
 object RetCodeSerializer: KSerializer<OneBotV11ActionResp.RetCode> {
-    override val descriptor: SerialDescriptor = serialDescriptor<Long>()
+    override val descriptor: SerialDescriptor = serialDescriptor<Int>()
 
     override fun deserialize(decoder: Decoder): OneBotV11ActionResp.RetCode {
-        return with(decoder.decodeLong()) {
+        return with(decoder.decodeInt()) {
             codes[this] ?: OneBotV11ActionResp.RetCode.Custom(this)
         }
     }
 
     override fun serialize(encoder: Encoder, value: OneBotV11ActionResp.RetCode) {
-        encoder.encodeLong(value.rawCode)
+        encoder.encodeInt(value.rawCode)
     }
 }
 

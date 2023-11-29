@@ -5,6 +5,7 @@ import io.github.mystere.onebot.OneBotConnectionException
 import io.github.mystere.onebot.v11.OneBotV11Action
 import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.UniWebsocketClient
+import io.github.mystere.onebot.v11.OneBotV11ActionResp
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.api.*
@@ -16,6 +17,8 @@ import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 
 
 fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
@@ -69,13 +72,15 @@ internal class ReverseWebSocketConnection(
                         throw OneBotConnectionException("url not set or apiUrl and eventUrl both not set!")
                     }
                     while (true) {
-                        log.debug { "waiting for new onebot action" }
-                        val action = ApiWebsocket.receiveDeserialized<OneBotV11Action>()
-                        log.debug { "new onebot action! action: ${action.rawAction}" }
                         try {
+                            log.debug { "waiting for new onebot action" }
+                            val action = MystereJson.decodeFromJsonElement<OneBotV11Action>(
+                                ApiWebsocket.receiveDeserialized<JsonElement>()
+                            )
+                            log.debug { "new onebot action! action: ${action.rawAction}" }
                             actionChannel.send(action)
                         } catch (e: Exception) {
-                            log.warn(e) { "error during sending action ${action.rawAction}" }
+                            log.warn(e) { "error during sending action" }
                         }
                     }
                 } catch (e: Exception) {
@@ -95,6 +100,17 @@ internal class ReverseWebSocketConnection(
                     log.warn(e) { "event send error" }
                 }
             }
+        }
+    }
+
+    override suspend fun response(respBody: OneBotV11ActionResp) {
+        try {
+            log.info { "receive response body: ${respBody::class}" }
+            val rawBody = MystereJson.encodeToString(respBody)
+            log.debug { "receive response body: $rawBody" }
+            ApiWebsocket.send(Frame.Text(rawBody))
+        } catch (e: Exception) {
+            log.warn(e) { "response body send error" }
         }
     }
 
