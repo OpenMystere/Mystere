@@ -73,7 +73,7 @@ class MystereV12QQBot(
         }
     }
 
-    override suspend fun onProcessOneBotActionInternalError(e: Exception, originAction: OneBotV12Action) {
+    override suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: OneBotV12Action) {
         OneBotConnection.response(OneBotV12ActionResp(
             status = IOneBotActionResp.Status.failed,
             retcode = OneBotV12ActionResp.RetCode.InternalHandlerError,

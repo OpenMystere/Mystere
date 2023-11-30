@@ -48,27 +48,27 @@ object OpCode0 {
         @SerialName("timestamp")
         val timestamp: Timestamp,
         @SerialName("editedTimestamp")
-        val editedTimestamp: Timestamp,
+        val editedTimestamp: Timestamp? = null,
         @SerialName("mention_everyone")
-        val mentionEveryone: Boolean,
+        val mentionEveryone: Boolean? = null,
         @SerialName("author")
         val author: User,
         @SerialName("attachments")
-        val attachments: List<MessageAttachment>,
+        val attachments: List<MessageAttachment> = emptyList(),
         @SerialName("embeds")
-        val embeds: List<MessageEmbed>,
+        val embeds: List<MessageEmbed> = emptyList(),
         @SerialName("mentions")
-        val mentions: List<User>,
+        val mentions: List<User> = emptyList(),
         @SerialName("member")
-        val member: List<Member>,
+        val member: Member? = null,
         @SerialName("ark")
-        val ark: List<MessageArk>,
+        val ark: List<MessageArk> = emptyList(),
         @SerialName("seq")
-        val seq: Int,
+        val seq: Int? = null,
         @SerialName("seq_in_channel")
         val seqInChannel: Int,
         @SerialName("message_reference")
-        val messageReference: MessageReference,
+        val messageReference: MessageReference? = null,
     ): OpCodeData
 }
 

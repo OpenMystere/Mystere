@@ -83,7 +83,7 @@ internal class ReverseWebSocketConnection(
                             log.warn(e) { "error during sending action" }
                         }
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     log.warn(e) { "WebSocket disconnected, reconnect in ${originConfig.reconnectInterval}ms..." }
                 }
                 delay(originConfig.reconnectInterval)
@@ -105,11 +105,11 @@ internal class ReverseWebSocketConnection(
 
     override suspend fun response(respBody: OneBotV11ActionResp) {
         try {
-            log.info { "receive response body: ${respBody::class}" }
+            log.info { "send response body: ${respBody::class}" }
             val rawBody = MystereJson.encodeToString(respBody)
-            log.debug { "receive response body: $rawBody" }
+            log.debug { "send response body: $rawBody" }
             ApiWebsocket.send(Frame.Text(rawBody))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             log.warn(e) { "response body send error" }
         }
     }

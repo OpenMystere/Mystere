@@ -11,7 +11,6 @@ import io.ktor.client.*
 import io.ktor.client.plugins.api.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import kotlinx.serialization.serializer
 
@@ -65,20 +64,20 @@ fun QQBotAPI(
 }
 
 object QQOpenApiConverterFactory: Converter.Factory {
-    override fun responseConverter(
+    override fun suspendResponseConverter(
         typeData: TypeData,
-        ktorfit: Ktorfit,
-    ): Converter.ResponseConverter<HttpResponse, *> {
+        ktorfit: Ktorfit
+    ): Converter.SuspendResponseConverter<HttpResponse, *> {
         return QQOpenApiConverter(typeData, ktorfit)
     }
 
     class QQOpenApiConverter(
         private val typeData: TypeData,
         private val ktorfit: Ktorfit,
-    ): Converter.ResponseConverter<HttpResponse, Any> {
-        override fun convert(getResponse: suspend () -> HttpResponse) = runBlocking {
-            val resp = getResponse()
-            val body = MystereJson.decodeFromString<JsonElement>(resp.bodyAsText())
+    ): Converter.SuspendResponseConverter<HttpResponse, Any> {
+        @Suppress("OVERRIDE_DEPRECATION")
+        override suspend fun convert(response: HttpResponse): Any {
+            val body = MystereJson.decodeFromString<JsonElement>(response.bodyAsText())
             if (body is JsonObject && body.containsKey("code") && body.containsKey("message")) {
                 throw CodeMessageDataDto(
                     code = body["code"]!!.jsonPrimitive.int,
@@ -86,7 +85,7 @@ object QQOpenApiConverterFactory: Converter.Factory {
                     data = body["data"] ?: JsonNull,
                 )
             }
-            return@runBlocking MystereJson.decodeFromJsonElement(
+            return MystereJson.decodeFromJsonElement(
                 MystereJson.serializersModule.serializer(typeData.typeInfo.kotlinType!!), body
             ) as Any
         }

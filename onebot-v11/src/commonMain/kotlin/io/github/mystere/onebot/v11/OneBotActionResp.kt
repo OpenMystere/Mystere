@@ -1,14 +1,13 @@
 package io.github.mystere.onebot.v11
 
+import io.github.mystere.core.util.ListDelegateSerializer
 import io.github.mystere.onebot.IOneBotActionResp
-import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.listSerialDescriptor
-import kotlinx.serialization.descriptors.serialDescriptor
+import io.github.mystere.core.util.simpleClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
@@ -131,7 +130,7 @@ data class OneBotV11ActionResp(
     ): Data
 
     /**
-     * @see OneBotV11Action.GetFriendList
+     * @see OneBotV11Action.GetGroupList
      */
     @Serializable(with = GetGroupListRespSerializer::class)
     class GetGroupListResp(
@@ -287,6 +286,7 @@ data class OneBotV11ActionResp(
     class GetGuildListResp(
         delegate: ArrayList<GuildInfo>
     ): List<GetGuildListResp.GuildInfo> by delegate, Data {
+        @Serializable
         data class GuildInfo(
             @SerialName("guild_id")
             val guildId: String,
@@ -488,7 +488,7 @@ private val codes: HashMap<Int, OneBotV11ActionResp.RetCode> = hashMapOf(
     1406 to OneBotV11ActionResp.RetCode.NotAcceptable,
 )
 object RetCodeSerializer: KSerializer<OneBotV11ActionResp.RetCode> {
-    override val descriptor: SerialDescriptor = serialDescriptor<Int>()
+    override val descriptor: SerialDescriptor = simpleClassSerialDescriptor<Int>()
 
     override fun deserialize(decoder: Decoder): OneBotV11ActionResp.RetCode {
         return with(decoder.decodeInt()) {
@@ -501,54 +501,36 @@ object RetCodeSerializer: KSerializer<OneBotV11ActionResp.RetCode> {
     }
 }
 
-abstract class ListDelegateSerializer<ListT: List<ItemT>, ItemT: @Serializable Any>: KSerializer<ListT> {
-    abstract override val descriptor: SerialDescriptor
-
-    override fun deserialize(decoder: Decoder): ListT {
-        val array = (decoder as JsonDecoder).decodeJsonElement().jsonArray
-        val result: ArrayList<ItemT> = MystereJson.decodeFromJsonElement(array)
-        return newList(result)
-    }
-
-    abstract fun newList(result: ArrayList<ItemT>): ListT
-
-    override fun serialize(encoder: Encoder, value: ListT) {
-        (encoder as JsonEncoder).encodeJsonElement(
-            MystereJson.encodeToJsonElement(value as List<ItemT>)
-        )
-    }
-}
-
 object GetFriendListRespSerializer: ListDelegateSerializer<OneBotV11ActionResp.GetFriendListResp, OneBotV11ActionResp.GetFriendListResp.FriendListItem>() {
-    override val descriptor: SerialDescriptor = listSerialDescriptor<OneBotV11ActionResp.GetFriendListResp.FriendListItem>()
+    override val descriptor: SerialDescriptor = simpleClassSerialDescriptor<OneBotV11ActionResp.GetFriendListResp>()
     override fun newList(result: ArrayList<OneBotV11ActionResp.GetFriendListResp.FriendListItem>): OneBotV11ActionResp.GetFriendListResp {
         return OneBotV11ActionResp.GetFriendListResp(result)
     }
 }
 
 object GetGroupListRespSerializer: ListDelegateSerializer<OneBotV11ActionResp.GetGroupListResp, OneBotV11ActionResp.GetGroupInfoResp>() {
-    override val descriptor: SerialDescriptor = listSerialDescriptor<OneBotV11ActionResp.GetGroupInfoResp>()
+    override val descriptor: SerialDescriptor = simpleClassSerialDescriptor<OneBotV11ActionResp.GetGroupListResp>()
     override fun newList(result: ArrayList<OneBotV11ActionResp.GetGroupInfoResp>): OneBotV11ActionResp.GetGroupListResp {
         return OneBotV11ActionResp.GetGroupListResp(result)
     }
 }
 
 object GetGroupMemberListRespSerializer: ListDelegateSerializer<OneBotV11ActionResp.GetGroupMemberListResp, OneBotV11ActionResp.GetGroupMemberInfo>() {
-    override val descriptor: SerialDescriptor = listSerialDescriptor<OneBotV11ActionResp.GetGroupMemberInfo>()
+    override val descriptor: SerialDescriptor = simpleClassSerialDescriptor<OneBotV11ActionResp.GetGroupMemberListResp>()
     override fun newList(result: ArrayList<OneBotV11ActionResp.GetGroupMemberInfo>): OneBotV11ActionResp.GetGroupMemberListResp {
         return OneBotV11ActionResp.GetGroupMemberListResp(result)
     }
 }
 
 object GuildInfoRespSerializer: ListDelegateSerializer<OneBotV11ActionResp.GetGuildListResp, OneBotV11ActionResp.GetGuildListResp.GuildInfo>() {
-    override val descriptor: SerialDescriptor = listSerialDescriptor<OneBotV11ActionResp.GetGuildListResp.GuildInfo>()
+    override val descriptor: SerialDescriptor = simpleClassSerialDescriptor<OneBotV11ActionResp.GetGuildListResp>()
     override fun newList(result: ArrayList<OneBotV11ActionResp.GetGuildListResp.GuildInfo>): OneBotV11ActionResp.GetGuildListResp {
         return OneBotV11ActionResp.GetGuildListResp(result)
     }
 }
 
 object GetTopicChannelFeedsRespSerializer: ListDelegateSerializer<OneBotV11ActionResp.GetTopicChannelFeedsResp, OneBotV11ActionResp.GetTopicChannelFeedsResp.FeedInfo>() {
-    override val descriptor: SerialDescriptor = listSerialDescriptor<OneBotV11ActionResp.GetTopicChannelFeedsResp.FeedInfo>()
+    override val descriptor: SerialDescriptor = simpleClassSerialDescriptor<OneBotV11ActionResp.GetTopicChannelFeedsResp>()
     override fun newList(result: ArrayList<OneBotV11ActionResp.GetTopicChannelFeedsResp.FeedInfo>): OneBotV11ActionResp.GetTopicChannelFeedsResp {
         return OneBotV11ActionResp.GetTopicChannelFeedsResp(result)
     }

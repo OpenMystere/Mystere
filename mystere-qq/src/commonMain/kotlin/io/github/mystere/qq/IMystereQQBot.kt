@@ -38,7 +38,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
                     } else {
                         processQQEvent(payload)
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     log.warn(e) { "process qq event error" }
                 }
             }
@@ -47,15 +47,19 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
             for (action: ActionT in OneBotConnection) {
                 try {
                     processOneBotAction(action)
-                } catch (e: Exception) {
-                    log.warn(e) { "process onebot action error" }
-                    onProcessOneBotActionInternalError(e, action)
+                } catch (e1: Throwable) {
+                    log.warn(e1) { "process onebot action error" }
+                    try {
+                        onProcessOneBotActionInternalError(e1, action)
+                    } catch (e2: Throwable) {
+                        log.warn(e2) { "error during handle error" }
+                    }
                 }
             }
         }
     }
 
-    protected abstract suspend fun onProcessOneBotActionInternalError(e: Exception, originAction: ActionT)
+    protected abstract suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: ActionT)
 
     protected abstract suspend fun processQQEvent(event: QQBotWebsocketPayload)
     protected open suspend fun EventT.encodeToJsonElement(): JsonElement {

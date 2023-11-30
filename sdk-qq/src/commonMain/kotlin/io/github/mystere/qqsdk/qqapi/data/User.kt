@@ -14,7 +14,7 @@ data class User(
     @SerialName("bot")
     val bot: Boolean,
     @SerialName("union_openid")
-    val unionOpenid: String,
+    val unionOpenid: String? = null,
     @SerialName("union_user_account")
-    val unionUserAccount: String,
+    val unionUserAccount: String? = null,
 )

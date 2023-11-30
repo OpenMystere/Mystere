@@ -82,7 +82,7 @@ class MystereV11QQBot internal constructor(
                     var originEventId: String? = null
                     if (originEvent != null) {
                         if (originEvent!!.type == IOneBotV11Event.PostType.message) {
-                            log.debug { "send passive message,reply message_id: ${originEvent!!.id}" }
+                            log.debug { "send passive message, reply message_id: ${originEvent!!.id}" }
                             originMessageId = originEvent!!.id
                         } else {
                             log.debug { "send passive message, reply event_id: ${originEvent!!.id}" }
@@ -111,18 +111,23 @@ class MystereV11QQBot internal constructor(
                 }
                 else -> { }
             }
-        } catch (e: CodeMessageDataDto) {
-            log.error(e) { "send request to qq openapi failed (code: ${e.code}): ${e.message}" }
+        } catch (e1: Throwable) {
+            when (e1) {
+                is CodeMessageDataDto ->
+                    log.warn { "send request to qq openapi failed (code: ${e1.code}): ${e1.message}" }
+                else ->
+                    log.warn(e1) { "action process error: ${e1.message}" }
+            }
             OneBotConnection.response(OneBotV11ActionResp(
                 status = IOneBotActionResp.Status.failed,
                 retcode = OneBotV11ActionResp.RetCode.OK,
-                message = e.message,
+                message = e1.message ?: "unknown error.",
                 echo = action.echo,
             ))
         }
     }
 
-    override suspend fun onProcessOneBotActionInternalError(e: Exception, originAction: OneBotV11Action) {
+    override suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: OneBotV11Action) {
         OneBotConnection.response(OneBotV11ActionResp(
             status = IOneBotActionResp.Status.failed,
             retcode = OneBotV11ActionResp.RetCode.OK,

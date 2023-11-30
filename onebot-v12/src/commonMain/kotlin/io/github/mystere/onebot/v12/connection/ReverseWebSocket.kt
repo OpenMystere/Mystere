@@ -74,11 +74,11 @@ internal class ReverseWebSocketConnection(
 
     override suspend fun response(respBody: OneBotV12ActionResp) {
         try {
-            log.info { "receive response body: ${respBody::class}" }
+            log.info { "send response body: ${respBody::class}" }
             val rawBody = MystereJson.encodeToString(respBody)
-            log.debug { "receive response body: $rawBody" }
+            log.debug { "send response body: $rawBody" }
             UniWebsocket?.send(Frame.Text(rawBody))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             log.warn(e) { "response body send error" }
         }
     }

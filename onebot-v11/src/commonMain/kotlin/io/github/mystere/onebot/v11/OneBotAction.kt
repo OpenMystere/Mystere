@@ -329,6 +329,9 @@ data class OneBotV11Action(
     ): Param
 
     @Serializable
+    data object GetGroupList: Param
+
+    @Serializable
     data class GetGroupMemberInfo(
         @SerialName("user_id")
         val userId: String,

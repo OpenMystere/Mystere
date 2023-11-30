@@ -27,9 +27,9 @@ fun CQCodeV11Message.asQQMessageContent(): String? {
     return StringBuilder().also {
         for (item in this) {
             when (item) {
-                is CQCodeV11MessageItem.Text -> it.append(it.append(item.text))
+                is CQCodeV11MessageItem.Text -> it.append(item.text)
                 is CQCodeV11MessageItem.At -> it.append(QQMessageContent.atReg(item.qq))
-                is CQCodeV11MessageItem.SubChannel -> it.append(it.append(QQMessageContent.subChanelReg(item.channelId)))
+                is CQCodeV11MessageItem.SubChannel -> it.append(QQMessageContent.subChanelReg(item.channelId))
                 else -> { }
             }
         }

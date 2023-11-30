@@ -49,3 +49,7 @@ suspend inline fun <reified T: Any> DefaultClientWebSocketSession.sendWithLog(lo
     log.debug { "send WebSocket message: $message" }
     send(Frame.Text(message))
 }
+
+val DefaultHttpClient: HttpClient by lazy {
+    UniHttpClient()
+}
