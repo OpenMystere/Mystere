@@ -36,7 +36,7 @@ object OpCode0 {
     }
 
     @Serializable
-    data class Message(
+    data class GuildMessage(
         @SerialName("id")
         val id: String,
         @SerialName("channel_id")
@@ -52,13 +52,13 @@ object OpCode0 {
         @SerialName("mention_everyone")
         val mentionEveryone: Boolean? = null,
         @SerialName("author")
-        val author: User,
+        val author: GuildUser,
         @SerialName("attachments")
         val attachments: List<MessageAttachment> = emptyList(),
         @SerialName("embeds")
         val embeds: List<MessageEmbed> = emptyList(),
         @SerialName("mentions")
-        val mentions: List<User> = emptyList(),
+        val mentions: List<GuildUser> = emptyList(),
         @SerialName("member")
         val member: Member? = null,
         @SerialName("ark")
@@ -70,6 +70,46 @@ object OpCode0 {
         @SerialName("message_reference")
         val messageReference: MessageReference? = null,
     ): OpCodeData
+
+    @Serializable
+    data class GroupMessage(
+        @SerialName("id")
+        val id: String,
+        @SerialName("GroupMessage")
+        val groupOpenid: String,
+        @SerialName("content")
+        val content: String,
+        @SerialName("timestamp")
+        val timestamp: Timestamp,
+        @SerialName("author")
+        val author: GroupUser,
+        @SerialName("attachments")
+        val attachments: List<MessageAttachment> = emptyList(),
+    ): OpCodeData
+
+    @Serializable
+    data class C2CMessage(
+        @SerialName("id")
+        val id: String,
+        @SerialName("content")
+        val content: String,
+        @SerialName("timestamp")
+        val timestamp: Timestamp,
+        @SerialName("author")
+        val author: C2CUser,
+        @SerialName("attachments")
+        val attachments: List<MessageAttachment> = emptyList(),
+    ): OpCodeData
+
+    @Serializable
+    data class GroupAddRobot(
+        @SerialName("timestamp")
+        val timestamp: Timestamp,
+        @SerialName("group_openid")
+        val groupOpenid: Timestamp,
+        @SerialName("op_member_openid")
+        val opMemberOpenid: Timestamp,
+    )
 }
 
 typealias Timestamp = @Serializable(with = TimestampSerializer::class) Long

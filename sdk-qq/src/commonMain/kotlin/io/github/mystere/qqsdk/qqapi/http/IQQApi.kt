@@ -2,11 +2,11 @@ package io.github.mystere.qqsdk.qqapi.http
 
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.Multipart
 import de.jensklingenberg.ktorfit.http.POST
 import io.github.mystere.core.util.DefaultHttpClient
 import io.github.mystere.qqsdk.qqapi.dto.*
 import io.github.mystere.core.util.MystereJson
-import io.github.mystere.core.util.logger
 import io.github.mystere.qqsdk.qqapi.data.MessageArk
 import io.github.mystere.qqsdk.qqapi.data.MessageEmbed
 import io.github.mystere.qqsdk.qqapi.data.MessageMarkdown
@@ -47,27 +47,34 @@ interface IQQBotAPI {
     @GET("gateway")
     suspend fun gateway(): GatewayRespDto
 
+    @Multipart
     @POST("channels/{channel_id}/messages")
     suspend fun _messageIO_channel(
         @de.jensklingenberg.ktorfit.http.Path("channel_id")
         channelId: String,
         @Body
         body: MultiPartFormDataContent,
-    ): OpCode0.Message
+    ): OpCode0.GuildMessage
     @POST("channels/{channel_id}/messages")
     suspend fun _messageIO_channel(
         @de.jensklingenberg.ktorfit.http.Path("channel_id")
         channelId: String,
-        @Body message: MessageRequestDto,
-    ): OpCode0.Message
+        @Body message: GuildMessageRequestDto,
+    ): OpCode0.GuildMessage
 
     @POST("v2/groups/{group_openid}/messages")
-    suspend fun _messageIO_groups(
+    suspend fun messageIO_groups(
         @de.jensklingenberg.ktorfit.http.Path("group_openid")
         groupOpenId: String,
-        @Body
-        body: MultiPartFormDataContent,
-    ): OpCode0.Message
+        @Body message: GroupMessageRequestDto,
+    ): OpCode0.GuildMessage
+
+    @POST("v2/groups/{group_openid}/files")
+    suspend fun files_groups(
+        @de.jensklingenberg.ktorfit.http.Path("group_openid")
+        groupOpenId: String,
+        @Body file: GroupFileRequestDto,
+    )
 }
 
 @OptIn(ExperimentalEncodingApi::class)
@@ -82,9 +89,9 @@ suspend fun IQQBotAPI.messageIO_channel(
     eventId: String? = null,
     markdown: MessageMarkdown? = null,
     images: List<String> = emptyList(),
-): OpCode0.Message {
+): OpCode0.GuildMessage {
     return _messageIO_channel(channelId, MultiPartFormDataContent(formData {
-//            append("msg_type", msgType)
+//        append("msg_type", msgType)
         content?.takeIf { it.isNotBlank() }?.let { append("content", it) }
         embed?.let { append("embed", MystereJson.encodeToString(it)) }
         ark?.let { append("ark", MystereJson.encodeToString(it)) }
@@ -94,7 +101,7 @@ suspend fun IQQBotAPI.messageIO_channel(
         eventId?.let { append("event_id", it) }
         var size = 0
         for (item in images) {
-            when  {
+            when {
                 item.startsWith("file:///") -> {
                     val path = with(item.substring(8)) {
                         if (contains(":")) this else "/$this"
@@ -105,7 +112,7 @@ suspend fun IQQBotAPI.messageIO_channel(
                         headers = Headers.build {
                             append(HttpHeaders.ContentDisposition, "filename=\"upload-${size++}.png\"")
                             append(HttpHeaders.ContentType, "image/png")
-                        }
+                        },
                     )
                 }
                 item.startsWith("https://") || item.startsWith("http://") -> {
@@ -117,7 +124,7 @@ suspend fun IQQBotAPI.messageIO_channel(
                         headers = Headers.build {
                             append(HttpHeaders.ContentDisposition, "filename=\"upload-${size++}.png\"")
                             append(HttpHeaders.ContentType, "image/png")
-                        }
+                        },
                     )
                 }
                 item.startsWith("base64://") -> {
@@ -127,7 +134,7 @@ suspend fun IQQBotAPI.messageIO_channel(
                         headers = Headers.build {
                             append(HttpHeaders.ContentDisposition, "filename=\"upload-${size++}.png\"")
                             append(HttpHeaders.ContentType, "image/png")
-                        }
+                        },
                     )
                 }
                 else -> {

@@ -102,6 +102,8 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val sender: Sender,
         @SerialName("user_id")
         val userId: String,
+        @SerialName("memberOpenid")
+        val groupId: String? = null,
         @SerialName("guild_id")
         val guildId: String? = null,
         @SerialName("self_tiny_id")
@@ -190,6 +192,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         group_admin,
         group_decrease, group_increase,
         group_ban,
+        group_recall,
         friend_add,
         friend_recall,
         poke,
@@ -213,9 +216,9 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("self_id")
         override val selfId: String,
         @SerialName("group_id")
-        val groupId: Long,
+        val groupId: String,
         @SerialName("user_id")
-        val userId: Long,
+        val userId: String,
         @SerialName("file")
         val file: FileMeta,
         @SerialName("id")
@@ -236,9 +239,9 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("sub_type")
         val subType: SubType,
         @SerialName("group_id")
-        val groupId: Long,
+        val groupId: String,
         @SerialName("user_id")
-        val userId: Long,
+        val userId: String,
         @SerialName("id")
         override val id: String? = null,
         @SerialName("time")
@@ -261,9 +264,9 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("sub_type")
         val subType: SubType,
         @SerialName("group_id")
-        val groupId: Long,
+        val groupId: String,
         @SerialName("user_id")
-        val userId: Long,
+        val userId: String,
         @SerialName("operator_id")
         val operatorId: Long,
         @SerialName("id")
@@ -288,9 +291,9 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("sub_type")
         val subType: SubType,
         @SerialName("group_id")
-        val groupId: Long,
+        val groupId: String,
         @SerialName("user_id")
-        val userId: Long,
+        val userId: String,
         @SerialName("operator_id")
         val operatorId: Long,
         @SerialName("id")
@@ -315,9 +318,9 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("sub_type")
         val subType: SubType,
         @SerialName("group_id")
-        val groupId: Long,
+        val groupId: String,
         @SerialName("user_id")
-        val userId: Long,
+        val userId: String,
         @SerialName("operator_id")
         val operatorId: Long,
         @SerialName("duration")
@@ -342,7 +345,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("self_id")
         override val selfId: String,
         @SerialName("user_id")
-        val userId: Long,
+        val userId: String,
         @SerialName("id")
         override val id: String? = null,
         @SerialName("time")
@@ -352,6 +355,25 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         override val postType: PostType = PostType.notice
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.friend_add
+    }
+
+    // 群禁言
+    data class NoticeGroupRecall(
+        @SerialName("self_id")
+        override val selfId: String,
+        @SerialName("group_id")
+        val groupId: String,
+        @SerialName("user_id")
+        val userId: String,
+        @SerialName("id")
+        override val id: String? = null,
+        @SerialName("time")
+        override val time: Long = Clock.System.now().toEpochMilliseconds(),
+    ): IOneBotV11Event {
+        @SerialName("post_type")
+        override val postType: PostType = PostType.notice
+        @SerialName("notice_type")
+        val noticeType: NoticeType = NoticeType.group_recall
     }
 
     // 好友消息撤回

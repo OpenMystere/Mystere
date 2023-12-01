@@ -30,7 +30,7 @@ class MystereV12QQBot(
     override suspend fun processQQEvent(event: QQBotWebsocketPayload) {
         when (event.opCode) {
             QQBotWebsocketPayload.OpCode.Dispatch -> when (event.type) {
-                "MESSAGE_CREATE" -> event.withData<OpCode0.Message> {
+                "MESSAGE_CREATE" -> event.withData<OpCode0.GuildMessage> {
                     val cqMsg: CQCodeV12Message = with(this) {
                         var message: CQCodeV12Message? = null
 //                        var firstAtSelfFilted = false

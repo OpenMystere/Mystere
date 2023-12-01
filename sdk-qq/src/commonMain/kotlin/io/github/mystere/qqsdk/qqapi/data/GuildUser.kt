@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class User(
+data class GuildUser(
     @SerialName("id")
     val id: String,
     @SerialName("username")
@@ -17,4 +17,16 @@ data class User(
     val unionOpenid: String? = null,
     @SerialName("union_user_account")
     val unionUserAccount: String? = null,
+)
+
+@Serializable
+data class GroupUser(
+    @SerialName("member_openid")
+    val memberOpenid: String
+)
+
+@Serializable
+data class C2CUser(
+    @SerialName("user_openid")
+    val userOpenid: String
 )
