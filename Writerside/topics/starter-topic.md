@@ -18,23 +18,6 @@ Mystere 是一个基于 Kotlin/Native、实现了 OneBot 协议的机器人无�
 + macosArm64
 
 
-## OneBot 协议支持 {id="OneBot-协议支持"}
-
-|            | WebSocket Reverse | WebSocket | Http Post | Http  |
-|------------|-------------------|-----------|-----------|-------|
-| OneBot V11 | 🚧️               | ❌ [1]     | ❌ [1]     | ❌ [1] |
-
-|            | WebSocket Reverse | WebSocket | Http WebHook | Http  |
-|------------|-------------------|-----------|--------------|-------|
-| OneBot V12 | 🚧️               | ❌ [1]     | ❌ [1]        | ❌ [1] |
-
-1. 适配工作尚未开始。
-
-
-## 机器人平台支持 {id="机器人平台支持"}
-
-+ QQ：[查看详情](mystere-qq.md)
-
 ## 跨平台兼容性 {id="跨平台兼容性"}
 
 |                | jvm<br />Java | linuxX64<br />Linux x64 | linuxArm64<br />Linux Arm64 | macosX64<br />macOS x64 | macosArm64<br />macOS Arm64 | mingwX64<br />Windows x64 | others |

@@ -61,3 +61,7 @@ Mystere 是一个基于 Kotlin/Native、实现了 OneBot 协议的机器人无�
 > [IntelliJ IDEA](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE，适用于 JVM 平台语言。
 
 [<img src="https://raw.githubusercontent.com/JetBrains/logos/master/web/intellij-idea/intellij-idea.svg" width="200"/>](https://www.jetbrains.com/?from=mirai)
+
+> [WriterSide](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE，适用于 JVM 平台语言。
+
+[<img src="https://raw.githubusercontent.com/JetBrains/logos/master/web/intellij-idea/intellij-idea.svg" width="200"/>](https://www.jetbrains.com/?from=mirai)
