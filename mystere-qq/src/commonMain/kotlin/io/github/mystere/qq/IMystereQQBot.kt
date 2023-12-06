@@ -50,11 +50,11 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
         coroutineScope.launch(Dispatchers.IO) {
             for ((action, resp) in OneBotConnection) {
                 try {
-                    processOneBotAction(action)
+                    resp.complete(processOneBotAction(action))
                 } catch (e1: Throwable) {
                     log.warn(e1) { "process onebot action error" }
                     try {
-                        onProcessOneBotActionInternalError(e1, action)
+                        resp.complete(onProcessOneBotActionInternalError(e1, action))
                     } catch (e2: Throwable) {
                         log.warn(e2) { "error during handle error" }
                     }
@@ -63,7 +63,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
         }
     }
 
-    protected abstract suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: ActionT): OneBotV11ActionResp
+    protected abstract suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: ActionT): RespT
 
     private suspend fun processQQEvent(event: QQBotWebsocketPayload) {
         when (event.opCode) {
