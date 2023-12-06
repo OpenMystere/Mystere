@@ -75,7 +75,25 @@ internal class ReverseWebSocketConnection(
                                 ApiWebsocket.receiveDeserialized<JsonElement>()
                             )
                             log.debug { "new onebot action! action: ${action.rawAction}" }
-                            actionChannel.send(action)
+                            coroutineScope.launch(Dispatchers.IO) {
+                                val result = CompletableDeferred<OneBotV11ActionResp>()
+                                actionChannel.send(action to result)
+                                try {
+                                    val resp = withTimeout(60_000) {
+                                        result.await()
+                                    }
+                                    log.info { "send response body: ${resp::class}" }
+                                    val rawBody = MystereJson.encodeToString(resp)
+                                    log.debug { "send response body: $rawBody" }
+                                    ApiWebsocket.send(Frame.Text(rawBody))
+                                } catch (e: Throwable) {
+                                    if (e is TimeoutCancellationException) {
+                                        log.warn(e) { "action request timeout!" }
+                                    } else {
+                                        log.warn(e) { "response body send error" }
+                                    }
+                                }
+                            }
                         } catch (e: Exception) {
                             log.warn(e) { "error during sending action" }
                         }
@@ -97,17 +115,6 @@ internal class ReverseWebSocketConnection(
                     log.warn(e) { "event send error" }
                 }
             }
-        }
-    }
-
-    override suspend fun response(respBody: OneBotV11ActionResp) {
-        try {
-            log.info { "send response body: ${respBody::class}" }
-            val rawBody = MystereJson.encodeToString(respBody)
-            log.debug { "send response body: $rawBody" }
-            ApiWebsocket.send(Frame.Text(rawBody))
-        } catch (e: Throwable) {
-            log.warn(e) { "response body send error" }
         }
     }
 

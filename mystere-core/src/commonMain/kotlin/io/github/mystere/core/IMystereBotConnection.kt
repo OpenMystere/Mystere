@@ -1,16 +1,22 @@
 package io.github.mystere.core
 
-import io.ktor.client.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 
-abstract class IMystereBotConnection<ActionT: Any, EventT: Any> private constructor(
+abstract class IMystereBotConnection<ActionT: Any, EventT: Any, RespT: Any> private constructor(
     val ownBotId: String,
-    protected val eventChannel: Channel<EventT>,
-    protected val actionChannel: Channel<ActionT>,
+    private val _eventChannel: Channel<EventT>,
+    private val _actionChannel: Channel<Pair<ActionT, CompletableDeferred<RespT>>>,
     open val originConfig: IConfig<ActionT>? = null,
-): ReceiveChannel<ActionT> by actionChannel, SendChannel<EventT> by eventChannel {
+): SendChannel<EventT> by _eventChannel, ReceiveChannel<Pair<ActionT, CompletableDeferred<RespT>>> by _actionChannel {
+    protected val coroutineScope: CoroutineScope by lazyMystereScope()
+
+    protected val eventChannel: ReceiveChannel<EventT> = _eventChannel
+    protected val actionChannel: SendChannel<Pair<ActionT, CompletableDeferred<RespT>>> = _actionChannel
+
     protected constructor(
         ownBotId: String,
         originConfig: IConfig<ActionT>? = null,
@@ -22,6 +28,6 @@ abstract class IMystereBotConnection<ActionT: Any, EventT: Any> private construc
     interface IConfig<ActionT: Any> {
         fun createConnection(
             ownBotId: String,
-        ): IMystereBotConnection<ActionT, out Any>
+        ): IMystereBotConnection<ActionT, out Any, out Any>
     }
 }

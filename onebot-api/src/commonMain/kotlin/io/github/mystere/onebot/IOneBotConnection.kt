@@ -5,11 +5,9 @@ import io.github.mystere.core.IMystereBotConnection
 abstract class IOneBotConnection<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT: IOneBotActionResp> protected constructor(
     ownBotId: String,
     override val originConfig: IConfig<ActionT>
-): IMystereBotConnection<ActionT, EventT>(
+): IMystereBotConnection<ActionT, EventT, RespT>(
     ownBotId, originConfig
 ) {
-    abstract suspend fun response(respBody: RespT)
-
     interface IConfig<ActionT: IOneBotAction>: IMystereBotConnection.IConfig<ActionT> {
         val url: String?
 

@@ -73,8 +73,4 @@ internal class WebSocketConnection(
         ApiConnection?.stop()
         EventConnection?.stop()
     }
-
-    override suspend fun response(respBody: OneBotV11ActionResp) {
-        TODO("Not yet implemented")
-    }
 }

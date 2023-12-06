@@ -2,6 +2,7 @@ package io.github.mystere.qq
 
 import io.github.mystere.core.IMystereBotConnection
 import io.github.mystere.onebot.*
+import io.github.mystere.onebot.v11.OneBotV11ActionResp
 import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
 import io.github.mystere.qq.v11.MystereV11QQBot
@@ -47,7 +48,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
             }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            for (action: ActionT in OneBotConnection) {
+            for ((action, resp) in OneBotConnection) {
                 try {
                     processOneBotAction(action)
                 } catch (e1: Throwable) {
@@ -62,7 +63,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
         }
     }
 
-    protected abstract suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: ActionT)
+    protected abstract suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: ActionT): OneBotV11ActionResp
 
     private suspend fun processQQEvent(event: QQBotWebsocketPayload) {
         when (event.opCode) {
@@ -102,7 +103,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
                 " in your instance of IMystereQQBot!")
     }
 
-    protected abstract suspend fun processOneBotAction(action: ActionT)
+    protected abstract suspend fun processOneBotAction(action: ActionT): RespT
 
     final override suspend fun disconnect() {
         mQQBot.disconnect()
@@ -120,7 +121,7 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
     companion object {
         fun create(
             config: QQBot.Config,
-            connection: IMystereBotConnection<*, *>,
+            connection: IMystereBotConnection<*, *, *>,
         ): IMystereQQBot<*, *, *> {
             return when (connection) {
                 is IOneBotV11Connection -> MystereV11QQBot(config, connection)

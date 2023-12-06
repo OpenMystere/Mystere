@@ -15,8 +15,6 @@ abstract class IOneBotV11Connection internal constructor(
 ): IOneBotConnection<OneBotV11Action, IOneBotV11Event, OneBotV11ActionResp>(
     ownBotId, originConfig,
 ) {
-    protected val coroutineScope: CoroutineScope by lazyMystereScope()
-
     interface IConfig: IOneBotConnection.IConfig<OneBotV11Action> {
         override fun createConnection(
             ownBotId: String,

@@ -98,22 +98,15 @@ class MystereV11QQBot internal constructor(
         TODO("Not yet implemented")
     }
 
-    private suspend fun processOneBotAction(rawAction: String, params: OneBotV11Action.Param, echo: JsonElement?): Boolean {
-        when (params) {
-            is OneBotV11Action.SendGroupMsg -> {
-                processSendGroupMsg(params, echo)
-                return true
-            }
-
-            is OneBotV11Action.SendGuildChannelMsg -> {
-                processSendGuildChannelMsg(params, echo)
-                return true
-            }
-            else -> return false
+    private suspend fun processOneBotAction(rawAction: String, params: OneBotV11Action.Param, echo: JsonElement?): OneBotV11ActionResp? {
+        return when (params) {
+            is OneBotV11Action.SendGroupMsg -> processSendGroupMsg(params, echo)
+            is OneBotV11Action.SendGuildChannelMsg -> processSendGuildChannelMsg(params, echo)
+            else -> return null
         }
     }
 
-    private suspend fun processSendGroupMsg(params: OneBotV11Action.SendGroupMsg, echo: JsonElement?) {
+    private suspend fun processSendGroupMsg(params: OneBotV11Action.SendGroupMsg, echo: JsonElement?): OneBotV11ActionResp {
         var originMessageId: String? = null
         var originEventId: String? = null
         if (params.originEvent != null) {
@@ -137,17 +130,17 @@ class MystereV11QQBot internal constructor(
                 eventId = originEventId,
             )
         )
-        OneBotConnection.response(OneBotV11ActionResp(
+        return OneBotV11ActionResp(
             status = IOneBotActionResp.Status.ok,
             retcode = OneBotV11ActionResp.RetCode.OK,
             data = OneBotV11ActionResp.MessageIdResp(
                 messageId = result.id,
             ),
             echo = echo,
-        ))
+        )
     }
 
-    private suspend fun processSendGuildChannelMsg(params: OneBotV11Action.SendGuildChannelMsg, echo: JsonElement?) {
+    private suspend fun processSendGuildChannelMsg(params: OneBotV11Action.SendGuildChannelMsg, echo: JsonElement?): OneBotV11ActionResp {
         var originMessageId: String? = null
         var originEventId: String? = null
         if (params.originEvent != null) {
@@ -170,26 +163,24 @@ class MystereV11QQBot internal constructor(
             msgId = originMessageId,
             eventId = originEventId,
         )
-        OneBotConnection.response(OneBotV11ActionResp(
+        return OneBotV11ActionResp(
             status = IOneBotActionResp.Status.ok,
             retcode = OneBotV11ActionResp.RetCode.OK,
             data = OneBotV11ActionResp.MessageIdResp(
                 messageId = result.id,
             ),
             echo = echo,
-        ))
+        )
     }
 
-    override suspend fun processOneBotAction(action: OneBotV11Action) {
+    override suspend fun processOneBotAction(action: OneBotV11Action): OneBotV11ActionResp {
         try {
-            if (processOneBotAction(action.rawAction, action.params, action.echo)) {
-                return
-            }
-            OneBotConnection.response(OneBotV11ActionResp(
-                status = IOneBotActionResp.Status.failed,
-                retcode = OneBotV11ActionResp.RetCode.NotFound,
-                echo = action.echo,
-            ))
+            return processOneBotAction(action.rawAction, action.params, action.echo)
+                ?: OneBotV11ActionResp(
+                    status = IOneBotActionResp.Status.failed,
+                    retcode = OneBotV11ActionResp.RetCode.NotFound,
+                    echo = action.echo,
+                )
         } catch (e1: Throwable) {
             when (e1) {
                 is CodeMessageDataDto ->
@@ -197,22 +188,22 @@ class MystereV11QQBot internal constructor(
                 else ->
                     log.warn(e1) { "action process error: ${e1.message}" }
             }
-            OneBotConnection.response(OneBotV11ActionResp(
+            return OneBotV11ActionResp(
                 status = IOneBotActionResp.Status.failed,
                 retcode = OneBotV11ActionResp.RetCode.OK,
                 message = e1.message ?: "unknown error.",
                 echo = action.echo,
-            ))
+            )
         }
     }
 
-    override suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: OneBotV11Action) {
-        OneBotConnection.response(OneBotV11ActionResp(
+    override suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: OneBotV11Action): OneBotV11ActionResp {
+        return OneBotV11ActionResp(
             status = IOneBotActionResp.Status.failed,
             retcode = OneBotV11ActionResp.RetCode.OK,
             message = "Mystere internal error.",
             echo = originAction.echo,
-        ))
+        )
     }
 
     override suspend fun IOneBotV11Event.encodeToJsonElement(): JsonElement {
