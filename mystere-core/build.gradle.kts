@@ -68,19 +68,13 @@ kotlin {
         }
 
         // windows
-        val mingwMain by getting {
-            dependsOn(commonMain)
-            dependencies {
-                implementation(mystere.ktor.client.winhttp)
-            }
-        }
-
-        // native
-        val nativeMain by getting {
-            dependencies {
-
-            }
-        }
+//        val mingwMain by getting {
+//            dependsOn(commonMain)
+//            dependencies {
+//                implementation(mystere.ktor.client.winhttp)
+////                implementation(mystere.ktor.server.cio)
+//            }
+//        }
     }
 }
 

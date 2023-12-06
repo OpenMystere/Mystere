@@ -9,11 +9,14 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 expect fun UniHttpClient(config: HttpClientConfig<*>.() -> Unit = { }): HttpClient
 expect fun _WebsocketClient(): HttpClient
+
+
 fun UniWebsocketClient(config: WebSockets.Config.() -> Unit = {
     contentConverter = KotlinxWebsocketSerializationConverter(MystereJson)
 }): HttpClient = _WebsocketClient().config {

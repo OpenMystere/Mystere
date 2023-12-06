@@ -11,7 +11,10 @@ import io.github.mystere.qqsdk.qqapi.http.IQQBotAPI
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.mystere.qqsdk.qqapi.websocket.withData
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonElement
 
 abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT: IOneBotActionResp> protected constructor(
@@ -61,7 +64,39 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
 
     protected abstract suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: ActionT)
 
-    protected abstract suspend fun processQQEvent(event: QQBotWebsocketPayload)
+    private suspend fun processQQEvent(event: QQBotWebsocketPayload) {
+        when (event.opCode) {
+            QQBotWebsocketPayload.OpCode.Dispatch -> when (val originType = event.type) {
+                // 频道全量消息
+                "MESSAGE_CREATE",
+                // 频道@消息
+                "AT_MESSAGE_CREATE",
+                // 频道私聊消息
+                "DIRECT_MESSAGE_CREATE", -> event.withData<OpCode0.GuildMessage> {
+                    processGuildMessage(originType, this)
+                }
+                // 群@消息
+                "GROUP_AT_MESSAGE_CREATE" -> event.withData<OpCode0.GroupMessage> {
+                    processGroupMessage(originType, this)
+                }
+                // 单聊消息
+                "C2C_MESSAGE_CREATE" -> event.withData<OpCode0.C2CMessage> {
+                    processC2CMessage(originType, this)
+                }
+                // 机器人被添加到群聊
+                "GROUP_ADD_ROBOT" -> event.withData<OpCode0.GroupAddRobot> {
+                    processGroupAddRobot(originType, this)
+                }
+            }
+            else -> { }
+        }
+    }
+
+    protected abstract suspend fun processGuildMessage(originType: String, message: OpCode0.GuildMessage)
+    protected abstract suspend fun processGroupMessage(originType: String, message: OpCode0.GroupMessage)
+    protected abstract suspend fun processC2CMessage(originType: String, message: OpCode0.C2CMessage)
+    protected abstract suspend fun processGroupAddRobot(originType: String, message: OpCode0.GroupAddRobot)
+
     protected open suspend fun EventT.encodeToJsonElement(): JsonElement {
         throw NotImplementedError("Please implement \"fun EventT.encodeToJsonElement(): JsonElement\"" +
                 " in your instance of IMystereQQBot!")

@@ -31,83 +31,71 @@ class MystereV11QQBot internal constructor(
 ): IMystereQQBot<OneBotV11Action, IOneBotV11Event, OneBotV11ActionResp>(config, connection) {
     override val log: KLogger = KotlinLogging.logger("MystereV11QQBot(botId: ${config.appId})")
 
-    override suspend fun processQQEvent(event: QQBotWebsocketPayload) {
-        when (event.opCode) {
-            QQBotWebsocketPayload.OpCode.Dispatch -> when (event.type) {
-                // 频道全量消息
-                "MESSAGE_CREATE",
-                // 频道@消息
-                "AT_MESSAGE_CREATE",
-                // 频道私聊消息
-                "DIRECT_MESSAGE_CREATE", -> event.withData<OpCode0.GuildMessage> {
-                    val cqMsg: CQCodeV11Message = parseAsV11Message(content, attachments)
-                        ?: return@withData
-                    OneBotConnection.send(IOneBotV11Event.Message(
-                        id = id,
-                        selfId = config.appId,
-                        messageType =
-                            if (event.type == "DIRECT_MESSAGE_CREATE")
-                                IOneBotV11Event.MessageType.guild
-                            else
-                                IOneBotV11Event.MessageType.private,
-                        subType = IOneBotV11Event.MessageSubType.channel,
-                        messageId = id,
-                        message = cqMsg,
-                        rawMessage = CQCode.encodeToString(cqMsg),
-                        sender = IOneBotV11Event.Sender(
-                            userId = author.id,
-                            tinyId = author.id,
-                        ),
-                        selfTinyId = author.id,
-                        guildId = guildId,
-                        channelId = channelId,
-                        userId = author.id,
-                    ))
-                }
-                // 群@消息
-                "GROUP_AT_MESSAGE_CREATE" -> event.withData<OpCode0.GroupMessage> {
-                    val cqMsg: CQCodeV11Message = parseAsV11Message(content, attachments)
-                        ?: return@withData
-                    OneBotConnection.send(IOneBotV11Event.Message(
-                        id = id,
-                        selfId = config.appId,
-                        messageType = IOneBotV11Event.MessageType.guild,
-                        subType = IOneBotV11Event.MessageSubType.group,
-                        messageId = id,
-                        message = cqMsg,
-                        rawMessage = CQCode.encodeToString(cqMsg),
-                        sender = IOneBotV11Event.Sender(
-                            userId = author.memberOpenid,
-                        ),
-                        userId = author.memberOpenid,
-                        groupId = groupOpenid,
-                    ))
-                }
-                // 单聊消息
-                "C2C_MESSAGE_CREATE" -> event.withData<OpCode0.C2CMessage> {
-                    val cqMsg: CQCodeV11Message = parseAsV11Message(content, attachments)
-                        ?: return@withData
-                    OneBotConnection.send(IOneBotV11Event.Message(
-                        id = id,
-                        selfId = config.appId,
-                        messageType = IOneBotV11Event.MessageType.private,
-                        subType = IOneBotV11Event.MessageSubType.friend,
-                        messageId = id,
-                        message = cqMsg,
-                        rawMessage = CQCode.encodeToString(cqMsg),
-                        sender = IOneBotV11Event.Sender(
-                            userId = author.userOpenid,
-                        ),
-                        userId = author.userOpenid,
-                    ))
-                }
-                // 机器人被添加到群聊
-                "GROUP_ADD_ROBOT" -> event.withData<OpCode0.GroupAddRobot> {
+    override suspend fun processGuildMessage(originType: String, message: OpCode0.GuildMessage) {
+        val cqMsg: CQCodeV11Message = parseAsV11Message(message.content, message.attachments)
+            ?: return
+        OneBotConnection.send(IOneBotV11Event.Message(
+            id = message.id,
+            selfId = config.appId,
+            messageType =
+            if (originType == "DIRECT_MESSAGE_CREATE")
+                IOneBotV11Event.MessageType.private
+            else
+                IOneBotV11Event.MessageType.guild,
+            subType = IOneBotV11Event.MessageSubType.channel,
+            messageId = message.id,
+            message = cqMsg,
+            rawMessage = CQCode.encodeToString(cqMsg),
+            sender = IOneBotV11Event.Sender(
+                userId = message.author.id,
+                tinyId = message.author.id,
+            ),
+            selfTinyId = message.author.id,
+            guildId = message.guildId,
+            channelId = message.channelId,
+            userId = message.author.id,
+        ))
+    }
 
-                }
-            }
-            else -> { }
-        }
+    override suspend fun processGroupMessage(originType: String, message: OpCode0.GroupMessage) {
+        val cqMsg: CQCodeV11Message = parseAsV11Message(message.content, message.attachments)
+            ?: return
+        OneBotConnection.send(IOneBotV11Event.Message(
+            id = message.id,
+            selfId = config.appId,
+            messageType = IOneBotV11Event.MessageType.guild,
+            subType = IOneBotV11Event.MessageSubType.group,
+            messageId = message.id,
+            message = cqMsg,
+            rawMessage = CQCode.encodeToString(cqMsg),
+            sender = IOneBotV11Event.Sender(
+                userId = message.author.memberOpenid,
+            ),
+            userId = message.author.memberOpenid,
+            groupId = message.groupOpenid,
+        ))
+    }
+
+    override suspend fun processC2CMessage(originType: String, message: OpCode0.C2CMessage) {
+        val cqMsg: CQCodeV11Message = parseAsV11Message(message.content, message.attachments)
+            ?: return
+        OneBotConnection.send(IOneBotV11Event.Message(
+            id = message.id,
+            selfId = config.appId,
+            messageType = IOneBotV11Event.MessageType.private,
+            subType = IOneBotV11Event.MessageSubType.friend,
+            messageId = message.id,
+            message = cqMsg,
+            rawMessage = CQCode.encodeToString(cqMsg),
+            sender = IOneBotV11Event.Sender(
+                userId = message.author.userOpenid,
+            ),
+            userId = message.author.userOpenid,
+        ))
+    }
+
+    override suspend fun processGroupAddRobot(originType: String, message: OpCode0.GroupAddRobot) {
+        TODO("Not yet implemented")
     }
 
     private suspend fun processOneBotAction(rawAction: String, params: OneBotV11Action.Param, echo: JsonElement?): Boolean {

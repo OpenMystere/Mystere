@@ -7,17 +7,13 @@ import io.github.mystere.core.util.UniWebsocketClient
 import io.github.mystere.onebot.v12.OneBotV12ActionResp
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
-import io.ktor.client.plugins.api.*
 
 import io.ktor.client.plugins.websocket.*
-import io.ktor.client.request.*
 
 import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.JsonElement
 
 
 internal class ReverseWebSocketConnection(
@@ -33,8 +29,8 @@ internal class ReverseWebSocketConnection(
 
     private val coroutineScope by lazyMystereScope()
 
-    override suspend fun connect(httpClient: HttpClientConfig<*>.() -> Unit) {
-        _WebsocketClient = UniWebsocketClient().config(httpClient)
+    override suspend fun connect() {
+        _WebsocketClient = UniWebsocketClient()
         coroutineScope.launch(Dispatchers.IO) {
             while (true) {
                 try {

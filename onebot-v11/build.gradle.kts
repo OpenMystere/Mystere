@@ -35,6 +35,7 @@ kotlin {
                 implementation(mystere.ktor.client.content.negotiation)
                 implementation(mystere.ktor.client.auth)
                 implementation(mystere.ktor.server.core)
+                implementation(mystere.ktor.server.cio)
                 implementation(mystere.ktor.server.websockets)
                 implementation(mystere.ktor.plugin.logging)
                 implementation(mystere.ktor.plugin.serialization.kotlinx.json)
@@ -60,7 +61,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)
-                implementation(mystere.ktor.server.cio)
+//                implementation(mystere.ktor.server.cio)
             }
         }
 
@@ -68,7 +69,7 @@ kotlin {
         val macosMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)
-                implementation(mystere.ktor.server.cio)
+//                implementation(mystere.ktor.server.cio)
             }
         }
 
@@ -76,7 +77,7 @@ kotlin {
         val linuxMain by getting {
             dependencies {
                 implementation(mystere.ktor.client.cio)
-                implementation(mystere.ktor.server.cio)
+//                implementation(mystere.ktor.server.cio)
             }
         }
 
@@ -84,7 +85,7 @@ kotlin {
 //        val mingwMain by getting {
 //            dependencies {
 //                implementation(mystere.ktor.client.winhttp)
-//                implementation(mystere.ktor.server.winhttp)
+//                implementation(mystere.ktor.server.cio)
 //            }
 //        }
     }

@@ -27,50 +27,20 @@ class MystereV12QQBot(
 ): IMystereQQBot<OneBotV12Action, IOneBotV12Event, OneBotV12ActionResp>(config, connection) {
     override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
 
-    override suspend fun processQQEvent(event: QQBotWebsocketPayload) {
-        when (event.opCode) {
-            QQBotWebsocketPayload.OpCode.Dispatch -> when (event.type) {
-                "MESSAGE_CREATE" -> event.withData<OpCode0.GuildMessage> {
-                    val cqMsg: CQCodeV12Message = with(this) {
-                        var message: CQCodeV12Message? = null
-//                        var firstAtSelfFilted = false
-                        for (item in content.asV12MessageContent()) {
-//                            if (item is CQCodeV12MessageItem.Mention &&
-//                                item.userId == botUser?.id && !firstAtSelfFilted) {
-//                                // 因为触发机器人必须 at，所以这里过滤掉第一次 at 机器人
-//                                firstAtSelfFilted = true
-//                                continue
-//                            }
-                            message += item
-                        }
-                        for (attachment in attachments) {
-                            if (attachment.contentType.startsWith("image")) {
-                                message += CQCodeV12MessageItem.Image(
-                                    fileId = "",
-                                )
-                            }
-                        }
-                        return@with message!!
-                    }
-                    OneBotConnection.send(IOneBotV12Event.Message(
-                        selfId = config.appId,
-                        messageType = IOneBotV12Event.MessageType.guild,
-                        subType = IOneBotV12Event.MessageSubType.channel,
-                        messageId = id,
-                        message = cqMsg,
-                        rawMessage = CQCode.encodeToString(cqMsg),
-                        font = 0,
-                        sender = IOneBotV12Event.Message.Sender(
-                            userId = author.id
-                        ),
-                        guildId = guildId,
-                        channelId = channelId,
-                        userId = author.id
-                    ))
-                }
-            }
-            else -> { }
-        }
+    override suspend fun processGuildMessage(originType: String, message: OpCode0.GuildMessage) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGroupMessage(originType: String, message: OpCode0.GroupMessage) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processC2CMessage(originType: String, message: OpCode0.C2CMessage) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGroupAddRobot(originType: String, message: OpCode0.GroupAddRobot) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: OneBotV12Action) {

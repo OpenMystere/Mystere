@@ -16,7 +16,7 @@ abstract class IMystereBotConnection<ActionT: Any, EventT: Any> private construc
         originConfig: IConfig<ActionT>? = null,
     ): this(ownBotId, Channel(), Channel(), originConfig)
 
-    abstract suspend fun connect(httpClient: HttpClientConfig<*>.() -> Unit = { })
+    abstract suspend fun connect()
     abstract suspend fun disconnect()
 
     interface IConfig<ActionT: Any> {

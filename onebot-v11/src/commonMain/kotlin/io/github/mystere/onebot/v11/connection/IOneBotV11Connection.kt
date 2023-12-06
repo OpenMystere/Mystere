@@ -1,9 +1,11 @@
 package io.github.mystere.onebot.v11.connection
 
+import io.github.mystere.core.lazyMystereScope
 import io.github.mystere.onebot.IOneBotConnection
 import io.github.mystere.onebot.v11.IOneBotV11Event
 import io.github.mystere.onebot.v11.OneBotV11Action
 import io.github.mystere.onebot.v11.OneBotV11ActionResp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -13,6 +15,8 @@ abstract class IOneBotV11Connection internal constructor(
 ): IOneBotConnection<OneBotV11Action, IOneBotV11Event, OneBotV11ActionResp>(
     ownBotId, originConfig,
 ) {
+    protected val coroutineScope: CoroutineScope by lazyMystereScope()
+
     interface IConfig: IOneBotConnection.IConfig<OneBotV11Action> {
         override fun createConnection(
             ownBotId: String,
@@ -40,18 +44,6 @@ abstract class IOneBotV11Connection internal constructor(
     }
 
     @Serializable
-    data class HttpPost(
-        @SerialName("url")
-        override val url: String,
-    ) : IConfig {
-        override fun createConnection(
-            ownBotId: String
-        ): IOneBotV11Connection {
-            TODO("Not yet implemented")
-        }
-    }
-
-    @Serializable
     data class WebSocket(
         @SerialName("url")
         override val url: String? = null,
@@ -59,6 +51,18 @@ abstract class IOneBotV11Connection internal constructor(
         val apiUrl: String? = null,
         @SerialName("event-url")
         val eventUrl: String? = null,
+    ) : IConfig {
+        override fun createConnection(
+            ownBotId: String
+        ): IOneBotV11Connection {
+            return WebSocketConnection(ownBotId, this)
+        }
+    }
+
+    @Serializable
+    data class HttpPost(
+        @SerialName("url")
+        override val url: String,
     ) : IConfig {
         override fun createConnection(
             ownBotId: String

@@ -33,7 +33,7 @@ internal class ReverseWebSocketConnection(
     ownBotId: String,
     override val originConfig: ReverseWebSocket,
 ): IOneBotV11Connection(ownBotId, originConfig) {
-    private val log = KotlinLogging.logger("OneBotV11Connection(ownBotId: $ownBotId)")
+    private val log = KotlinLogging.logger("OneBotV11-ReverseWebSocketConnection(ownBotId: $ownBotId)")
 
     private var _WebsocketClient: HttpClient? = null
     private val WebsocketClient: HttpClient get() = _WebsocketClient!!
@@ -44,12 +44,9 @@ internal class ReverseWebSocketConnection(
     private var _EventWebsocket: DefaultClientWebSocketSession? = null
     private val EventWebsocket: DefaultClientWebSocketSession get() = (_EventWebsocket ?: _UniWebsocket)!!
 
-    private val coroutineScope by lazyMystereScope()
-
-    override suspend fun connect(httpClient: HttpClientConfig<*>.() -> Unit) {
+    override suspend fun connect() {
         _WebsocketClient = UniWebsocketClient().config {
             applySelfIdHeader(ownBotId)
-            httpClient()
         }
         coroutineScope.launch(Dispatchers.IO) {
             while (true) {
