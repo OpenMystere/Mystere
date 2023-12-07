@@ -41,6 +41,7 @@ kotlin {
                 implementation(mystere.ktorfit.lib.light)
 
                 implementation(mystere.kotlinx.coroutines.core)
+                implementation(mystere.kotlinx.datetime)
             }
         }
 

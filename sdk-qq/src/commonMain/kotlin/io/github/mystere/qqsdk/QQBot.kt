@@ -70,7 +70,6 @@ data class QQBot private constructor(
                     accessTokenExpire = 10
                     return@launch
                 }
-
                 if (websocket == null) {
                     websocket = QQBotWebsocketConnection(
                         log = log,

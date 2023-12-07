@@ -1,6 +1,7 @@
 package io.github.mystere.core
 
 import kotlinx.coroutines.*
+import kotlinx.datetime.Clock
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -34,4 +35,9 @@ fun MystereScope(context: CoroutineContext = Dispatchers.IO): CoroutineScope {
 }
 fun lazyMystereScope(context: CoroutineContext = Dispatchers.IO) = lazy {
     MystereScope(context)
+}
+
+private val launchTime: Long = Clock.System.now().toEpochMilliseconds()
+val launchTiming: Int get() {
+    return (Clock.System.now().toEpochMilliseconds() - launchTime).toInt()
 }

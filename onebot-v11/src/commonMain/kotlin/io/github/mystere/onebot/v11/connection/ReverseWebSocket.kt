@@ -49,6 +49,7 @@ internal class ReverseWebSocketConnection(
             applySelfIdHeader(ownBotId)
         }
         coroutineScope.launch(Dispatchers.IO) {
+            val childScope = CoroutineScope(coroutineScope.coroutineContext + Job())
             while (true) {
                 try {
                     if (originConfig.url != null) {
@@ -75,7 +76,7 @@ internal class ReverseWebSocketConnection(
                                 ApiWebsocket.receiveDeserialized<JsonElement>()
                             )
                             log.debug { "new onebot action! action: ${action.rawAction}" }
-                            coroutineScope.launch(Dispatchers.IO) {
+                            childScope.launch(Dispatchers.IO) {
                                 val result = CompletableDeferred<OneBotV11ActionResp>()
                                 actionChannel.send(action to result)
                                 try {

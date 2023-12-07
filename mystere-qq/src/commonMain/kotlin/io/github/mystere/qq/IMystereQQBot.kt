@@ -12,10 +12,7 @@ import io.github.mystere.qqsdk.qqapi.http.IQQBotAPI
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.mystere.qqsdk.qqapi.websocket.withData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.serialization.json.JsonElement
 
 abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT: IOneBotActionResp> protected constructor(
@@ -28,42 +25,26 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
     protected val QQBotApi: IQQBotAPI get() = mQQBot.BotAPI
     final override suspend fun connect() {
         super.connect()
+        mQQBot.connect()
         coroutineScope.launch(Dispatchers.IO) {
-            mQQBot.connect()
-        }
-
-        coroutineScope.launch(Dispatchers.IO) {
+            val childScope = CoroutineScope(coroutineScope.coroutineContext + Job())
             for (payload: QQBotWebsocketPayload in mQQBot) {
-                try {
-                    if (payload.opCode == QQBotWebsocketPayload.OpCode.Dispatch && payload.type == "READY") {
-                        payload.withData<OpCode0.Ready> {
-                            botUser = user
-                        }
-                    } else {
-                        processQQEvent(payload)
-                    }
-                } catch (e: Throwable) {
-                    log.warn(e) { "process qq event error" }
-                }
-            }
-        }
-        coroutineScope.launch(Dispatchers.IO) {
-            for ((action, resp) in OneBotConnection) {
-                try {
-                    resp.complete(processOneBotAction(action))
-                } catch (e1: Throwable) {
-                    log.warn(e1) { "process onebot action error" }
+                childScope.launch(Dispatchers.IO) {
                     try {
-                        resp.complete(onProcessOneBotActionInternalError(e1, action))
-                    } catch (e2: Throwable) {
-                        log.warn(e2) { "error during handle error" }
+                        if (payload.opCode == QQBotWebsocketPayload.OpCode.Dispatch && payload.type == "READY") {
+                            payload.withData<OpCode0.Ready> {
+                                botUser = user
+                            }
+                        } else {
+                            processQQEvent(payload)
+                        }
+                    } catch (e: Throwable) {
+                        log.warn(e) { "process qq event error" }
                     }
                 }
             }
         }
     }
-
-    protected abstract suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: ActionT): RespT
 
     private suspend fun processQQEvent(event: QQBotWebsocketPayload) {
         when (event.opCode) {
@@ -97,13 +78,6 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
     protected abstract suspend fun processGroupMessage(originType: String, message: OpCode0.GroupMessage)
     protected abstract suspend fun processC2CMessage(originType: String, message: OpCode0.C2CMessage)
     protected abstract suspend fun processGroupAddRobot(originType: String, message: OpCode0.GroupAddRobot)
-
-    protected open suspend fun EventT.encodeToJsonElement(): JsonElement {
-        throw NotImplementedError("Please implement \"fun EventT.encodeToJsonElement(): JsonElement\"" +
-                " in your instance of IMystereQQBot!")
-    }
-
-    protected abstract suspend fun processOneBotAction(action: ActionT): RespT
 
     final override suspend fun disconnect() {
         mQQBot.disconnect()

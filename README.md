@@ -17,43 +17,7 @@ Mystere 是一个基于 Kotlin/Native、实现了 OneBot 协议的机器人无�
 + macosX64
 + macosArm64
 
-
-## OneBot 协议支持
-
-|            | WebSocket Reverse | WebSocket | Http Post | Http  |
-|------------|-------------------|-----------|-----------|-------|
-| OneBot V11 | 🚧️               | ❌ [1]     | ❌ [1]     | ❌ [1] |
-
-|            | WebSocket Reverse | WebSocket | Http WebHook | Http  |
-|------------|-------------------|-----------|--------------|-------|
-| OneBot V12 | 🚧️               | ❌ [1]     | ❌ [1]        | ❌ [1] |
-
-1. 适配工作尚未开始。
-
-
-## 机器人平台支持
-
-+ QQ：[查看详情](mystere-qq)
-
-## 跨平台兼容性
-
-|                | jvm<br />Java | linuxX64<br />Linux x64 | linuxArm64<br />Linux Arm64 | macosX64<br />macOS x64 | macosArm64<br />macOS Arm64 | mingwX64<br />Windows x64 | others |
-|----------------|---------------|-------------------------|-----------------------------|-------------------------|-----------------------------|---------------------------|--------|
-| mystere        | ✔️            | ✔️                      | ❌ [2]                       | ✔️                      | ✔️                          | ❌ [3]                     | ❌ [1]  |
-| mystere-core   | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
-| mystere-sqlite | ✔️            | ✔️                      | ❌ [4]                       | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
-| mystere-qq     | ✔️            | ✔️                      | ❌ [2]                       | ✔️                      | ✔️                          | ❌ [3]                     | ❌ [1]  |
-| onebot-api     | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
-| ontbot-v11     | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ❌ [5]                     | ❌ [1]  |
-| onebot-v12     | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ❌ [5]                     | ❌ [1]  |
-| sdk-qq         | ✔️            | ✔️                      | ✔️                          | ✔️                      | ✔️                          | ✔️                        | ❌ [1]  |
-
-1. 暂无计划支持其他目标。
-2. 等待模块 `mystere-sqlite` 对 linuxArm64 提供支持；<br/>
-   等待依赖 [com.github.ajalt.clikt:clikt](https://github.com/ajalt/clikt) 对 linuxArm64 提供支持：[arm64 - Issue #404 - ajalt/clikt](https://github.com/ajalt/clikt/issues/404)。
-3. 等待模块 `ontbot-v11`、`ontbot-v12` 对 mingwX64 提供支持。
-4. 等待依赖 [app.cash.sqldelight:native-driver](https://github.com/cashapp/sqldelight) 对 linuxArm64 提供支持：[Add all native targets to the runtime - Issue #4255 - cashapp/sqldelight](https://github.com/cashapp/sqldelight/issues/4255)。
-5. 等待依赖 [io.ktor:ktor-server-cio](https://github.com/ktorio/ktor) 对 mingwX64 提供支持：[Native server | Ktor](https://ktor.io/docs/native-server.html)。
+完整文档请查阅：[OpenMystere 官网](https://openmystere.github.io/starter-topic.html)
 
 
 ## 鸣谢

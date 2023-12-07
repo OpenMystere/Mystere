@@ -1,15 +1,12 @@
 package io.github.mystere.onebot.v12.connection
 
-import io.github.mystere.core.lazyMystereScope
-import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.UniWebsocketClient
+import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.onebot.v12.OneBotV12ActionResp
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
-
 import io.ktor.client.plugins.websocket.*
-
 import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
@@ -27,11 +24,10 @@ internal class ReverseWebSocketConnection(
 
     private var UniWebsocket: DefaultClientWebSocketSession? = null
 
-    private val coroutineScope by lazyMystereScope()
-
     override suspend fun connect() {
         _WebsocketClient = UniWebsocketClient()
         coroutineScope.launch(Dispatchers.IO) {
+            val childScope = CoroutineScope(coroutineScope.coroutineContext + Job())
             while (true) {
                 try {
                     UniWebsocket?.cancel()
@@ -42,10 +38,24 @@ internal class ReverseWebSocketConnection(
                         log.debug { "waiting for new onebot action" }
                         val action = UniWebsocket!!.receiveDeserialized<OneBotV12Action>()
                         log.debug { "new onebot action! action: ${action.action}" }
-                        try {
-                            actionChannel.send(action)
-                        } catch (e: Exception) {
-                            log.warn(e) { "error during sending action ${action.action}" }
+                        childScope.launch(Dispatchers.IO) {
+                            val result = CompletableDeferred<OneBotV12ActionResp>()
+                            actionChannel.send(action to result)
+                            try {
+                                val resp = withTimeout(60_000) {
+                                    result.await()
+                                }
+                                log.info { "send response body: ${resp::class}" }
+                                val rawBody = MystereJson.encodeToString(resp)
+                                log.debug { "send response body: $rawBody" }
+                                UniWebsocket?.send(Frame.Text(rawBody))
+                            } catch (e: Throwable) {
+                                if (e is TimeoutCancellationException) {
+                                    log.warn(e) { "action request timeout!" }
+                                } else {
+                                    log.warn(e) { "response body send error" }
+                                }
+                            }
                         }
                     }
                 } catch (e: Exception) {
@@ -65,17 +75,6 @@ internal class ReverseWebSocketConnection(
                     log.warn(e) { "event send error" }
                 }
             }
-        }
-    }
-
-    override suspend fun response(respBody: OneBotV12ActionResp) {
-        try {
-            log.info { "send response body: ${respBody::class}" }
-            val rawBody = MystereJson.encodeToString(respBody)
-            log.debug { "send response body: $rawBody" }
-            UniWebsocket?.send(Frame.Text(rawBody))
-        } catch (e: Throwable) {
-            log.warn(e) { "response body send error" }
         }
     }
 

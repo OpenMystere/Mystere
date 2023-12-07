@@ -1,6 +1,5 @@
 package io.github.mystere.qq.v11
 
-import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.IOneBotActionResp
 import io.github.mystere.onebot.v11.IOneBotV11Event
 import io.github.mystere.onebot.v11.OneBotV11Action
@@ -15,15 +14,12 @@ import io.github.mystere.qqsdk.qqapi.data.MessageAttachment
 import io.github.mystere.qqsdk.qqapi.dto.CodeMessageDataDto
 import io.github.mystere.qqsdk.qqapi.dto.GroupMessageRequestDto
 import io.github.mystere.qqsdk.qqapi.http.messageIO_channel
-import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
-import io.github.mystere.qqsdk.qqapi.websocket.withData
 import io.github.mystere.serialization.cqcode.CQCode
+import io.github.mystere.serialization.cqcode.plus
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.encodeToJsonElement
-import io.github.mystere.serialization.cqcode.plus
 
 class MystereV11QQBot internal constructor(
     config: QQBot.Config,
@@ -100,13 +96,13 @@ class MystereV11QQBot internal constructor(
 
     private suspend fun processOneBotAction(rawAction: String, params: OneBotV11Action.Param, echo: JsonElement?): OneBotV11ActionResp? {
         return when (params) {
-            is OneBotV11Action.SendGroupMsg -> processSendGroupMsg(params, echo)
-            is OneBotV11Action.SendGuildChannelMsg -> processSendGuildChannelMsg(params, echo)
+            is OneBotV11Action.SendGroupMsg -> processSendGroupMsgAction(params, echo)
+            is OneBotV11Action.SendGuildChannelMsg -> processSendGuildChannelMsgAction(params, echo)
             else -> return null
         }
     }
 
-    private suspend fun processSendGroupMsg(params: OneBotV11Action.SendGroupMsg, echo: JsonElement?): OneBotV11ActionResp {
+    private suspend fun processSendGroupMsgAction(params: OneBotV11Action.SendGroupMsg, echo: JsonElement?): OneBotV11ActionResp {
         var originMessageId: String? = null
         var originEventId: String? = null
         if (params.originEvent != null) {
@@ -140,7 +136,7 @@ class MystereV11QQBot internal constructor(
         )
     }
 
-    private suspend fun processSendGuildChannelMsg(params: OneBotV11Action.SendGuildChannelMsg, echo: JsonElement?): OneBotV11ActionResp {
+    private suspend fun processSendGuildChannelMsgAction(params: OneBotV11Action.SendGuildChannelMsg, echo: JsonElement?): OneBotV11ActionResp {
         var originMessageId: String? = null
         var originEventId: String? = null
         if (params.originEvent != null) {
@@ -197,17 +193,13 @@ class MystereV11QQBot internal constructor(
         }
     }
 
-    override suspend fun onProcessOneBotActionInternalError(e: Throwable, originAction: OneBotV11Action): OneBotV11ActionResp {
+    override suspend fun onProcessInternalError(e: Throwable, originAction: OneBotV11Action): OneBotV11ActionResp {
         return OneBotV11ActionResp(
             status = IOneBotActionResp.Status.failed,
             retcode = OneBotV11ActionResp.RetCode.OK,
             message = "Mystere internal error.",
             echo = originAction.echo,
         )
-    }
-
-    override suspend fun IOneBotV11Event.encodeToJsonElement(): JsonElement {
-        return MystereJson.encodeToJsonElement(this)
     }
 
     private fun parseAsV11Message(content: String, attachments: List<MessageAttachment>): CQCodeV11Message? {

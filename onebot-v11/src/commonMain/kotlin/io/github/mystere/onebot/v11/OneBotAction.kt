@@ -1,10 +1,13 @@
 package io.github.mystere.onebot.v11
 
+import io.github.mystere.core.launchTiming
 import io.github.mystere.onebot.IOneBotAction
 import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11MessageItem
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.serialDescriptor
@@ -13,6 +16,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlinx.serialization.json.*
 import kotlin.reflect.KClass
+import kotlin.time.TimeSource
 
 @Serializable(with = OneBotV11ActionSerializer::class)
 data class OneBotV11Action(
@@ -114,6 +118,8 @@ data class OneBotV11Action(
         val userId: String,
         @SerialName("message")
         val message: CQCodeV11Message,
+        @SerialName("message_seq")
+        val messageSeq: Int = launchTiming,
         @SerialName("auto_escape")
         val autoEscape: Boolean = false,
         @SerialName("origin_event")
@@ -126,6 +132,8 @@ data class OneBotV11Action(
         val groupId: String,
         @SerialName("message")
         val message: CQCodeV11Message,
+        @SerialName("message_seq")
+        val messageSeq: Int = launchTiming,
         @SerialName("auto_escape")
         val autoEscape: Boolean = false,
         @SerialName("origin_event")
@@ -142,6 +150,8 @@ data class OneBotV11Action(
         val groupId: String? = null,
         @SerialName("message")
         val message: CQCodeV11Message,
+        @SerialName("message_seq")
+        val messageSeq: Int = launchTiming,
         @SerialName("auto_escape")
         val autoEscape: Boolean = false,
         @SerialName("origin_event")
@@ -528,10 +538,6 @@ data class OneBotV11Action(
         val initialUsers: List<String>,
     ): Param
 }
-
-//suspend inline fun <reified T: OneBotV11Action.Param> OneBotV11Action.withParams(crossinline block: suspend T.() -> Unit) {
-//    block.invoke(MystereJson.decodeFromJsonElement(params))
-//}
 
 object OneBotV11ActionSerializer: KSerializer<OneBotV11Action> {
     override val descriptor: SerialDescriptor = serialDescriptor<OneBotV11Action>()
