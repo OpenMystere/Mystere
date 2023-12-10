@@ -50,7 +50,7 @@ data class OneBotV12Action(
         @SerialName("id")
         val id: String,
         @SerialName("type")
-        val type: IOneBotV12Event.PostType,
+        val type: OneBotV12Event.Type,
         @SerialName("detail_type")
         val detailType: String = "",
         @SerialName("sub_type")

@@ -84,15 +84,6 @@ data class MessageAttachment(
     val size: Long? = null,
 )
 @Serializable
-data class Member(
-    @SerialName("joined_at")
-    val joinedAt: Timestamp,
-    @SerialName("nick")
-    val nick: String,
-    @SerialName("roles")
-    val roles: List<Int>,
-)
-@Serializable
 data class Mentions(
     @SerialName("avatar")
     val avatar: String,

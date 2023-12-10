@@ -1,23 +1,53 @@
 package io.github.mystere.onebot.v12
 
+import io.github.mystere.core.util.MystereJson
+import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.onebot.IOneBotEvent
 import io.github.mystere.onebot.v12.cqcode.CQCodeV12Message
 import kotlinx.datetime.Clock
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.serialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.*
 
-@Serializable
-sealed interface IOneBotV12Event: IOneBotEvent {
-    @SerialName("post_type")
-    val postType: PostType
-    @SerialName("self_id")
-    val selfId: String
+@Serializable(with = IOneBotV12EventSerializer::class)
+data class OneBotV12Event(
+    val id: String? = null,
+    val type: Type,
+    val detailType: Enum<*>,
+    val subType: Enum<*>? = null,
+    val selfId: String,
+    val time: Long = Clock.System.now().toEpochMilliseconds(),
+    val params: Data,
+): IOneBotEvent {
+    constructor(
+        id: String? = null,
+        type: Type,
+        detailType: Enum<*>,
+        subType: Enum<*>? = null,
+        selfId: String,
+        time: Long,
+        params: JsonObject,
+    ): this(
+        id, type, detailType,
+        subType, selfId, time,
+        CustomEvent(params)
+    )
 
-    @SerialName("time")
-    val time: Long
+    @Serializable
+    sealed interface Data: IOneBotEvent.Data
+    
+    @Serializable(with = CustomEventSerializer::class)
+    data class CustomEvent(
+        val data: JsonObject
+    ): Data
 
-    enum class PostType {
-        message, notice, request, meta_event;
+    enum class Type {
+        message, notice, request, meta;
     }
 
 
@@ -36,8 +66,6 @@ sealed interface IOneBotV12Event: IOneBotEvent {
     // 私聊消息
     @Serializable
     data class MessagePrivate(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("sub_type")
         val subType: MessageSubType,
         @SerialName("message_id")
@@ -52,13 +80,9 @@ sealed interface IOneBotV12Event: IOneBotEvent {
         val sender: Sender,
         @SerialName("user_id")
         val userId: Long = sender.userId,
-    ): IOneBotV12Event {
+    ): Data {
         @SerialName("message_type")
         val messageType: MessageType = MessageType.private
-        @SerialName("post_type")
-        override val postType: PostType = PostType.message
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds()
 
         @Serializable
         data class Sender(
@@ -76,8 +100,6 @@ sealed interface IOneBotV12Event: IOneBotEvent {
     // 消息
     @Serializable
     data class Message(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("message_type")
         val messageType: MessageType = MessageType.group,
         @SerialName("sub_type")
@@ -98,12 +120,7 @@ sealed interface IOneBotV12Event: IOneBotEvent {
         val guildId: String? = null,
         @SerialName("channel_id")
         val channelId: String? = null,
-    ): IOneBotV12Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.message
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds()
-
+    ): Data {
         @Serializable
         data class Sender(
             @SerialName("user_id")
@@ -133,18 +150,12 @@ sealed interface IOneBotV12Event: IOneBotEvent {
         enable, disable, connect
     }
     @Serializable
-    data class MetaLifecycle(
-        @SerialName("self_id")
-        override val selfId: String,
+    data class MetaConnect(
         @SerialName("sub_type")
         val subType: LifecycleSubType,
-    ): IOneBotV12Event {
+    ): Data {
         @SerialName("meta_event_type")
         val metaEventType: MetaEventType = MetaEventType.lifecycle
-        @SerialName("post_type")
-        override val postType: PostType = PostType.meta_event
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds()
     }
 
     // 心跳
@@ -157,17 +168,11 @@ sealed interface IOneBotV12Event: IOneBotEvent {
     )
     @Serializable
     data class MetaHeartbeat(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("state")
         val state: HeartbeatStatus,
-    ): IOneBotV12Event {
+    ): Data {
         @SerialName("meta_event_type")
         val metaEventType: MetaEventType = MetaEventType.heartbeat
-        @SerialName("post_type")
-        override val postType: PostType = PostType.meta_event
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds()
     }
 
 
@@ -191,17 +196,48 @@ sealed interface IOneBotV12Event: IOneBotEvent {
     )
     @Serializable
     data class NoticeGroupFileUpload(
-        override val selfId: String,
         @SerialName("group_id")
         val groupId: Long,
         @SerialName("user_id")
         val userId: Long,
         @SerialName("file")
         val file: FileMeta,
-    ): IOneBotV12Event {
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.group_upload
-        override val postType: PostType = PostType.notice
-        override val time: Long = Clock.System.now().toEpochMilliseconds()
+    }
+}
+
+object IOneBotV12EventSerializer: KSerializer<OneBotV12Event> {
+    override val descriptor: SerialDescriptor = serialDescriptor<OneBotV12Event>()
+    override fun serialize(encoder: Encoder, value: OneBotV12Event) {
+        (encoder as JsonEncoder).encodeJsonElement(buildJsonObject {
+            put("self_id", value.selfId)
+            put("id", value.id)
+            put("time", value.time)
+            put("type", value.type.name)
+            put("detail_type", value.detailType.name)
+            put("sub_type", value.subType?.name ?: "")
+            for ((key, param) in MystereJson.encodeToJsonElement(value.params).jsonObject) {
+                if (key == MystereJsonClassDiscriminator) {
+                    continue
+                }
+                put(key, param)
+            }
+        })
+    }
+
+    override fun deserialize(decoder: Decoder): OneBotV12Event {
+        throw NotImplementedError("Unnecessary implementation")
+    }
+}
+
+object CustomEventSerializer: KSerializer<OneBotV12Event.CustomEvent> {
+    override val descriptor: SerialDescriptor = serialDescriptor<OneBotV12Event.CustomEvent>()
+    override fun serialize(encoder: Encoder, value: OneBotV12Event.CustomEvent) {
+        (encoder as JsonEncoder).encodeJsonElement(value.data)
+    }
+    override fun deserialize(decoder: Decoder): OneBotV12Event.CustomEvent {
+        throw NotImplementedError("Unnecessary implementation")
     }
 }

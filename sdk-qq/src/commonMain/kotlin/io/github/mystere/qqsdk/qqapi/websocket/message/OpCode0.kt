@@ -11,6 +11,10 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.longOrNull
 
 object OpCode0 {
     @Serializable
@@ -102,14 +106,91 @@ object OpCode0 {
     ): OpCodeData
 
     @Serializable
-    data class GroupAddRobot(
+    data class GuildInfo(
+        @SerialName("description")
+        val description: String,
+        @SerialName("icon")
+        val icon: String,
+        @SerialName("id")
+        val id: String,
+        @SerialName("joined_at")
+        val joinedAt: Timestamp,
+        @SerialName("max_members")
+        val maxMembers: Int,
+        @SerialName("member_count")
+        val memberCount: Int,
+        @SerialName("name")
+        val name: String,
+        @SerialName("op_user_id")
+        val opUserId: String,
+        @SerialName("owner_id")
+        val ownerId: String,
+    ): OpCodeData
+
+    @Serializable
+    data class ChannelInfo(
+        @SerialName("guild_id")
+        val guildId: String,
+        @SerialName("id")
+        val id: String,
+        @SerialName("name")
+        val name: String,
+        @SerialName("op_user_id")
+        val opUserId: Int,
+        @SerialName("owner_id")
+        val ownerId: String,
+        @SerialName("sub_type")
+        val subType: String,
+        @SerialName("type")
+        val type: String,
+    ): OpCodeData
+
+    @Serializable
+    data class GuildMember(
+        @SerialName("guild_id")
+        val guildId: String,
+        @SerialName("user")
+        val user: User,
+        @SerialName("nick")
+        val nick: String,
+        @SerialName("roles")
+        val roles: List<String>,
+        @SerialName("joined_at")
+        val joinedAt: Timestamp,
+        @SerialName("op_user_id")
+        val opUserId: Int,
+    ): OpCodeData
+
+    @Serializable
+    data class AudioLiveChannelMember(
+        @SerialName("guild_id")
+        val guildId: String,
+        @SerialName("uschannel_id")
+        val channelId: User,
+        // 2-音视频子频道 5-直播子频道
+        @SerialName("channel_type")
+        val channelType: Int,
+        @SerialName("user_id")
+        val userId: String,
+    ): OpCodeData
+
+    @Serializable
+    data class GroupRobot(
         @SerialName("timestamp")
-        val timestamp: Timestamp,
+        val timestamp: Int,
         @SerialName("group_openid")
-        val groupOpenid: Timestamp,
+        val groupOpenid: String,
         @SerialName("op_member_openid")
-        val opMemberOpenid: Timestamp,
-    )
+        val opMemberOpenid: String,
+    ): OpCodeData
+
+    @Serializable
+    data class UserRobot(
+        @SerialName("timestamp")
+        val timestamp: Int,
+        @SerialName("openid")
+        val openid: String,
+    ): OpCodeData
 }
 
 typealias Timestamp = @Serializable(with = TimestampSerializer::class) Long
@@ -117,7 +198,8 @@ object TimestampSerializer: KSerializer<Timestamp> {
     override val descriptor: SerialDescriptor = serialDescriptor<Long>()
 
     override fun deserialize(decoder: Decoder): Timestamp {
-        return Instant.parse(decoder.decodeString()).toEpochMilliseconds()
+        val value = (decoder as JsonDecoder).decodeJsonElement().jsonPrimitive
+        return value.longOrNull ?: Instant.parse(value.content).toEpochMilliseconds()
     }
 
     override fun serialize(encoder: Encoder, value: Timestamp) {

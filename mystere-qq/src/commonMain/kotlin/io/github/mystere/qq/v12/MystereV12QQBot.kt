@@ -1,7 +1,7 @@
 package io.github.mystere.qq.v12
 
 import io.github.mystere.onebot.IOneBotActionResp
-import io.github.mystere.onebot.v12.IOneBotV12Event
+import io.github.mystere.onebot.v12.OneBotV12Event
 import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.onebot.v12.OneBotV12ActionResp
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
@@ -16,22 +16,97 @@ import kotlinx.serialization.json.JsonElement
 class MystereV12QQBot(
     config: QQBot.Config,
     connection: IOneBotV12Connection,
-): IMystereQQBot<OneBotV12Action, IOneBotV12Event, OneBotV12ActionResp>(config, connection) {
+): IMystereQQBot<OneBotV12Action, OneBotV12Event, OneBotV12ActionResp>(config, connection) {
     override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
 
-    override suspend fun processGuildMessage(originType: String, message: OpCode0.GuildMessage) {
+    override suspend fun processGuildMessageEvent(originType: String, message: OpCode0.GuildMessage) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun processGroupMessage(originType: String, message: OpCode0.GroupMessage) {
+    override suspend fun processGroupMessageEvent(originType: String, message: OpCode0.GroupMessage) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun processC2CMessage(originType: String, message: OpCode0.C2CMessage) {
+    override suspend fun processC2CMessageEvent(originType: String, message: OpCode0.C2CMessage) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun processGroupAddRobot(originType: String, message: OpCode0.GroupAddRobot) {
+    override suspend fun processGuildCreateEvent(originType: String, message: OpCode0.GuildInfo) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGuildUpdateEvent(originType: String, message: OpCode0.GuildInfo) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGuildDeleteEvent(originType: String, message: OpCode0.GuildInfo) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processChannelCreateEvent(originType: String, message: OpCode0.ChannelInfo) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processChannelUpdateEvent(originType: String, message: OpCode0.ChannelInfo) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processChannelDeleteEvent(originType: String, message: OpCode0.ChannelInfo) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGuildMemberAddEvent(originType: String, message: OpCode0.GuildMember) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGuildMemberUpdateEvent(originType: String, message: OpCode0.GuildMember) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGuildMemberRemoveEvent(originType: String, message: OpCode0.GuildMember) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processAudioLiveChannelEnterEvent(
+        originType: String,
+        message: OpCode0.AudioLiveChannelMember
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processAudioLiveChannelExitEvent(originType: String, message: OpCode0.AudioLiveChannelMember) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGroupAddRobotEvent(originType: String, message: OpCode0.GroupRobot) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGroupDelRobotEvent(originType: String, message: OpCode0.GroupRobot) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGroupMsgRejectEvent(originType: String, message: OpCode0.GroupRobot) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processGroupMsgReceiveEvent(originType: String, message: OpCode0.GroupRobot) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processFriendAddEvent(originType: String, message: OpCode0.UserRobot) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processFriendDelEvent(originType: String, message: OpCode0.UserRobot) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processC2CMsgRejectEvent(originType: String, message: OpCode0.UserRobot) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun processC2CMsgReceiveEvent(originType: String, message: OpCode0.UserRobot) {
         TODO("Not yet implemented")
     }
 

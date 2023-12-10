@@ -4,6 +4,7 @@ import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.UniWebsocketClient
 import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.onebot.v12.OneBotV12ActionResp
+import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.websocket.*
@@ -14,17 +15,19 @@ import kotlinx.serialization.encodeToString
 
 
 internal class ReverseWebSocketConnection(
-    ownBotId: String,
     override val originConfig: ReverseWebSocket,
-): IOneBotV12Connection(ownBotId, originConfig) {
-    private val log = KotlinLogging.logger("OneBotV12Connection(ownBotId: $ownBotId)")
+): IOneBotV12Connection(originConfig) {
+    private val log: KLogger by lazy {
+        KotlinLogging.logger("OneBotV12Connection(ownBotId: $ownBotId)")
+    }
 
     private var _WebsocketClient: HttpClient? = null
     private val WebsocketClient: HttpClient get() = _WebsocketClient!!
 
     private var UniWebsocket: DefaultClientWebSocketSession? = null
 
-    override suspend fun connect() {
+    override suspend fun connect(ownBotId: String) {
+        super.connect(ownBotId)
         _WebsocketClient = UniWebsocketClient()
         coroutineScope.launch(Dispatchers.IO) {
             val childScope = CoroutineScope(coroutineScope.coroutineContext + Job())

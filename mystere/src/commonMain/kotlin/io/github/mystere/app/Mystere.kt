@@ -125,10 +125,8 @@ object Mystere: CliktCommand(), AutoCloseable {
                 )
                 else -> throw IllegalArgumentException("Unknown bot type: $type")
             }
+            botInstance.connect()
             bots[botInstance.botId] = botInstance
-        }
-        for ((_, bot) in bots) {
-            bot.connect()
         }
     }
 

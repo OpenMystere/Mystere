@@ -1,22 +1,42 @@
 package io.github.mystere.onebot.v11
 
+import io.github.mystere.core.util.MystereJson
+import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.onebot.IOneBotEvent
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import kotlinx.datetime.Clock
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.*
 
-@Serializable
-sealed interface IOneBotV11Event: IOneBotEvent {
-    @SerialName("id")
-    val id: String?
-    @SerialName("post_type")
-    val postType: PostType
-    @SerialName("self_id")
-    val selfId: String
+@Serializable(with = IOneBotV11EventSerializer::class)
+data class OneBotV11Event(
+    val id: String? = null,
+    val postType: PostType,
+    val selfId: String,
+    val time: Long = Clock.System.now().toEpochMilliseconds(),
+    val params: Data,
+): IOneBotEvent {
+    constructor(
+        id: String?,
+        postType: PostType,
+        selfId: String,
+        time: Long,
+        params: JsonObject,
+    ): this(
+        id, postType, selfId,
+        time, CustomEvent(params)
+    )
 
-    @SerialName("time")
-    val time: Long
+    @Serializable
+    sealed interface Data: IOneBotEvent.Data
+
+    @Serializable(with = CustomEventSerializer::class)
+    data class CustomEvent(
+        val data: JsonObject
+    ): Data
 
     enum class PostType {
         message, notice, request, meta_event;
@@ -44,9 +64,9 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         @SerialName("card")
         val card: String? = null,
         @SerialName("nickname")
-        val nickname: String? = null,
+        val nickname: String = "用户",
         @SerialName("sex")
-        val sex: Sex? = null,
+        val sex: Sex = Sex.unknown,
         @SerialName("age")
         val age: Int? = null,
     )
@@ -54,8 +74,6 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     // 私聊消息
     @Serializable
     data class MessagePrivate(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("sub_type")
         val subType: MessageSubType,
         @SerialName("message_id")
@@ -70,22 +88,14 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val sender: Sender,
         @SerialName("user_id")
         val userId: String,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
+    ): Data {
         @SerialName("message_type")
         val messageType: MessageType = MessageType.private
-        @SerialName("post_type")
-        override val postType: PostType = PostType.message
     }
 
     // 消息
     @Serializable
     data class Message(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("message_type")
         val messageType: MessageType = MessageType.group,
         @SerialName("sub_type")
@@ -112,14 +122,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val channelId: String? = null,
         @SerialName("anonymous")
         val anonymous: Anonymous? = null,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.message
-
+    ): Data {
         @Serializable
         data class Anonymous(
             @SerialName("id")
@@ -144,19 +147,11 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     }
     @Serializable
     data class MetaLifecycle(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("sub_type")
         val subType: LifecycleSubType,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
+    ): Data {
         @SerialName("meta_event_type")
         val metaEventType: MetaEventType = MetaEventType.lifecycle
-        @SerialName("post_type")
-        override val postType: PostType = PostType.meta_event
     }
 
     // 心跳
@@ -169,19 +164,11 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     )
     @Serializable
     data class MetaHeartbeat(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("state")
         val state: HeartbeatStatus,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
+    ): Data {
         @SerialName("meta_event_type")
         val metaEventType: MetaEventType = MetaEventType.heartbeat
-        @SerialName("post_type")
-        override val postType: PostType = PostType.meta_event
     }
 
 
@@ -213,42 +200,27 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     )
     @Serializable
     data class NoticeGroupFileUpload(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("group_id")
         val groupId: String,
         @SerialName("user_id")
         val userId: String,
         @SerialName("file")
         val file: FileMeta,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.group_upload
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
     }
 
     // 群管理员变动
+    @Serializable
     data class NoticeGroupAdminChange(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("sub_type")
         val subType: SubType,
         @SerialName("group_id")
         val groupId: String,
         @SerialName("user_id")
         val userId: String,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.group_admin
 
@@ -258,9 +230,8 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     }
 
     // 群成员减少
+    @Serializable
     data class NoticeGroupMemberDecrease(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("sub_type")
         val subType: SubType,
         @SerialName("group_id")
@@ -269,13 +240,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val userId: String,
         @SerialName("operator_id")
         val operatorId: Long,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.group_decrease
 
@@ -285,9 +250,8 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     }
 
     // 群成员增加
+    @Serializable
     data class NoticeGroupMemberIncrease(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("sub_type")
         val subType: SubType,
         @SerialName("group_id")
@@ -296,13 +260,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val userId: String,
         @SerialName("operator_id")
         val operatorId: Long,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.group_increase
 
@@ -312,9 +270,8 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     }
 
     // 群禁言
+    @Serializable
     data class NoticeGroupBan(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("sub_type")
         val subType: SubType,
         @SerialName("group_id")
@@ -325,13 +282,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val operatorId: Long,
         @SerialName("duration")
         val duration: Long,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.group_ban
 
@@ -341,83 +292,54 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     }
 
     // 群禁言
+    @Serializable
     data class NoticeFriendAdd(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("user_id")
         val userId: String,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.friend_add
     }
 
     // 群禁言
+    @Serializable
     data class NoticeGroupRecall(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("group_id")
         val groupId: String,
         @SerialName("user_id")
         val userId: String,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.group_recall
     }
 
     // 好友消息撤回
+    @Serializable
     data class NoticeFriendRecall(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("user_id")
         val userId: Long,
         @SerialName("message_id")
         val messageId: Long,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.friend_recall
     }
 
     // 群内戳一戳
+    @Serializable
     data class NoticeGroupPoke(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("user_id")
         val userId: Long,
         @SerialName("message_id")
         val messageId: Long,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.poke
     }
 
     // 群红包运气王
+    @Serializable
     data class NoticeLuckyKing(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("group_id")
         val groupId: Long,
         @SerialName("user_id")
@@ -426,13 +348,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val targetId: Long,
         @SerialName("sub_type")
         val subType: SubType,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.notify
 
@@ -442,9 +358,8 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     }
 
     // 群成员荣誉变更
+    @Serializable
     data class NoticeGroupHonorChange(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("group_id")
         val groupId: Long,
         @SerialName("user_id")
@@ -455,13 +370,7 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val subType: SubType,
         @SerialName("honor_type")
         val honorType: HonorType,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.notice
+    ): Data {
         @SerialName("notice_type")
         val noticeType: NoticeType = NoticeType.notify
 
@@ -483,19 +392,11 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     // 加好友请求
     @Serializable
     data class RequestFriendAdd(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("user_id")
         val userId: Long,
         @SerialName("comment")
         val comment: String,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.request
+    ): Data {
         @SerialName("request_type")
         val requestType: RequestType = RequestType.friend
     }
@@ -503,8 +404,6 @@ sealed interface IOneBotV11Event: IOneBotEvent {
     // 加群请求/邀请
     @Serializable
     data class RequestGroupAdd(
-        @SerialName("self_id")
-        override val selfId: String,
         @SerialName("group_id")
         val groupId: Long,
         @SerialName("user_id")
@@ -513,18 +412,83 @@ sealed interface IOneBotV11Event: IOneBotEvent {
         val comment: String,
         @SerialName("flag")
         val flag: String,
-        @SerialName("id")
-        override val id: String? = null,
-        @SerialName("time")
-        override val time: Long = Clock.System.now().toEpochMilliseconds(),
-    ): IOneBotV11Event {
-        @SerialName("post_type")
-        override val postType: PostType = PostType.request
+    ): Data {
         @SerialName("request_type")
         val requestType: RequestType = RequestType.group
 
         enum class SubType {
             add, invite
         }
+    }
+}
+
+inline fun <reified T: @Serializable Any> IOneBotV11Event(
+    id: String? = null,
+    postType: OneBotV11Event.PostType,
+    selfId: String,
+
+    time: Long = Clock.System.now().toEpochMilliseconds(),
+
+    params: T,
+) = OneBotV11Event(
+    id, postType, selfId, time,
+    OneBotV11Event.CustomEvent(
+        MystereJson.encodeToJsonElement(params).jsonObject
+    ),
+)
+fun <T: Any> IOneBotV11Event(
+    id: String? = null,
+    postType: OneBotV11Event.PostType,
+    selfId: String,
+
+    time: Long = Clock.System.now().toEpochMilliseconds(),
+
+    params: T,
+    serializer: KSerializer<T>,
+) = OneBotV11Event(
+    id, postType, selfId, time,
+    OneBotV11Event.CustomEvent(
+        MystereJson.encodeToJsonElement(serializer, params).jsonObject
+    ),
+)
+
+object IOneBotV11EventSerializer: KSerializer<OneBotV11Event> {
+    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+    override val descriptor: SerialDescriptor = buildSerialDescriptor(
+        serialName = "io.github.mystere.onebot.v11.BotV11Event",
+        kind = StructureKind.OBJECT
+    )
+
+    override fun serialize(encoder: Encoder, value: OneBotV11Event) {
+        (encoder as JsonEncoder).encodeJsonElement(buildJsonObject {
+            put("self_id", value.selfId)
+            put("id", value.id)
+            put("time", value.time)
+            put("post_type", value.postType.name)
+            for ((key, param) in MystereJson.encodeToJsonElement(value.params).jsonObject) {
+                if (key == MystereJsonClassDiscriminator) {
+                    continue
+                }
+                put(key, param)
+            }
+        })
+    }
+
+    override fun deserialize(decoder: Decoder): OneBotV11Event {
+        throw NotImplementedError("Unnecessary implementation")
+    }
+}
+
+object CustomEventSerializer: KSerializer<OneBotV11Event.CustomEvent> {
+    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+    override val descriptor: SerialDescriptor = buildSerialDescriptor(
+        serialName = "io.github.mystere.onebot.v11.BotV11Event\$CustomEvent",
+        kind = StructureKind.OBJECT
+    )
+    override fun serialize(encoder: Encoder, value: OneBotV11Event.CustomEvent) {
+        (encoder as JsonEncoder).encodeJsonElement(value.data)
+    }
+    override fun deserialize(decoder: Decoder): OneBotV11Event.CustomEvent {
+        throw NotImplementedError("Unnecessary implementation")
     }
 }

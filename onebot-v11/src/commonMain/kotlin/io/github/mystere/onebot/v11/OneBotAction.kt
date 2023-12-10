@@ -6,17 +6,13 @@ import io.github.mystere.core.util.MystereJson
 import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11MessageItem
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlinx.serialization.json.*
 import kotlin.reflect.KClass
-import kotlin.time.TimeSource
 
 @Serializable(with = OneBotV11ActionSerializer::class)
 data class OneBotV11Action(
@@ -105,7 +101,7 @@ data class OneBotV11Action(
         @SerialName("id")
         val id: String,
         @SerialName("type")
-        val type: IOneBotV11Event.PostType,
+        val type: OneBotV11Event.PostType,
         @SerialName("detail_type")
         val detailType: String = "",
         @SerialName("sub_type")
@@ -311,9 +307,9 @@ data class OneBotV11Action(
         val approve: Boolean = true,
         @SerialName("type")
         @JsonNames("sub_type")
-        val type: IOneBotV11Event.RequestGroupAdd.SubType? = null,
+        val type: OneBotV11Event.RequestGroupAdd.SubType? = null,
         @SerialName("reason")
-        val reason: IOneBotV11Event.RequestGroupAdd.SubType? = null,
+        val reason: OneBotV11Event.RequestGroupAdd.SubType? = null,
     ): Param
 
     @Serializable

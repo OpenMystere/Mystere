@@ -4,8 +4,11 @@ import io.github.mystere.core.lazyMystereScope
 import io.github.mystere.onebot.OneBotConnectionException
 import io.github.mystere.onebot.v11.OneBotV11Action
 import io.github.mystere.core.util.MystereJson
+import io.github.mystere.core.util.MystereJsonClassDiscriminator
 import io.github.mystere.core.util.UniWebsocketClient
 import io.github.mystere.onebot.v11.OneBotV11ActionResp
+import io.github.mystere.onebot.v11.OneBotV11Event
+import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.api.*
@@ -17,8 +20,7 @@ import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.*
 
 
 fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
@@ -30,10 +32,11 @@ fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {
 }
 
 internal class ReverseWebSocketConnection(
-    ownBotId: String,
     override val originConfig: ReverseWebSocket,
-): IOneBotV11Connection(ownBotId, originConfig) {
-    private val log = KotlinLogging.logger("OneBotV11-ReverseWebSocketConnection(ownBotId: $ownBotId)")
+): IOneBotV11Connection(originConfig) {
+    private val log: KLogger by lazy {
+        KotlinLogging.logger("OneBotV11-ReverseWebSocketConnection(ownBotId: $ownBotId)")
+    }
 
     private var _WebsocketClient: HttpClient? = null
     private val WebsocketClient: HttpClient get() = _WebsocketClient!!
@@ -44,7 +47,8 @@ internal class ReverseWebSocketConnection(
     private var _EventWebsocket: DefaultClientWebSocketSession? = null
     private val EventWebsocket: DefaultClientWebSocketSession get() = (_EventWebsocket ?: _UniWebsocket)!!
 
-    override suspend fun connect() {
+    override suspend fun connect(ownBotId: String) {
+        super.connect(ownBotId)
         _WebsocketClient = UniWebsocketClient().config {
             applySelfIdHeader(ownBotId)
         }
@@ -69,12 +73,13 @@ internal class ReverseWebSocketConnection(
                     } else {
                         throw OneBotConnectionException("url not set or apiUrl and eventUrl both not set!")
                     }
+                    log.info { "WebSocket connected!" }
                     while (true) {
+                        log.debug { "waiting for new onebot action" }
+                        val action = MystereJson.decodeFromJsonElement<OneBotV11Action>(
+                            ApiWebsocket.receiveDeserialized<JsonElement>()
+                        )
                         try {
-                            log.debug { "waiting for new onebot action" }
-                            val action = MystereJson.decodeFromJsonElement<OneBotV11Action>(
-                                ApiWebsocket.receiveDeserialized<JsonElement>()
-                            )
                             log.debug { "new onebot action! action: ${action.rawAction}" }
                             childScope.launch(Dispatchers.IO) {
                                 val result = CompletableDeferred<OneBotV11ActionResp>()
@@ -106,13 +111,13 @@ internal class ReverseWebSocketConnection(
             }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            for (event in eventChannel) {
+            for (event: OneBotV11Event in eventChannel) {
                 try {
-                    log.info { "receive event: ${event::class}" }
+                    log.info { "receive event: ${event.params::class}" }
                     val rawEvent = MystereJson.encodeToString(event)
                     log.debug { "receive event: $rawEvent" }
                     EventWebsocket.send(Frame.Text(rawEvent))
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     log.warn(e) { "event send error" }
                 }
             }

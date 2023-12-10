@@ -3,6 +3,7 @@ package io.github.mystere.onebot.v11.connection
 import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.OneBotConnectionException
 import io.github.mystere.onebot.v11.OneBotV11ActionResp
+import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
@@ -13,10 +14,11 @@ import io.ktor.server.websocket.*
 import kotlinx.coroutines.*
 
 internal class WebSocketConnection(
-    ownBotId: String,
     override val originConfig: WebSocket,
-): IOneBotV11Connection(ownBotId, originConfig) {
-    private val log = KotlinLogging.logger("OneBotV11-WebSocketConnection(ownBotId: $ownBotId)")
+): IOneBotV11Connection(originConfig) {
+    private val log: KLogger by lazy {
+        KotlinLogging.logger("OneBotV11-WebSocketConnection(ownBotId: $ownBotId)")
+    }
 
     private var ApiConnection: ApplicationEngine? = null
     private var EventConnection: ApplicationEngine? = null
@@ -24,7 +26,8 @@ internal class WebSocketConnection(
     private val ApiApplication: Application? get() = ApiConnection?.application
     private val EventApplication: Application? get() = EventConnection?.application
 
-    override suspend fun connect() {
+    override suspend fun connect(ownBotId: String) {
+        super.connect(ownBotId)
         coroutineScope.launch(Dispatchers.IO) {
             if (originConfig.url != null) {
                 val urlListen = Url(originConfig.url)

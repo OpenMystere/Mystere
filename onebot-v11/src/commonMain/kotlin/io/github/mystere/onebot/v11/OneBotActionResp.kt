@@ -1,13 +1,15 @@
 package io.github.mystere.onebot.v11
 
 import io.github.mystere.core.util.ListDelegateSerializer
+import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.IOneBotActionResp
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import io.github.mystere.core.util.simpleClassSerialDescriptor
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.buildSerialDescriptor
+import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
@@ -25,6 +27,17 @@ data class OneBotV11ActionResp(
     @SerialName("echo")
     val echo: JsonElement? = null,
 ): IOneBotActionResp {
+    constructor(
+        status: IOneBotActionResp.Status,
+        retcode: RetCode,
+        message: String,
+        data: JsonElement?,
+        echo: JsonElement?,
+    ): this(
+        status, retcode, message,
+        CustomResp(data ?: JsonNull), echo
+    )
+
     @Serializable(with = RetCodeSerializer::class)
     sealed class RetCode(
         override val rawCode: Int,
@@ -39,6 +52,11 @@ data class OneBotV11ActionResp(
     }
     @Serializable
     sealed interface Data: IOneBotActionResp.Data
+
+    @Serializable(with = CustomRespSerializer::class)
+    data class CustomResp(
+        val content: JsonElement
+    ): Data
 
 
     /**
@@ -61,13 +79,13 @@ data class OneBotV11ActionResp(
         @SerialName("time")
         val time: Long,
         @SerialName("message_type")
-        val messageType: IOneBotV11Event.MessageType,
+        val messageType: OneBotV11Event.MessageType,
         @SerialName("message_id")
         val messageId: String,
         @SerialName("real_id")
         val realId: String,
         @SerialName("sender")
-        val sender: IOneBotV11Event.Sender,
+        val sender: OneBotV11Event.Sender,
     ): Data
 
     /**
@@ -89,7 +107,7 @@ data class OneBotV11ActionResp(
         @SerialName("nickname")
         val nickname: String,
         @SerialName("sex")
-        val sex: IOneBotV11Event.Sex,
+        val sex: OneBotV11Event.Sex,
         @SerialName("age")
         val age: Int,
     ): Data
@@ -108,7 +126,7 @@ data class OneBotV11ActionResp(
             @SerialName("nickname")
             val nickname: String,
             @SerialName("sex")
-            val sex: IOneBotV11Event.Sex,
+            val sex: OneBotV11Event.Sex,
             @SerialName("age")
             val age: Int,
         )
@@ -151,7 +169,7 @@ data class OneBotV11ActionResp(
         @SerialName("card")
         val card: String,
         @SerialName("sex")
-        val sex: IOneBotV11Event.Sex,
+        val sex: OneBotV11Event.Sex,
         @SerialName("age")
         val age: Int,
         @SerialName("area")
@@ -479,6 +497,38 @@ data class OneBotV11ActionResp(
         }
     }
 }
+
+inline fun <reified T: @Serializable Any> OneBotV11ActionResp(
+    status: IOneBotActionResp.Status,
+    retcode: OneBotV11ActionResp.RetCode,
+    message: String,
+    data: T?,
+    echo: JsonElement?,
+) = OneBotV11ActionResp(
+    status, retcode, message,
+    OneBotV11ActionResp.CustomResp(
+        MystereJson.encodeToJsonElement(data)
+    ), echo,
+)
+
+fun <T: Any> OneBotV11ActionResp(
+    status: IOneBotActionResp.Status,
+    retcode: OneBotV11ActionResp.RetCode,
+    message: String,
+    data: T?,
+    serializer: KSerializer<T>,
+    echo: JsonElement?,
+) = OneBotV11ActionResp(
+    status, retcode, message,
+    data?.let {
+        OneBotV11ActionResp.CustomResp(
+            MystereJson.encodeToJsonElement(serializer, it)
+        )
+    } ?: OneBotV11ActionResp.CustomResp(JsonNull),
+    echo,
+)
+
+
 private val codes: HashMap<Int, OneBotV11ActionResp.RetCode> = hashMapOf(
     0 to OneBotV11ActionResp.RetCode.OK,
     1400 to OneBotV11ActionResp.RetCode.BadRequest,
@@ -533,5 +583,23 @@ object GetTopicChannelFeedsRespSerializer: ListDelegateSerializer<OneBotV11Actio
     override val descriptor: SerialDescriptor = simpleClassSerialDescriptor<OneBotV11ActionResp.GetTopicChannelFeedsResp>()
     override fun newList(result: ArrayList<OneBotV11ActionResp.GetTopicChannelFeedsResp.FeedInfo>): OneBotV11ActionResp.GetTopicChannelFeedsResp {
         return OneBotV11ActionResp.GetTopicChannelFeedsResp(result)
+    }
+}
+
+object CustomRespSerializer: KSerializer<OneBotV11ActionResp.CustomResp> {
+    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+    override val descriptor: SerialDescriptor = buildSerialDescriptor(
+        serialName = "io.github.mystere.onebot.v11.OneBotV11ActionResp\$CustomResp",
+        kind = StructureKind.OBJECT
+    )
+
+    override fun serialize(encoder: Encoder, value: OneBotV11ActionResp.CustomResp) {
+        (encoder as JsonEncoder).encodeJsonElement(value.content)
+    }
+
+    override fun deserialize(decoder: Decoder): OneBotV11ActionResp.CustomResp {
+        return OneBotV11ActionResp.CustomResp(
+            (decoder as JsonDecoder).decodeJsonElement()
+        )
     }
 }

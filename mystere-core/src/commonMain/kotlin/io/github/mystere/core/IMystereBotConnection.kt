@@ -5,9 +5,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.serialization.Serializable
 
 abstract class IMystereBotConnection<ActionT: Any, EventT: Any, RespT: Any> private constructor(
-    val ownBotId: String,
     private val _eventChannel: Channel<EventT>,
     private val _actionChannel: Channel<Pair<ActionT, CompletableDeferred<RespT>>>,
     open val originConfig: IConfig<ActionT>? = null,
@@ -18,16 +18,19 @@ abstract class IMystereBotConnection<ActionT: Any, EventT: Any, RespT: Any> priv
     protected val actionChannel: SendChannel<Pair<ActionT, CompletableDeferred<RespT>>> = _actionChannel
 
     protected constructor(
-        ownBotId: String,
         originConfig: IConfig<ActionT>? = null,
-    ): this(ownBotId, Channel(), Channel(), originConfig)
+    ): this(Channel(), Channel(), originConfig)
 
-    abstract suspend fun connect()
+    private var _ownBotId: String? = null
+    val ownBotId: String get() = _ownBotId ?: throw IllegalStateException("Connection has not been connected!")
+    open suspend fun connect(ownBotId: String) {
+        _ownBotId = ownBotId
+    }
     abstract suspend fun disconnect()
 
     interface IConfig<ActionT: Any> {
         fun createConnection(
             ownBotId: String,
-        ): IMystereBotConnection<ActionT, out Any, out Any>
+        ): IMystereBotConnection<out Any, out Any, out Any>
     }
 }

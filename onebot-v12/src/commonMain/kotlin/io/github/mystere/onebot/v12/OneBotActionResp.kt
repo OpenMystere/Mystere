@@ -9,8 +9,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.*
 
 @Serializable
 data class OneBotV12ActionResp(
@@ -21,12 +20,20 @@ data class OneBotV12ActionResp(
     @SerialName("message")
     val message: String = "success.",
     @SerialName("data")
-    val data: JsonElement? = null,
+    val data: Data? = null,
     @SerialName("echo")
     val echo: JsonElement? = null,
 ): IOneBotActionResp {
-    @Serializable
-    sealed interface Data: IOneBotActionResp.Data
+    constructor(
+        status: IOneBotActionResp.Status,
+        retcode: RetCode,
+        message: String,
+        data: JsonElement?,
+        echo: JsonElement?,
+    ): this(
+        status, retcode, message,
+        CustomResp(data ?: JsonNull), echo
+    )
 
     @Serializable(with = RetCodeSerializer::class)
     sealed class RetCode(
@@ -67,7 +74,46 @@ data class OneBotV12ActionResp(
 
         data class Custom(override val rawCode: Int): RetCode(rawCode)
     }
+
+    @Serializable
+    sealed interface Data: IOneBotActionResp.Data
+
+    @Serializable(with = CustomRespSerializer::class)
+    data class CustomResp(
+        val content: JsonElement
+    ): Data
 }
+
+inline fun <reified T: @Serializable Any> OneBotV12ActionResp(
+    status: IOneBotActionResp.Status,
+    retcode: OneBotV12ActionResp.RetCode,
+    message: String,
+    data: T?,
+    echo: JsonElement?,
+) = OneBotV12ActionResp(
+    status, retcode, message,
+    OneBotV12ActionResp.CustomResp(
+        MystereJson.encodeToJsonElement(data)
+    ), echo,
+)
+
+fun <T: Any> OneBotV12ActionResp(
+    status: IOneBotActionResp.Status,
+    retcode: OneBotV12ActionResp.RetCode,
+    message: String,
+    data: T?,
+    serializer: KSerializer<T>,
+    echo: JsonElement?,
+) = OneBotV12ActionResp(
+    status, retcode, message,
+    data?.let {
+        OneBotV12ActionResp.CustomResp(
+            MystereJson.encodeToJsonElement(serializer, it)
+        )
+    } ?: OneBotV12ActionResp.CustomResp(JsonNull),
+    echo,
+)
+
 private val codes: HashMap<Int, OneBotV12ActionResp.RetCode> = hashMapOf(
     0 to OneBotV12ActionResp.RetCode.Success,
 
@@ -121,3 +167,16 @@ inline fun <reified T: OneBotV12ActionResp.Data> OneBotV12ActionResp(
     message = message,
     echo = echo,
 )
+
+object CustomRespSerializer: KSerializer<OneBotV12ActionResp.CustomResp> {
+    override val descriptor: SerialDescriptor = serialDescriptor<OneBotV12ActionResp.CustomResp>()
+    override fun serialize(encoder: Encoder, value: OneBotV12ActionResp.CustomResp) {
+        (encoder as JsonEncoder).encodeJsonElement(value.content)
+    }
+
+    override fun deserialize(decoder: Decoder): OneBotV12ActionResp.CustomResp {
+        return OneBotV12ActionResp.CustomResp(
+            (decoder as JsonDecoder).decodeJsonElement()
+        )
+    }
+}

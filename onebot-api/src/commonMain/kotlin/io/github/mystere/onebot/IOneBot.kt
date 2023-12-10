@@ -5,13 +5,17 @@ import io.github.mystere.core.lazyMystereScope
 import kotlinx.coroutines.*
 
 abstract class IOneBot<EventT: IOneBotEvent, ActionT: IOneBotAction, RespT: IOneBotActionResp> protected constructor(
-    override val botId: String,
     protected val OneBotConnection: IOneBotConnection<ActionT, EventT, RespT>,
 ): IMystereBot<EventT> {
+    abstract override val botId: String
     protected val coroutineScope by lazyMystereScope()
 
     override suspend fun connect() {
-        OneBotConnection.connect()
+        throw NotImplementedError("Use connect(ownBotId: String) instead.")
+    }
+
+    protected suspend fun connect(ownBotId: String) {
+        OneBotConnection.connect(ownBotId)
 
         coroutineScope.launch(Dispatchers.IO) {
             val childScope = CoroutineScope(coroutineScope.coroutineContext + Job())

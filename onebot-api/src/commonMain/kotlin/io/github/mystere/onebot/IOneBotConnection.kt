@@ -3,10 +3,9 @@ package io.github.mystere.onebot
 import io.github.mystere.core.IMystereBotConnection
 
 abstract class IOneBotConnection<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT: IOneBotActionResp> protected constructor(
-    ownBotId: String,
     override val originConfig: IConfig<ActionT>
 ): IMystereBotConnection<ActionT, EventT, RespT>(
-    ownBotId, originConfig
+    originConfig
 ) {
     interface IConfig<ActionT: IOneBotAction>: IMystereBotConnection.IConfig<ActionT> {
         val url: String?
@@ -32,4 +31,6 @@ interface IOneBotActionResp {
     }
 }
 
-interface IOneBotEvent
+interface IOneBotEvent {
+    interface Data
+}

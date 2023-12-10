@@ -1,24 +1,21 @@
 package io.github.mystere.onebot.v11.connection
 
-import io.github.mystere.core.lazyMystereScope
 import io.github.mystere.onebot.IOneBotConnection
-import io.github.mystere.onebot.v11.IOneBotV11Event
+import io.github.mystere.onebot.v11.OneBotV11Event
 import io.github.mystere.onebot.v11.OneBotV11Action
 import io.github.mystere.onebot.v11.OneBotV11ActionResp
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 abstract class IOneBotV11Connection internal constructor(
-    ownBotId: String,
     originConfig: IConfig,
-): IOneBotConnection<OneBotV11Action, IOneBotV11Event, OneBotV11ActionResp>(
-    ownBotId, originConfig,
+): IOneBotConnection<OneBotV11Action, OneBotV11Event, OneBotV11ActionResp>(
+    originConfig,
 ) {
     interface IConfig: IOneBotConnection.IConfig<OneBotV11Action> {
         override fun createConnection(
             ownBotId: String,
-        ): IOneBotConnection<OneBotV11Action, IOneBotV11Event, OneBotV11ActionResp>
+        ): IOneBotConnection<OneBotV11Action, OneBotV11Event, OneBotV11ActionResp>
     }
 
     @Serializable
@@ -37,7 +34,7 @@ abstract class IOneBotV11Connection internal constructor(
         override fun createConnection(
             ownBotId: String
         ): IOneBotV11Connection {
-            return ReverseWebSocketConnection(ownBotId, this)
+            return ReverseWebSocketConnection(this)
         }
     }
 
@@ -53,7 +50,7 @@ abstract class IOneBotV11Connection internal constructor(
         override fun createConnection(
             ownBotId: String
         ): IOneBotV11Connection {
-            return WebSocketConnection(ownBotId, this)
+            return WebSocketConnection(this)
         }
     }
 
