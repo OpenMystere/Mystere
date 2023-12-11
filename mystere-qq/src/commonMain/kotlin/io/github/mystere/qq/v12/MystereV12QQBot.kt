@@ -5,7 +5,7 @@ import io.github.mystere.onebot.v12.OneBotV12Event
 import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.onebot.v12.OneBotV12ActionResp
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
-import io.github.mystere.qq.IMystereQQBot
+import io.github.mystere.qq.*
 import io.github.mystere.qqsdk.QQBot
 import io.github.mystere.qqsdk.qqapi.dto.CodeMessageDataDto
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
@@ -17,8 +17,6 @@ class MystereV12QQBot(
     config: QQBot.Config,
     connection: IOneBotV12Connection,
 ): IMystereQQBot<OneBotV12Action, OneBotV12Event, OneBotV12ActionResp>(config, connection) {
-    override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
-
     override suspend fun processGuildMessageEvent(originType: String, message: OpCode0.GuildMessage) {
         TODO("Not yet implemented")
     }
@@ -31,84 +29,117 @@ class MystereV12QQBot(
         TODO("Not yet implemented")
     }
 
-    override suspend fun processGuildCreateEvent(originType: String, message: OpCode0.GuildInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processGuildEvent(eventType: GuildEventType, message: OpCode0.GuildInfo) {
+        OneBotConnection.send(OneBotV12Event(
+            id = message.id,
+            selfId = config.appId,
+            type = OneBotV12Event.Type.notice,
+            detailType = QQNoticeType.guild,
+            subType = eventType,
+            params = OneBotV12QQEvent.GuildEvent(
+                description = message.description,
+                icon = message.icon,
+                joinedAt = message.joinedAt,
+                maxMembers = message.maxMembers,
+                name = message.name,
+                opUserId = message.opUserId,
+                memberCount = message.memberCount,
+                ownerId = message.ownerId,
+            ),
+            serializer = OneBotV12QQEvent.GuildEvent.serializer()
+        ))
     }
 
-    override suspend fun processGuildUpdateEvent(originType: String, message: OpCode0.GuildInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processChannelEvent(eventType: ChannelEventType, message: OpCode0.ChannelInfo) {
+        OneBotConnection.send(OneBotV12Event(
+            id = message.id,
+            selfId = config.appId,
+            type = OneBotV12Event.Type.notice,
+            detailType = QQNoticeType.channel,
+            subType = eventType,
+            params = OneBotV12QQEvent.ChannelEvent(
+                guildId = message.guildId,
+                name = message.name,
+                opUserId = message.opUserId,
+                ownerId = message.ownerId,
+                channelSubType = message.subType,
+                channelType = message.type,
+            ),
+            serializer = OneBotV12QQEvent.ChannelEvent.serializer()
+        ))
     }
 
-    override suspend fun processGuildDeleteEvent(originType: String, message: OpCode0.GuildInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processGuildMemberEvent(eventType: GuildMemberEventType, message: OpCode0.GuildMember) {
+        OneBotConnection.send(OneBotV12Event(
+//            id = message.id,
+            selfId = config.appId,
+            type = OneBotV12Event.Type.notice,
+            detailType = QQNoticeType.guild_member,
+            subType = eventType,
+            params = OneBotV12QQEvent.GuildMemberEvent(
+                guildId = message.guildId,
+                user = message.user,
+                nick = message.nick,
+                roles = message.roles,
+                joinedAt = message.joinedAt,
+                opUserId = message.opUserId,
+            ),
+            serializer = OneBotV12QQEvent.GuildMemberEvent.serializer()
+        ))
     }
 
-    override suspend fun processChannelCreateEvent(originType: String, message: OpCode0.ChannelInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processAudioLiveChannelEvent(eventType: AudioLiveChannelEventType, message: OpCode0.AudioLiveChannelMember) {
+        OneBotConnection.send(OneBotV12Event(
+//            id = message.id,
+            selfId = config.appId,
+            type = OneBotV12Event.Type.notice,
+            detailType = QQNoticeType.audio_live_channel,
+            subType = eventType,
+            params = OneBotV12QQEvent.AudioLiveChannelMemberEvent(
+                guildId = message.guildId,
+                channelId = message.channelId,
+                channelType = message.channelType,
+                userId = message.userId,
+            ),
+            serializer = OneBotV12QQEvent.AudioLiveChannelMemberEvent.serializer()
+        ))
     }
 
-    override suspend fun processChannelUpdateEvent(originType: String, message: OpCode0.ChannelInfo) {
-        TODO("Not yet implemented")
+
+    override suspend fun processGroupRobotEvent(eventType: GroupRobotEventType, message: OpCode0.GroupRobot) {
+        OneBotConnection.send(OneBotV12Event(
+//            id = message.id,
+            selfId = config.appId,
+            type = OneBotV12Event.Type.notice,
+            detailType = QQNoticeType.group_robot,
+            subType = eventType,
+            params = OneBotV12QQEvent.GroupRobotEvent(
+                timestamp = message.timestamp,
+                groupOpenid = message.groupOpenid,
+                opMemberOpenid = message.opMemberOpenid,
+            ),
+            serializer = OneBotV12QQEvent.GroupRobotEvent.serializer()
+        ))
     }
 
-    override suspend fun processChannelDeleteEvent(originType: String, message: OpCode0.ChannelInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processUserRobotEvent(eventType: UserRobotEventType, message: OpCode0.UserRobot) {
+        OneBotConnection.send(OneBotV12Event(
+//            id = message.id,
+            selfId = config.appId,
+            type = OneBotV12Event.Type.notice,
+            detailType = QQNoticeType.user_robot,
+            subType = eventType,
+            params = OneBotV12QQEvent.UserRobotEvent(
+                timestamp = message.timestamp,
+                openid = message.openid,
+            ),
+            serializer = OneBotV12QQEvent.UserRobotEvent.serializer()
+        ))
     }
 
-    override suspend fun processGuildMemberAddEvent(originType: String, message: OpCode0.GuildMember) {
-        TODO("Not yet implemented")
-    }
+    override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
 
-    override suspend fun processGuildMemberUpdateEvent(originType: String, message: OpCode0.GuildMember) {
-        TODO("Not yet implemented")
-    }
 
-    override suspend fun processGuildMemberRemoveEvent(originType: String, message: OpCode0.GuildMember) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processAudioLiveChannelEnterEvent(
-        originType: String,
-        message: OpCode0.AudioLiveChannelMember
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processAudioLiveChannelExitEvent(originType: String, message: OpCode0.AudioLiveChannelMember) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGroupAddRobotEvent(originType: String, message: OpCode0.GroupRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGroupDelRobotEvent(originType: String, message: OpCode0.GroupRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGroupMsgRejectEvent(originType: String, message: OpCode0.GroupRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGroupMsgReceiveEvent(originType: String, message: OpCode0.GroupRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processFriendAddEvent(originType: String, message: OpCode0.UserRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processFriendDelEvent(originType: String, message: OpCode0.UserRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processC2CMsgRejectEvent(originType: String, message: OpCode0.UserRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processC2CMsgReceiveEvent(originType: String, message: OpCode0.UserRobot) {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun onProcessInternalError(e: Throwable, originAction: OneBotV12Action): OneBotV12ActionResp {
         return OneBotV12ActionResp(

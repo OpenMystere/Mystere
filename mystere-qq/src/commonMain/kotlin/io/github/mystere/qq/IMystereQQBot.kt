@@ -78,79 +78,79 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
                 }
                 // 频道创建
                 "GUILD_CREATE" -> event.withData<OpCode0.GuildInfo> {
-                    processGuildCreateEvent(originType, this)
+                    processGuildEvent(GuildEventType.create, this)
                 }
                 // 频道更新
                 "GUILD_UPDATE" -> event.withData<OpCode0.GuildInfo> {
-                    processGuildUpdateEvent(originType, this)
+                    processGuildEvent(GuildEventType.update, this)
                 }
                 // 频道删除
                 "GUILD_DELETE" -> event.withData<OpCode0.GuildInfo> {
-                    processGuildDeleteEvent(originType, this)
+                    processGuildEvent(GuildEventType.create, this)
                 }
                 // 子频道创建
                 "CHANNEL_CREATE" -> event.withData<OpCode0.ChannelInfo> {
-                    processChannelCreateEvent(originType, this)
+                    processChannelEvent(ChannelEventType.create, this)
                 }
                 // 子频道更新
                 "CHANNEL_UPDATE" -> event.withData<OpCode0.ChannelInfo> {
-                    processChannelUpdateEvent(originType, this)
+                    processChannelEvent(ChannelEventType.update, this)
                 }
                 // 子频道删除
                 "CHANNEL_DELETE" -> event.withData<OpCode0.ChannelInfo> {
-                    processChannelDeleteEvent(originType, this)
+                    processChannelEvent(ChannelEventType.delete, this)
                 }
                 // 频道用户新增
                 "GUILD_MEMBER_ADD" -> event.withData<OpCode0.GuildMember> {
-                    processGuildMemberAddEvent(originType, this)
+                    processGuildMemberEvent(GuildMemberEventType.add, this)
                 }
                 // 频道用户更新
                 "GUILD_MEMBER_UPDATE" -> event.withData<OpCode0.GuildMember> {
-                    processGuildMemberUpdateEvent(originType, this)
+                    processGuildMemberEvent(GuildMemberEventType.update, this)
                 }
                 // 频道用户离开
                 "GUILD_MEMBER_REMOVE" -> event.withData<OpCode0.GuildMember> {
-                    processGuildMemberRemoveEvent(originType, this)
+                    processGuildMemberEvent(GuildMemberEventType.remove, this)
                 }
                 // 用户进入音视频/直播子频道时
                 "AUDIO_OR_LIVE_CHANNEL_MEMBER_ENTER" -> event.withData<OpCode0.AudioLiveChannelMember> {
-                    processAudioLiveChannelEnterEvent(originType, this)
+                    processAudioLiveChannelEvent(AudioLiveChannelEventType.enter, this)
                 }
                 // 用户离开音视频/直播子频道时
                 "AUDIO_OR_LIVE_CHANNEL_MEMBER_EXIT" -> event.withData<OpCode0.AudioLiveChannelMember> {
-                    processAudioLiveChannelExitEvent(originType, this)
+                    processAudioLiveChannelEvent(AudioLiveChannelEventType.exit, this)
                 }
                 // 机器人加入群聊
                 "GROUP_ADD_ROBOT" -> event.withData<OpCode0.GroupRobot> {
-                    processGroupAddRobotEvent(originType, this)
+                    processGroupRobotEvent(GroupRobotEventType.add, this)
                 }
                 // 机器人退出群聊
                 "GROUP_DEL_ROBOT" -> event.withData<OpCode0.GroupRobot> {
-                    processGroupDelRobotEvent(originType, this)
+                    processGroupRobotEvent(GroupRobotEventType.del, this)
                 }
                 // 群聊拒绝机器人主动消息
                 "GROUP_MSG_REJECT" -> event.withData<OpCode0.GroupRobot> {
-                    processGroupMsgRejectEvent(originType, this)
+                    processGroupRobotEvent(GroupRobotEventType.reject, this)
                 }
                 // 群聊接受机器人主动消息
                 "GROUP_MSG_RECEIVE" -> event.withData<OpCode0.GroupRobot> {
-                    processGroupMsgReceiveEvent(originType, this)
+                    processGroupRobotEvent(GroupRobotEventType.receive, this)
                 }
                 // 用户添加机器人
                 "FRIEND_ADD" -> event.withData<OpCode0.UserRobot> {
-                    processFriendAddEvent(originType, this)
+                    processUserRobotEvent(UserRobotEventType.add, this)
                 }
                 // 用户删除机器人
                 "FRIEND_DEL" -> event.withData<OpCode0.UserRobot> {
-                    processFriendDelEvent(originType, this)
+                    processUserRobotEvent(UserRobotEventType.del, this)
                 }
                 // 用户拒绝机器人主动消息
                 "C2C_MSG_REJECT" -> event.withData<OpCode0.UserRobot> {
-                    processC2CMsgRejectEvent(originType, this)
+                    processUserRobotEvent(UserRobotEventType.reject, this)
                 }
                 // 用户允许机器人主动消息
                 "C2C_MSG_RECEIVE" -> event.withData<OpCode0.UserRobot> {
-                    processC2CMsgReceiveEvent(originType, this)
+                    processUserRobotEvent(UserRobotEventType.receive, this)
                 }
             }
             else -> { }
@@ -160,25 +160,12 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
     protected abstract suspend fun processGuildMessageEvent(originType: String, message: OpCode0.GuildMessage)
     protected abstract suspend fun processGroupMessageEvent(originType: String, message: OpCode0.GroupMessage)
     protected abstract suspend fun processC2CMessageEvent(originType: String, message: OpCode0.C2CMessage)
-    protected abstract suspend fun processGuildCreateEvent(originType: String, message: OpCode0.GuildInfo)
-    protected abstract suspend fun processGuildUpdateEvent(originType: String, message: OpCode0.GuildInfo)
-    protected abstract suspend fun processGuildDeleteEvent(originType: String, message: OpCode0.GuildInfo)
-    protected abstract suspend fun processChannelCreateEvent(originType: String, message: OpCode0.ChannelInfo)
-    protected abstract suspend fun processChannelUpdateEvent(originType: String, message: OpCode0.ChannelInfo)
-    protected abstract suspend fun processChannelDeleteEvent(originType: String, message: OpCode0.ChannelInfo)
-    protected abstract suspend fun processGuildMemberAddEvent(originType: String, message: OpCode0.GuildMember)
-    protected abstract suspend fun processGuildMemberUpdateEvent(originType: String, message: OpCode0.GuildMember)
-    protected abstract suspend fun processGuildMemberRemoveEvent(originType: String, message: OpCode0.GuildMember)
-    protected abstract suspend fun processAudioLiveChannelEnterEvent(originType: String, message: OpCode0.AudioLiveChannelMember)
-    protected abstract suspend fun processAudioLiveChannelExitEvent(originType: String, message: OpCode0.AudioLiveChannelMember)
-    protected abstract suspend fun processGroupAddRobotEvent(originType: String, message: OpCode0.GroupRobot)
-    protected abstract suspend fun processGroupDelRobotEvent(originType: String, message: OpCode0.GroupRobot)
-    protected abstract suspend fun processGroupMsgRejectEvent(originType: String, message: OpCode0.GroupRobot)
-    protected abstract suspend fun processGroupMsgReceiveEvent(originType: String, message: OpCode0.GroupRobot)
-    protected abstract suspend fun processFriendAddEvent(originType: String, message: OpCode0.UserRobot)
-    protected abstract suspend fun processFriendDelEvent(originType: String, message: OpCode0.UserRobot)
-    protected abstract suspend fun processC2CMsgRejectEvent(originType: String, message: OpCode0.UserRobot)
-    protected abstract suspend fun processC2CMsgReceiveEvent(originType: String, message: OpCode0.UserRobot)
+    protected abstract suspend fun processGuildEvent(eventType: GuildEventType, message: OpCode0.GuildInfo)
+    protected abstract suspend fun processChannelEvent(eventType: ChannelEventType, message: OpCode0.ChannelInfo)
+    protected abstract suspend fun processGuildMemberEvent(eventType: GuildMemberEventType, message: OpCode0.GuildMember)
+    protected abstract suspend fun processAudioLiveChannelEvent(eventType: AudioLiveChannelEventType, message: OpCode0.AudioLiveChannelMember)
+    protected abstract suspend fun processGroupRobotEvent(eventType: GroupRobotEventType, message: OpCode0.GroupRobot)
+    protected abstract suspend fun processUserRobotEvent(eventType: UserRobotEventType, message: OpCode0.UserRobot)
 
     final override suspend fun disconnect() {
         mQQBot.disconnect()

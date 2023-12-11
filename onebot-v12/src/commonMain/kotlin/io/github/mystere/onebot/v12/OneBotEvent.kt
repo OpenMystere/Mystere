@@ -208,6 +208,34 @@ data class OneBotV12Event(
     }
 }
 
+inline fun <reified T: @Serializable IOneBotEvent.Data> OneBotV12Event(
+    id: String? = null,
+    type: OneBotV12Event.Type,
+    detailType: Enum<*>,
+    subType: Enum<*>? = null,
+    selfId: String,
+    time: Long = Clock.System.now().toEpochMilliseconds(),
+    params: T,
+) = OneBotV12Event(
+    id, type, detailType, subType, selfId, time, OneBotV12Event.CustomEvent(
+        MystereJson.encodeToJsonElement(params).jsonObject
+    ),
+)
+fun <T: IOneBotEvent.Data> OneBotV12Event(
+    id: String? = null,
+    type: OneBotV12Event.Type,
+    detailType: Enum<*>,
+    subType: Enum<*>? = null,
+    selfId: String,
+    time: Long = Clock.System.now().toEpochMilliseconds(),
+    params: T,
+    serializer: KSerializer<T>,
+) = OneBotV12Event(
+    id, type, detailType, subType, selfId, time, OneBotV12Event.CustomEvent(
+        MystereJson.encodeToJsonElement(serializer, params).jsonObject
+    ),
+)
+
 object IOneBotV12EventSerializer: KSerializer<OneBotV12Event> {
     override val descriptor: SerialDescriptor = serialDescriptor<OneBotV12Event>()
     override fun serialize(encoder: Encoder, value: OneBotV12Event) {

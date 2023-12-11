@@ -4,6 +4,7 @@ plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.kotlin.plugin.serialization)
     alias(mystere.plugins.buildkonfig)
+    alias(mystere.plugins.sqldelight)
 }
 
 kotlin {
@@ -17,7 +18,7 @@ kotlin {
     }
     macosArm64()
     macosX64()
-//    linuxArm64()
+    linuxArm64()
     linuxX64()
 //    mingwX64()
 
@@ -38,8 +39,6 @@ kotlin {
 
                 implementation(mystere.kotlinx.coroutines.core)
                 implementation(mystere.kotlinx.io.core)
-                implementation(mystere.clikt)
-                implementation(mystere.yamlkt)
 
                 implementation(project(":kotlinx-serialization-cqcode"))
 
@@ -90,6 +89,36 @@ kotlin {
 //        }
     }
 }
+
+sqldelight {
+    databases {
+        val pkgName = findProperty("mystere.lib.qq.pkgName")!!.toString()
+        val DBSqlite by creating {
+            packageName = pkgName
+            deriveSchemaFromMigrations = true
+            srcDirs(project.file("./src/commonMain/sqldelight-sqlite"))
+        }
+        val DBMySQL by creating {
+            packageName = pkgName
+            deriveSchemaFromMigrations = true
+            srcDirs(project.file("./src/commonMain/sqldelight-mysql"))
+            dialect(mystere.sqldelight.dialect.mysql)
+        }
+        val DBPostgreJVM by creating {
+            packageName = pkgName
+            deriveSchemaFromMigrations = true
+            srcDirs(project.file("./src/commonMain/sqldelight-mysql"))
+            dialect(mystere.sqldelight.dialect.postgresql.jvm)
+        }
+        val DBPostgreNative by creating {
+            packageName = pkgName
+            deriveSchemaFromMigrations = true
+            srcDirs(project.file("./src/commonMain/sqldelight-mysql"))
+            dialect(mystere.sqldelight.dialect.postgresql.native)
+        }
+    }
+}
+
 
 // https://github.com/JetBrains/compose-multiplatform/issues/3123#issuecomment-1699296352
 tasks.configureEach {

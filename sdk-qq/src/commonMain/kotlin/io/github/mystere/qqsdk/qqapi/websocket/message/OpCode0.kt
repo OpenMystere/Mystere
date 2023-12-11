@@ -2,8 +2,6 @@ package io.github.mystere.qqsdk.qqapi.websocket.message
 
 import io.github.mystere.qqsdk.qqapi.data.*
 import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,7 +10,7 @@ import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.JsonNames
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 
@@ -140,6 +138,7 @@ object OpCode0 {
         @SerialName("owner_id")
         val ownerId: String,
         @SerialName("sub_type")
+        @JsonNames("sub_type")
         val subType: String,
         @SerialName("type")
         val type: String,
@@ -203,8 +202,9 @@ object TimestampSerializer: KSerializer<Timestamp> {
     }
 
     override fun serialize(encoder: Encoder, value: Timestamp) {
-        encoder.encodeString(Instant.fromEpochMilliseconds(value)
-            .toLocalDateTime(TimeZone.currentSystemDefault())
-            .toString())
+//        encoder.encodeString(Instant.fromEpochMilliseconds(value)
+//            .toLocalDateTime(TimeZone.currentSystemDefault())
+//            .toString())
+        encoder.encodeLong(value)
     }
 }

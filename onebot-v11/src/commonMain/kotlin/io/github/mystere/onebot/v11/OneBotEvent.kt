@@ -11,7 +11,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 
-@Serializable(with = IOneBotV11EventSerializer::class)
+@Serializable(with = OneBotV11EventSerializer::class)
 data class OneBotV11Event(
     val id: String? = null,
     val postType: PostType,
@@ -422,7 +422,7 @@ data class OneBotV11Event(
     }
 }
 
-inline fun <reified T: @Serializable Any> IOneBotV11Event(
+inline fun <reified T: @Serializable IOneBotEvent.Data> OneBotV11Event(
     id: String? = null,
     postType: OneBotV11Event.PostType,
     selfId: String,
@@ -436,7 +436,7 @@ inline fun <reified T: @Serializable Any> IOneBotV11Event(
         MystereJson.encodeToJsonElement(params).jsonObject
     ),
 )
-fun <T: Any> IOneBotV11Event(
+fun <T: IOneBotEvent.Data> OneBotV11Event(
     id: String? = null,
     postType: OneBotV11Event.PostType,
     selfId: String,
@@ -446,13 +446,12 @@ fun <T: Any> IOneBotV11Event(
     params: T,
     serializer: KSerializer<T>,
 ) = OneBotV11Event(
-    id, postType, selfId, time,
-    OneBotV11Event.CustomEvent(
+    id, postType, selfId, time, OneBotV11Event.CustomEvent(
         MystereJson.encodeToJsonElement(serializer, params).jsonObject
     ),
 )
 
-object IOneBotV11EventSerializer: KSerializer<OneBotV11Event> {
+object OneBotV11EventSerializer: KSerializer<OneBotV11Event> {
     @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     override val descriptor: SerialDescriptor = buildSerialDescriptor(
         serialName = "io.github.mystere.onebot.v11.BotV11Event",

@@ -4,15 +4,27 @@ plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.kotlin.plugin.serialization)
     alias(mystere.plugins.buildkonfig)
+    alias(mystere.plugins.ktor)
 }
 
 kotlin {
     jvm {
         jvmToolchain(17)
+        withJava()
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()
             }
+        }
+        mainRun {
+            mainClass = "io.github.mystere.app.MystereKt"
+        }
+        java {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+        application {
+            mainClass = "io.github.mystere.app.MystereKt"
         }
     }
     listOf(

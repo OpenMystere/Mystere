@@ -5,13 +5,14 @@ agp = "8.1.1"
 ktor = "2.3.6"
 ktorfit = "1.10.2"
 buildkonfig = "0.14.0"
-sqldelight = "2.0.0"
+sqldelight = "2.0.1"
+postgres-native = "0.0.11"
 
 kotlinx-coroutines = "1.7.3"
 kotlinx-serialization = "1.6.1"
 kotlinx-serialization-message-pack = "0.0.2"
 kotlinx-io= "0.3.0"
-kotlinx-datetime= "0.4.1"
+kotlinx-datetime = "0.4.1"
 
 kotlin-logging = "5.1.0"
 slf4j = "2.0.9"
@@ -56,7 +57,10 @@ ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", vers
 sqldelight-driver-jdbc = { group = "app.cash.sqldelight", name = "jdbc-driver", version.ref = "sqldelight" }
 sqldelight-driver-sqlite-native = { group = "app.cash.sqldelight", name = "native-driver", version.ref = "sqldelight" }
 sqldelight-driver-sqlite-jvm = { group = "app.cash.sqldelight", name = "sqlite-driver", version.ref = "sqldelight" }
+sqldelight-driver-postgresql-native = { group = "app.softwork", name = "postgres-native-sqldelight-driver", version.ref = "postgres-native" }
 sqldelight-dialect-mysql = { group = "app.cash.sqldelight", name = "mysql-dialect", version.ref = "sqldelight" }
+sqldelight-dialect-postgresql-jvm = { group = "app.cash.sqldelight", name = "postgresql-dialect", version.ref = "sqldelight" }
+sqldelight-dialect-postgresql-native = { group = "app.softwork", name = "postgres-native-sqldelight-dialect", version.ref = "postgres-native" }
 sqldelight-extensions-coroutines = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
 
 # :mystere

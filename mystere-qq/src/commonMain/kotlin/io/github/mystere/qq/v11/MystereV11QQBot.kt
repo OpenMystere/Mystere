@@ -8,11 +8,10 @@ import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11MessageItem
 import io.github.mystere.onebot.v11.cqcode.encodeToString
-import io.github.mystere.qq.IMystereQQBot
+import io.github.mystere.qq.*
 import io.github.mystere.qqsdk.QQBot
 import io.github.mystere.qqsdk.qqapi.data.MessageAttachment
 import io.github.mystere.qqsdk.qqapi.dto.CodeMessageDataDto
-import io.github.mystere.qqsdk.qqapi.dto.GroupMessageRequestDto
 import io.github.mystere.qqsdk.qqapi.http.messageIO_channel
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.mystere.serialization.cqcode.CQCode
@@ -100,122 +99,144 @@ class MystereV11QQBot internal constructor(
         ))
     }
 
-    override suspend fun processGuildCreateEvent(originType: String, message: OpCode0.GuildInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processGuildEvent(eventType: GuildEventType, message: OpCode0.GuildInfo) {
+        OneBotConnection.send(OneBotV11Event(
+            id = message.id,
+            selfId = config.appId,
+            postType = OneBotV11Event.PostType.notice,
+            params = OneBotQQEvent.GuildEvent(
+                subType = eventType,
+                description = message.description,
+                icon = message.icon,
+                joinedAt = message.joinedAt,
+                maxMembers = message.maxMembers,
+                name = message.name,
+                opUserId = message.opUserId,
+                memberCount = message.memberCount,
+                ownerId = message.ownerId,
+            ),
+            serializer = OneBotQQEvent.GuildEvent.serializer()
+        ))
     }
 
-    override suspend fun processGuildUpdateEvent(originType: String, message: OpCode0.GuildInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processChannelEvent(eventType: ChannelEventType, message: OpCode0.ChannelInfo) {
+        OneBotConnection.send(OneBotV11Event(
+            id = message.id,
+            selfId = config.appId,
+            postType = OneBotV11Event.PostType.notice,
+            params = OneBotQQEvent.ChannelEvent(
+                subType = eventType,
+                guildId = message.guildId,
+                name = message.name,
+                opUserId = message.opUserId,
+                ownerId = message.ownerId,
+                channelSubType = message.subType,
+                channelType = message.type,
+            ),
+            serializer = OneBotQQEvent.ChannelEvent.serializer()
+        ))
     }
 
-    override suspend fun processGuildDeleteEvent(originType: String, message: OpCode0.GuildInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processGuildMemberEvent(eventType: GuildMemberEventType, message: OpCode0.GuildMember) {
+        OneBotConnection.send(OneBotV11Event(
+//            id = message.id,
+            selfId = config.appId,
+            postType = OneBotV11Event.PostType.notice,
+            params = OneBotQQEvent.GuildMemberEvent(
+                subType = eventType,
+                guildId = message.guildId,
+                user = message.user,
+                nick = message.nick,
+                roles = message.roles,
+                joinedAt = message.joinedAt,
+                opUserId = message.opUserId,
+            ),
+            serializer = OneBotQQEvent.GuildMemberEvent.serializer()
+        ))
     }
 
-    override suspend fun processChannelCreateEvent(originType: String, message: OpCode0.ChannelInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processAudioLiveChannelEvent(eventType: AudioLiveChannelEventType, message: OpCode0.AudioLiveChannelMember) {
+        OneBotConnection.send(OneBotV11Event(
+//            id = message.id,
+            selfId = config.appId,
+            postType = OneBotV11Event.PostType.notice,
+            params = OneBotQQEvent.AudioLiveChannelMemberEvent(
+                subType = eventType,
+                guildId = message.guildId,
+                channelId = message.channelId,
+                channelType = message.channelType,
+                userId = message.userId,
+            ),
+            serializer = OneBotQQEvent.AudioLiveChannelMemberEvent.serializer()
+        ))
     }
 
-    override suspend fun processChannelUpdateEvent(originType: String, message: OpCode0.ChannelInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processGroupRobotEvent(eventType: GroupRobotEventType, message: OpCode0.GroupRobot) {
+        OneBotConnection.send(OneBotV11Event(
+//            id = message.id,
+            selfId = config.appId,
+            postType = OneBotV11Event.PostType.notice,
+            params = OneBotQQEvent.GroupRobotEvent(
+                subType = eventType,
+                timestamp = message.timestamp,
+                groupOpenid = message.groupOpenid,
+                opMemberOpenid = message.opMemberOpenid,
+            ),
+            serializer = OneBotQQEvent.GroupRobotEvent.serializer()
+        ))
     }
 
-    override suspend fun processChannelDeleteEvent(originType: String, message: OpCode0.ChannelInfo) {
-        TODO("Not yet implemented")
+    override suspend fun processUserRobotEvent(eventType: UserRobotEventType, message: OpCode0.UserRobot) {
+        OneBotConnection.send(OneBotV11Event(
+//            id = message.id,
+            selfId = config.appId,
+            postType = OneBotV11Event.PostType.notice,
+            params = OneBotQQEvent.UserRobotEvent(
+                subType = eventType,
+                timestamp = message.timestamp,
+                openid = message.openid,
+            ),
+            serializer = OneBotQQEvent.UserRobotEvent.serializer()
+        ))
     }
 
-    override suspend fun processGuildMemberAddEvent(originType: String, message: OpCode0.GuildMember) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGuildMemberUpdateEvent(originType: String, message: OpCode0.GuildMember) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGuildMemberRemoveEvent(originType: String, message: OpCode0.GuildMember) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processAudioLiveChannelEnterEvent(originType: String, message: OpCode0.AudioLiveChannelMember) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processAudioLiveChannelExitEvent(originType: String, message: OpCode0.AudioLiveChannelMember) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGroupAddRobotEvent(originType: String, message: OpCode0.GroupRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGroupDelRobotEvent(originType: String, message: OpCode0.GroupRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGroupMsgRejectEvent(originType: String, message: OpCode0.GroupRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processGroupMsgReceiveEvent(originType: String, message: OpCode0.GroupRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processFriendAddEvent(originType: String, message: OpCode0.UserRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processFriendDelEvent(originType: String, message: OpCode0.UserRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processC2CMsgRejectEvent(originType: String, message: OpCode0.UserRobot) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun processC2CMsgReceiveEvent(originType: String, message: OpCode0.UserRobot) {
-        TODO("Not yet implemented")
-    }
 
     private suspend fun processOneBotAction(rawAction: String, params: OneBotV11Action.Param, echo: JsonElement?): OneBotV11ActionResp? {
         return when (params) {
             is OneBotV11Action.SendGroupMsg -> processSendGroupMsgAction(params, echo)
             is OneBotV11Action.SendGuildChannelMsg -> processSendGuildChannelMsgAction(params, echo)
-            else -> return null
+            is OneBotV11Action.SendMsg ->
+                if (params.groupId != null) {
+                    processSendGroupMsgAction(OneBotV11Action.SendGroupMsg(
+                        groupId = params.groupId!!,
+                        message = params.message,
+                        messageSeq = params.messageSeq,
+                        autoEscape = params.autoEscape,
+                        originEvent = params.originEvent,
+                    ), echo)
+                } else if (params.userId != null) {
+                    processSendPrivateMsgAction(OneBotV11Action.SendPrivateMsg(
+                        userId = params.userId!!,
+                        message = params.message,
+                        messageSeq = params.messageSeq,
+                        autoEscape = params.autoEscape,
+                        originEvent = params.originEvent,
+                    ), echo)
+                } else {
+                    log.warn { "receive send_msg action but no user_id and group_id!" }
+                    null
+                }
+
+            else -> null
         }
     }
 
+    private suspend fun processSendPrivateMsgAction(params: OneBotV11Action.SendPrivateMsg, echo: JsonElement?): OneBotV11ActionResp {
+        TODO("Not yet implemented")
+    }
+
     private suspend fun processSendGroupMsgAction(params: OneBotV11Action.SendGroupMsg, echo: JsonElement?): OneBotV11ActionResp {
-        var originMessageId: String? = null
-        var originEventId: String? = null
-        if (params.originEvent != null) {
-            if (params.originEvent!!.type == OneBotV11Event.PostType.message) {
-                log.debug { "send passive message, reply message_id: ${params.originEvent!!.id}" }
-                originMessageId = params.originEvent!!.id
-            } else {
-                log.debug { "send passive message, reply event_id: ${params.originEvent!!.id}" }
-                originEventId = params.originEvent!!.id
-            }
-        } else {
-            log.debug { "send proactive message" }
-        }
-        params.message.asQQImageList()
-        val result = QQBotApi.messageIO_groups(
-            groupOpenId = params.groupId,
-            message = GroupMessageRequestDto(
-                content = params.message.asQQMessageContent(),
-                msgType = 0,
-                msgId = originMessageId,
-                eventId = originEventId,
-            )
-        )
-        return OneBotV11ActionResp(
-            status = IOneBotActionResp.Status.ok,
-            retcode = OneBotV11ActionResp.RetCode.OK,
-            data = OneBotV11ActionResp.MessageIdResp(
-                messageId = result.id,
-            ),
-            echo = echo,
-        )
+        TODO("Not yet implemented")
     }
 
     private suspend fun processSendGuildChannelMsgAction(params: OneBotV11Action.SendGuildChannelMsg, echo: JsonElement?): OneBotV11ActionResp {

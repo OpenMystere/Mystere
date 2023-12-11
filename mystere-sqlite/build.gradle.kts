@@ -3,7 +3,6 @@ import com.codingfeline.buildkonfig.compiler.FieldSpec
 plugins {
     alias(mystere.plugins.kotlin.multiplatform)
     alias(mystere.plugins.buildkonfig)
-    alias(mystere.plugins.sqldelight)
     alias(mystere.plugins.kotlin.plugin.serialization)
 }
 
@@ -18,8 +17,7 @@ kotlin {
     }
     macosArm64()
     macosX64()
-    // TODO: sqldelight
-//    linuxArm64()
+    linuxArm64()
     linuxX64()
     mingwX64()
 
@@ -51,29 +49,30 @@ kotlin {
         // macos
         val macosMain by getting {
             dependencies {
-
+                implementation(mystere.sqldelight.driver.sqlite.native)
+                implementation(mystere.sqldelight.driver.postgresql.native)
             }
         }
 
         // linux
         val linuxMain by getting {
             dependencies {
-
+                implementation(mystere.sqldelight.driver.sqlite.native)
+                implementation(mystere.sqldelight.driver.postgresql.native)
             }
         }
 
         // windows
-        val mingwX64Main by getting {
-            dependsOn(commonMain)
+        val mingwMain by getting {
             dependencies {
-
+                implementation(mystere.sqldelight.driver.sqlite.native)
             }
         }
 
         // native
         val nativeMain by getting {
             dependencies {
-                implementation(mystere.sqldelight.driver.sqlite.native)
+
             }
         }
     }
