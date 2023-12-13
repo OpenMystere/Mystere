@@ -27,3 +27,7 @@ enum class GroupRobotEventType {
 enum class UserRobotEventType {
     add, del, reject, receive,
 }
+
+enum class MessageReactionEventType {
+    add, remove,
+}

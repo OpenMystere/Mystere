@@ -138,7 +138,6 @@ object OpCode0 {
         @SerialName("owner_id")
         val ownerId: String,
         @SerialName("sub_type")
-        @JsonNames("sub_type")
         val subType: String,
         @SerialName("type")
         val type: String,
@@ -189,6 +188,20 @@ object OpCode0 {
         val timestamp: Int,
         @SerialName("openid")
         val openid: String,
+    ): OpCodeData
+
+    @Serializable
+    data class MessageReaction(
+        @SerialName("user_id")
+        val userId: String,
+        @SerialName("guild_id")
+        val guildId: String,
+        @SerialName("channel_id")
+        val channelId: String,
+        @SerialName("target")
+        val target: ReactionTarget,
+        @SerialName("emoji")
+        val emoji: Emoji,
     ): OpCodeData
 }
 

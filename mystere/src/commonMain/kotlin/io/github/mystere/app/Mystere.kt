@@ -11,6 +11,7 @@ import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
 import io.github.mystere.qqsdk.QQBot
 import io.github.mystere.sqlite.MystereDatabaseConfig
+import io.github.mystere.core.sqlite.setSqliteBasePath
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.io.buffered
@@ -63,13 +64,7 @@ object Mystere: CliktCommand(), AutoCloseable {
             return@runBlocking
         }
 
-        MystereDatabaseConfig.init(YamlGlobal.decodeFromString(
-            when (Config.database.type) {
-                MystereConfig.DatabaseConfig.Type.sqlite ->
-                    MystereDatabaseConfig.SqliteDetail.serializer()
-            },
-            YamlGlobal.encodeToString(Config.database.detail),
-        ))
+        setSqliteBasePath(Config.dbDir)
 
         for (bot in Config.bots) {
             val type = bot.type.lowercase()
@@ -161,8 +156,8 @@ data class MystereConfig(
     val debug: Boolean = false,
     @SerialName("bots")
     val bots: List<BotConfig> = listOf(),
-    @SerialName("database")
-    val database: DatabaseConfig,
+    @SerialName("db_dir")
+    val dbDir: String = "./data",
 ) {
     @Serializable
     data class BotConfig(
@@ -182,15 +177,4 @@ data class MystereConfig(
         @SerialName("detail")
         val detail: YamlMap,
     )
-    @Serializable
-    data class DatabaseConfig(
-        @SerialName("type")
-        val type: Type,
-        @SerialName("detail")
-        val detail: YamlMap,
-    ) {
-        enum class Type {
-            sqlite,
-        }
-    }
 }

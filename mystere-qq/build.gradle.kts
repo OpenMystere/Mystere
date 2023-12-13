@@ -43,7 +43,6 @@ kotlin {
                 implementation(project(":kotlinx-serialization-cqcode"))
 
                 implementation(project(":mystere-core"))
-                implementation(project(":mystere-sqlite"))
 
                 implementation(project(":sdk-qq"))
 
@@ -92,29 +91,11 @@ kotlin {
 
 sqldelight {
     databases {
-        val pkgName = findProperty("mystere.lib.qq.pkgName")!!.toString()
-        val DBSqlite by creating {
+        val pkgName = "${findProperty("mystere.lib.qq.pkgName")}.database"
+        val IQQDatabase by creating {
             packageName = pkgName
             deriveSchemaFromMigrations = true
-            srcDirs(project.file("./src/commonMain/sqldelight-sqlite"))
-        }
-        val DBMySQL by creating {
-            packageName = pkgName
-            deriveSchemaFromMigrations = true
-            srcDirs(project.file("./src/commonMain/sqldelight-mysql"))
-            dialect(mystere.sqldelight.dialect.mysql)
-        }
-        val DBPostgreJVM by creating {
-            packageName = pkgName
-            deriveSchemaFromMigrations = true
-            srcDirs(project.file("./src/commonMain/sqldelight-mysql"))
-            dialect(mystere.sqldelight.dialect.postgresql.jvm)
-        }
-        val DBPostgreNative by creating {
-            packageName = pkgName
-            deriveSchemaFromMigrations = true
-            srcDirs(project.file("./src/commonMain/sqldelight-mysql"))
-            dialect(mystere.sqldelight.dialect.postgresql.native)
+            srcDirs(project.file("./src/commonMain/sqldelight"))
         }
     }
 }

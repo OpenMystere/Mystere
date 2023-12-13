@@ -12,6 +12,9 @@ import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
 @Serializable(with = OneBotV11ActionSerializer::class)
@@ -25,7 +28,7 @@ data class OneBotV11Action(
             Action.valueOf(rawAction.replace("_async", "")
                 .replace("_rate_limited", ""))
         } catch (e: Exception) {
-            Action.unknown
+            Action.custom
         }
     }
     val async: Boolean by lazy { rawAction.contains("_async") }
@@ -34,7 +37,7 @@ data class OneBotV11Action(
     @Serializable
     sealed interface Param: IOneBotAction.Param
     @Serializable
-    data class Unknown(
+    data class CustomAction(
         val content: JsonElement?
     ): Param
     enum class Action(
@@ -93,7 +96,7 @@ data class OneBotV11Action(
         update_guild_role(UpdateGuildRole::class),
         create_guild_role(CreateGuildRole::class),
 
-        unknown(Unknown::class);
+        custom(CustomAction::class);
     }
 
     @Serializable
@@ -559,7 +562,7 @@ object OneBotV11ActionSerializer: KSerializer<OneBotV11Action> {
             )
         } catch (e: Exception) {
             return OneBotV11Action(
-                params = OneBotV11Action.Unknown(json["params"]),
+                params = OneBotV11Action.CustomAction(json["params"]),
                 rawAction = rawAction,
                 echo = echo,
             )
@@ -579,9 +582,10 @@ object OneBotV11ActionSerializer: KSerializer<OneBotV11Action> {
     }
 }
 
-inline fun <reified T: IOneBotAction.Param> OneBotV11Action.castCustom(crossinline block: T.() -> Unit) {
-    if (params !is OneBotV11Action.Unknown) {
-        throw IllegalStateException("You should only call OneBotV11Action.castCustom() when custom action!")
+@OptIn(ExperimentalContracts::class)
+inline fun <reified T: @Serializable Any, Ret> JsonElement?.castCustom(block: T.() -> Ret): Ret {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    MystereJson.decodeFromJsonElement<T>(params.content ?: JsonNull).run(block)
+    return block(MystereJson.decodeFromJsonElement<T>(this@castCustom!!))
 }

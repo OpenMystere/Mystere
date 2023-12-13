@@ -6,6 +6,7 @@ plugins {
     alias(mystere.plugins.ksp)
     alias(mystere.plugins.ktorfit)
     alias(mystere.plugins.buildkonfig)
+    alias(mystere.plugins.sqldelight)
 }
 
 kotlin {
@@ -51,6 +52,7 @@ kotlin {
                 implementation(mystere.ktor.client.cio)
                 implementation(mystere.slf4j.api)
                 implementation(mystere.logback.classic)
+                implementation(mystere.sqldelight.driver.sqlite.jvm)
             }
         }
 
@@ -69,13 +71,17 @@ kotlin {
         }
 
         // windows
-//        val mingwMain by getting {
-//            dependsOn(commonMain)
-//            dependencies {
-//                implementation(mystere.ktor.client.winhttp)
-////                implementation(mystere.ktor.server.cio)
-//            }
-//        }
+        val mingwMain by getting {
+            dependencies {
+
+            }
+        }
+
+        val nativeMain by getting {
+            dependencies {
+                implementation(mystere.sqldelight.driver.sqlite.native)
+            }
+        }
     }
 }
 

@@ -1,13 +1,17 @@
 package io.github.mystere.qq.v12
 
+import app.cash.sqldelight.EnumColumnAdapter
+import io.github.mystere.core.sqlite.createSqliteDriver
 import io.github.mystere.onebot.IOneBotActionResp
+import io.github.mystere.onebot.OneBotException
 import io.github.mystere.onebot.v12.OneBotV12Event
 import io.github.mystere.onebot.v12.OneBotV12Action
 import io.github.mystere.onebot.v12.OneBotV12ActionResp
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
 import io.github.mystere.qq.*
+import io.github.mystere.qq.database.IQQDatabase
 import io.github.mystere.qqsdk.QQBot
-import io.github.mystere.qqsdk.qqapi.dto.CodeMessageDataDto
+import io.github.mystere.qqsdk.qqapi.dto.QQCodeMessageDataDto
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -17,6 +21,18 @@ class MystereV12QQBot(
     config: QQBot.Config,
     connection: IOneBotV12Connection,
 ): IMystereQQBot<OneBotV12Action, OneBotV12Event, OneBotV12ActionResp>(config, connection) {
+    override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
+    override val QQDatabase: IQQDatabase by lazy {
+        IQQDatabase(
+            driver = createSqliteDriver(
+                IQQDatabase.Schema, "qq_${connection.versionName}_${config.appId}.db"
+            ),
+            messageAdapter = Message.Adapter(
+                typeAdapter = EnumColumnAdapter(),
+            ),
+        )
+    }
+
     override suspend fun processGuildMessageEvent(originType: String, message: OpCode0.GuildMessage) {
         TODO("Not yet implemented")
     }
@@ -137,7 +153,20 @@ class MystereV12QQBot(
         ))
     }
 
-    override val log: KLogger = KotlinLogging.logger("MystereV12QQBot(botId: ${config.appId})")
+    override suspend fun processMessageReactionEvent(
+        eventType: MessageReactionEventType,
+        message: OpCode0.MessageReaction
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun createSuccessResp(data: JsonElement?, echo: JsonElement?): OneBotV12ActionResp {
+        TODO("Not yet implemented")
+    }
+
+    override fun createFailedResp(e: OneBotException): OneBotV12ActionResp {
+        TODO("Not yet implemented")
+    }
 
 
 
@@ -160,7 +189,7 @@ class MystereV12QQBot(
                 )
         } catch (e1: Throwable) {
             when (e1) {
-                is CodeMessageDataDto ->
+                is QQCodeMessageDataDto ->
                     log.warn { "send request to qq openapi failed (code: ${e1.code}): ${e1.message}" }
                 else ->
                     log.warn(e1) { "action process error: ${e1.message}" }

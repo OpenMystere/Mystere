@@ -1,0 +1,24 @@
+import io.github.mystere.qq.QQMessageContent;
+import kotlin.Boolean;
+
+CREATE TABLE IF NOT EXISTS message (
+    id TEXT NOT NULL PRIMARY KEY,
+    content TEXT NOT NULL,
+    type TEXT AS QQMessageContent.Type NOT NULL,
+    deleted INTEGER AS Boolean NOT NULL
+);
+
+findMessageById:
+SELECT *
+FROM message
+WHERE id=?;
+
+saveMessage:
+INSERT OR REPLACE
+INTO message
+VALUES (?, ?, ?, ?);
+
+setMessageAsDeleted:
+UPDATE message
+SET deleted=1
+WHERE id=?;

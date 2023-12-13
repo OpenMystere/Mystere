@@ -19,14 +19,6 @@ import kotlin.reflect.KClass
 abstract class ICQCodeMessage<ItemT: ICQCodeMessageItem> protected constructor(
     private val chain: ArrayDeque<ItemT> = ArrayDeque()
 ): List<ItemT> by chain {
-    override fun toString(): String {
-        return StringBuilder().also {
-            for (item in chain) {
-                it.append(item.toString())
-            }
-        }.toString()
-    }
-
     override fun equals(other: Any?): Boolean {
         if (other !is List<*>) {
             return false

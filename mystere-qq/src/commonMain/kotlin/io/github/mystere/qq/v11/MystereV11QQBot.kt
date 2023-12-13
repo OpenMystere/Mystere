@@ -1,17 +1,23 @@
 package io.github.mystere.qq.v11
 
+import app.cash.sqldelight.EnumColumnAdapter
+import io.github.mystere.core.sqlite.createSqliteDriver
 import io.github.mystere.onebot.IOneBotActionResp
+import io.github.mystere.onebot.OneBotException
 import io.github.mystere.onebot.v11.OneBotV11Event
 import io.github.mystere.onebot.v11.OneBotV11Action
 import io.github.mystere.onebot.v11.OneBotV11ActionResp
 import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11Message
 import io.github.mystere.onebot.v11.cqcode.CQCodeV11MessageItem
+import io.github.mystere.onebot.v11.cqcode.encodeToJson
 import io.github.mystere.onebot.v11.cqcode.encodeToString
 import io.github.mystere.qq.*
+import io.github.mystere.qq.database.IQQDatabase
 import io.github.mystere.qqsdk.QQBot
 import io.github.mystere.qqsdk.qqapi.data.MessageAttachment
-import io.github.mystere.qqsdk.qqapi.dto.CodeMessageDataDto
+import io.github.mystere.qqsdk.qqapi.data.MessageReference
+import io.github.mystere.qqsdk.qqapi.dto.QQCodeMessageDataDto
 import io.github.mystere.qqsdk.qqapi.http.messageIO_channel
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.mystere.serialization.cqcode.CQCode
@@ -25,10 +31,27 @@ class MystereV11QQBot internal constructor(
     connection: IOneBotV11Connection,
 ): IMystereQQBot<OneBotV11Action, OneBotV11Event, OneBotV11ActionResp>(config, connection) {
     override val log: KLogger = KotlinLogging.logger("MystereV11QQBot(botId: ${config.appId})")
+    override val QQDatabase: IQQDatabase by lazy {
+        IQQDatabase(
+            driver = createSqliteDriver(
+                IQQDatabase.Schema, "qq_${connection.versionName}_${config.appId}.db"
+            ),
+            messageAdapter = Message.Adapter(
+                typeAdapter = EnumColumnAdapter(),
+            ),
+        )
+    }
 
     override suspend fun processGuildMessageEvent(originType: String, message: OpCode0.GuildMessage) {
-        val cqMsg: CQCodeV11Message = parseAsV11Message(message.content, message.attachments)
-            ?: return
+        val cqMsg: CQCodeV11Message = parseAsV11Message(
+            message.content, message.attachments, message.messageReference
+        ) ?: return
+        QQDatabase.messageQueries.saveMessage(
+            id = message.id,
+            content = CQCode.encodeToJson(cqMsg).toString(),
+            type = QQMessageContent.Type.guild,
+            deleted = false,
+        )
         OneBotConnection.send(OneBotV11Event(
             id = message.id,
             selfId = botId,
@@ -57,8 +80,9 @@ class MystereV11QQBot internal constructor(
     }
 
     override suspend fun processGroupMessageEvent(originType: String, message: OpCode0.GroupMessage) {
-        val cqMsg: CQCodeV11Message = parseAsV11Message(message.content, message.attachments)
-            ?: return
+        val cqMsg: CQCodeV11Message = parseAsV11Message(
+            message.content, message.attachments, null
+        ) ?: return
         OneBotConnection.send(OneBotV11Event(
             id = message.id,
             selfId = config.appId,
@@ -79,8 +103,9 @@ class MystereV11QQBot internal constructor(
     }
 
     override suspend fun processC2CMessageEvent(originType: String, message: OpCode0.C2CMessage) {
-        val cqMsg: CQCodeV11Message = parseAsV11Message(message.content, message.attachments)
-            ?: return
+        val cqMsg: CQCodeV11Message = parseAsV11Message(
+            message.content, message.attachments, null
+        ) ?: return
         OneBotConnection.send(OneBotV11Event(
             id = message.id,
             selfId = config.appId,
@@ -200,6 +225,27 @@ class MystereV11QQBot internal constructor(
         ))
     }
 
+    override suspend fun processMessageReactionEvent(eventType: MessageReactionEventType, message: OpCode0.MessageReaction) {
+        TODO("Not yet implemented")
+    }
+
+    override fun createSuccessResp(data: JsonElement?, echo: JsonElement?): OneBotV11ActionResp {
+        return OneBotV11ActionResp(
+            status = IOneBotActionResp.Status.ok,
+            retcode = OneBotV11ActionResp.RetCode.OK,
+            data = data?.let {
+                OneBotV11ActionResp.CustomResp(
+                    content = it
+                )
+            },
+            echo = echo,
+        )
+    }
+
+    override fun createFailedResp(e: OneBotException): OneBotV11ActionResp {
+        TODO("Not yet implemented")
+    }
+
 
     private suspend fun processOneBotAction(rawAction: String, params: OneBotV11Action.Param, echo: JsonElement?): OneBotV11ActionResp? {
         return when (params) {
@@ -226,7 +272,15 @@ class MystereV11QQBot internal constructor(
                     log.warn { "receive send_msg action but no user_id and group_id!" }
                     null
                 }
-
+            is OneBotV11Action.CustomAction -> {
+                val action: OneBotQQAction = try {
+                    OneBotQQAction.valueOf(rawAction.replace("_async", "")
+                        .replace("_rate_limited", ""))
+                } catch (e: Throwable) {
+                    return null
+                }
+                return processOneBotQQAction(action, params.content, echo)
+            }
             else -> null
         }
     }
@@ -273,18 +327,17 @@ class MystereV11QQBot internal constructor(
 
     override suspend fun processOneBotAction(action: OneBotV11Action): OneBotV11ActionResp {
         try {
-            return processOneBotAction(action.rawAction, action.params, action.echo)
-                ?: OneBotV11ActionResp(
-                    status = IOneBotActionResp.Status.failed,
-                    retcode = OneBotV11ActionResp.RetCode.NotFound,
-                    echo = action.echo,
-                )
+            return processOneBotAction(
+                action.rawAction, action.params, action.echo
+            ) ?: OneBotV11ActionResp(
+                status = IOneBotActionResp.Status.failed,
+                retcode = OneBotV11ActionResp.RetCode.NotFound,
+                echo = action.echo,
+            )
         } catch (e1: Throwable) {
             when (e1) {
-                is CodeMessageDataDto ->
-                    log.warn { "send request to qq openapi failed (code: ${e1.code}): ${e1.message}" }
-                else ->
-                    log.warn(e1) { "action process error: ${e1.message}" }
+                is QQCodeMessageDataDto -> log.warn { "send request to qq openapi failed (code: ${e1.code}): ${e1.message}" }
+                else -> log.warn(e1) { "action process error: ${e1.message}" }
             }
             return OneBotV11ActionResp(
                 status = IOneBotActionResp.Status.failed,
@@ -304,8 +357,17 @@ class MystereV11QQBot internal constructor(
         )
     }
 
-    private fun parseAsV11Message(content: String, attachments: List<MessageAttachment>): CQCodeV11Message? {
+    private fun parseAsV11Message(
+        content: String,
+        attachments: List<MessageAttachment>,
+        messageReference: MessageReference?,
+    ): CQCodeV11Message? {
         var message: CQCodeV11Message? = null
+        messageReference?.let {
+            message += CQCodeV11MessageItem.Reply(
+                it.messageId
+            )
+        }
         for (item in content.asV11MessageContent()) {
             message += item
         }

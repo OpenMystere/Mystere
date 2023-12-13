@@ -1,26 +1,23 @@
 package io.github.mystere.onebot.v11.connection
 
-import io.github.mystere.core.lazyMystereScope
+import io.github.mystere.core.util.MystereJson
+import io.github.mystere.core.util.UniWebsocketClient
 import io.github.mystere.onebot.OneBotConnectionException
 import io.github.mystere.onebot.v11.OneBotV11Action
-import io.github.mystere.core.util.MystereJson
-import io.github.mystere.core.util.MystereJsonClassDiscriminator
-import io.github.mystere.core.util.UniWebsocketClient
 import io.github.mystere.onebot.v11.OneBotV11ActionResp
 import io.github.mystere.onebot.v11.OneBotV11Event
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.api.*
-
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
-
 import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 
 
 fun HttpClientConfig<*>.applySelfIdHeader(selfId: String) {

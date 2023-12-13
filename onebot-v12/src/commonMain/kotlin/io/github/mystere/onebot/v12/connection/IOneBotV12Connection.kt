@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 abstract class IOneBotV12Connection internal constructor(
     originConfig: IConfig,
 ): IOneBotConnection<OneBotV12Action, OneBotV12Event, OneBotV12ActionResp>(originConfig) {
+    final override val versionName: String = "12"
 
     interface IConfig: IOneBotConnection.IConfig<OneBotV12Action> {
         override fun createConnection(

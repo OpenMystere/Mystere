@@ -54,7 +54,6 @@ kotlin {
                 implementation(mystere.yamlkt)
 
                 implementation(project(":mystere-core"))
-                implementation(project(":mystere-sqlite"))
                 implementation(project(":mystere-qq"))
 
                 implementation(project(":sdk-qq"))

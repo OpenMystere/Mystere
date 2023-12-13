@@ -7,6 +7,8 @@ abstract class IOneBotConnection<ActionT: IOneBotAction, EventT: IOneBotEvent, R
 ): IMystereBotConnection<ActionT, EventT, RespT>(
     originConfig
 ) {
+    abstract val versionName: String
+
     interface IConfig<ActionT: IOneBotAction>: IMystereBotConnection.IConfig<ActionT> {
         val url: String?
 

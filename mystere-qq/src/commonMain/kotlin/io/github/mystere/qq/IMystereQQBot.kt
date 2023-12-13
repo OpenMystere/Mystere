@@ -4,19 +4,26 @@ import io.github.mystere.core.IMystereBotConnection
 import io.github.mystere.onebot.*
 import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
+import io.github.mystere.qq.database.IQQDatabase
 import io.github.mystere.qq.v11.MystereV11QQBot
 import io.github.mystere.qq.v12.MystereV12QQBot
 import io.github.mystere.qqsdk.QQBot
+import io.github.mystere.qqsdk.qqapi.dto.MessageReactionDto
 import io.github.mystere.qqsdk.qqapi.http.IQQBotAPI
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.mystere.qqsdk.qqapi.websocket.withData
+import io.github.mystere.core.util.MystereJson
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 
 abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT: IOneBotActionResp> protected constructor(
     protected val config: QQBot.Config,
     connection: IOneBotConnection<ActionT, EventT, RespT>,
 ): IOneBot<EventT, ActionT, RespT>(connection) {
+    protected abstract val QQDatabase: IQQDatabase
+
     override val botId: String get() = botUser.id
 
     private var _botUser: OpCode0.Ready.User? = null
@@ -152,6 +159,14 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
                 "C2C_MSG_RECEIVE" -> event.withData<OpCode0.UserRobot> {
                     processUserRobotEvent(UserRobotEventType.receive, this)
                 }
+                // 用户对消息进行表情表态时
+                "MESSAGE_REACTION_ADD" -> event.withData<OpCode0.MessageReaction> {
+                    processMessageReactionEvent(MessageReactionEventType.add, this)
+                }
+                // 用户对消息进行取消表情表态时
+                "MESSAGE_REACTION_REMOVE" -> event.withData<OpCode0.MessageReaction> {
+                    processMessageReactionEvent(MessageReactionEventType.remove, this)
+                }
             }
             else -> { }
         }
@@ -166,6 +181,41 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
     protected abstract suspend fun processAudioLiveChannelEvent(eventType: AudioLiveChannelEventType, message: OpCode0.AudioLiveChannelMember)
     protected abstract suspend fun processGroupRobotEvent(eventType: GroupRobotEventType, message: OpCode0.GroupRobot)
     protected abstract suspend fun processUserRobotEvent(eventType: UserRobotEventType, message: OpCode0.UserRobot)
+    protected abstract suspend fun processMessageReactionEvent(eventType: MessageReactionEventType, message: OpCode0.MessageReaction)
+
+    protected suspend fun processOneBotQQAction(action: OneBotQQAction, params: JsonElement?, echo: JsonElement?): RespT? {
+        try {
+            val respData: OneBotQQActionRespData? = when (action) {
+                OneBotQQAction.message_reaction_put -> params.castQQCustom<MessageReactionDto> {
+                    processMessageReactionPutAction(this)
+                }
+                OneBotQQAction.message_reaction_delete -> params.castQQCustom<MessageReactionDto> {
+                    processMessageReactionDeleteAction(this)
+                }
+                OneBotQQAction.message_reaction_get -> params.castQQCustom<MessageReactionDto> {
+                    processMessageReactionGetAction(this)
+                }
+            }
+            return createSuccessResp(
+                data = respData?.let {
+                    MystereJson.encodeToJsonElement(it)
+                },
+                echo = echo,
+            )
+        } catch (e: OneBotException) {
+            return createFailedResp(e)
+        }
+    }
+    private suspend fun processMessageReactionPutAction(params: MessageReactionDto): OneBotQQActionRespData? {
+        return null
+    }
+    private suspend fun processMessageReactionDeleteAction(params: MessageReactionDto): OneBotQQActionRespData? {
+        return null
+    }
+    private suspend fun processMessageReactionGetAction(params: MessageReactionDto): OneBotQQActionRespData? {
+        return null
+    }
+
 
     final override suspend fun disconnect() {
         mQQBot.disconnect()
@@ -179,6 +229,11 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
     final override fun hashCode(): Int {
         return botId.hashCode()
     }
+    protected abstract fun createSuccessResp(
+        data: JsonElement? = null,
+        echo: JsonElement? = null,
+    ): RespT
+    protected abstract fun createFailedResp(e: OneBotException): RespT
 
     companion object {
         fun create(

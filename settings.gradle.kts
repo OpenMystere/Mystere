@@ -37,7 +37,6 @@ include(":onebot-v12")
 
 include(":mystere")
 include(":mystere-core")
-include(":mystere-sqlite")
 include(":mystere-qq")
 
 include(":sdk-qq")

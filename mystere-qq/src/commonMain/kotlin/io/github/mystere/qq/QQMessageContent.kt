@@ -19,4 +19,8 @@ object QQMessageContent {
     fun emojiReg(faceId: String): String {
         return "<emoji:$faceId>"
     }
+
+    enum class Type {
+        group, guild, c2c
+    }
 }

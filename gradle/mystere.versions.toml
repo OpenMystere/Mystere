@@ -62,6 +62,7 @@ sqldelight-dialect-mysql = { group = "app.cash.sqldelight", name = "mysql-dialec
 sqldelight-dialect-postgresql-jvm = { group = "app.cash.sqldelight", name = "postgresql-dialect", version.ref = "sqldelight" }
 sqldelight-dialect-postgresql-native = { group = "app.softwork", name = "postgres-native-sqldelight-dialect", version.ref = "postgres-native" }
 sqldelight-extensions-coroutines = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
+sqldelight-adapter-primitive = { group = "app.cash.sqldelight", name = "primitive-adapters", version.ref = "sqldelight" }
 
 # :mystere
 clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }

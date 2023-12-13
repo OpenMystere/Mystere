@@ -12,6 +12,8 @@ abstract class IOneBotV11Connection internal constructor(
 ): IOneBotConnection<OneBotV11Action, OneBotV11Event, OneBotV11ActionResp>(
     originConfig,
 ) {
+    final override val versionName: String = "11"
+
     interface IConfig: IOneBotConnection.IConfig<OneBotV11Action> {
         override fun createConnection(
             ownBotId: String,

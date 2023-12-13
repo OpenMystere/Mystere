@@ -5,7 +5,7 @@ import de.jensklingenberg.ktorfit.converter.Converter
 import de.jensklingenberg.ktorfit.internal.TypeData
 import io.github.mystere.core.MystereCore
 import io.github.mystere.core.util.*
-import io.github.mystere.qqsdk.qqapi.dto.CodeMessageDataDto
+import io.github.mystere.qqsdk.qqapi.dto.QQCodeMessageDataDto
 import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.client.*
 import io.ktor.client.plugins.api.*
@@ -79,7 +79,7 @@ object QQOpenApiConverterFactory: Converter.Factory {
         override suspend fun convert(response: HttpResponse): Any {
             val body = MystereJson.decodeFromString<JsonElement>(response.bodyAsText())
             if (body is JsonObject && body.containsKey("code") && body.containsKey("message")) {
-                throw CodeMessageDataDto(
+                throw QQCodeMessageDataDto(
                     code = body["code"]!!.jsonPrimitive.int,
                     message = body["message"]!!.jsonPrimitive.content,
                     data = body["data"] ?: JsonNull,
