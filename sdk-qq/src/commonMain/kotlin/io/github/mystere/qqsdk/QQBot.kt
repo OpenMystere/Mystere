@@ -7,6 +7,8 @@ import io.github.mystere.qqsdk.qqapi.http.QQAuthAPI
 import io.github.mystere.qqsdk.qqapi.http.QQBotAPI
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketConnection
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
+import io.github.mystere.qqsdk.qqapi.websocket.message.SingleIntent
+import io.github.mystere.qqsdk.qqapi.websocket.message.asIntent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -74,7 +76,7 @@ data class QQBot private constructor(
                     websocket = QQBotWebsocketConnection(
                         log = log,
                         url = BotAPI.gateway().url,
-                        isPrivate = config.private,
+                        intent = config.intent.asIntent(),
                         channel = EventChannel,
                     ) provider@{
                         return@provider accessToken
@@ -91,7 +93,7 @@ data class QQBot private constructor(
     sealed interface IConfig {
         val appId: String
         val clientSecret: String
-        val private: Boolean
+        val intent: List<SingleIntent>
     }
     @Serializable
     data class Config(
@@ -99,8 +101,8 @@ data class QQBot private constructor(
         override val appId: String,
         @SerialName("client-secret")
         override val clientSecret: String,
-        @SerialName("private")
-        override val private: Boolean = false,
+        @SerialName("intent")
+        override val intent: List<SingleIntent> = listOf(SingleIntent._DEFAULT),
     ): IConfig
     @Serializable
     data class MutableConfig internal constructor(
@@ -108,8 +110,8 @@ data class QQBot private constructor(
         override var appId: String,
         @SerialName("client-secret")
         override var clientSecret: String,
-        @SerialName("private")
-        override var private: Boolean = false,
+        @SerialName("intent")
+        override var intent: MutableList<SingleIntent> = mutableListOf(SingleIntent._DEFAULT),
     ): IConfig
 
     companion object {

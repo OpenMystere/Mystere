@@ -1,28 +1,20 @@
 package io.github.mystere.qqsdk.qqapi.http
 
-import de.jensklingenberg.ktorfit.http.Body
-import de.jensklingenberg.ktorfit.http.GET
-import de.jensklingenberg.ktorfit.http.Multipart
-import de.jensklingenberg.ktorfit.http.POST
-import io.github.mystere.core.util.DefaultHttpClient
+import de.jensklingenberg.ktorfit.http.*
+import io.github.mystere.core.util.*
 import io.github.mystere.qqsdk.qqapi.dto.*
-import io.github.mystere.core.util.MystereJson
-import io.github.mystere.qqsdk.qqapi.data.MessageArk
-import io.github.mystere.qqsdk.qqapi.data.MessageEmbed
-import io.github.mystere.qqsdk.qqapi.data.MessageMarkdown
-import io.github.mystere.qqsdk.qqapi.data.MessageReference
+import io.github.mystere.qqsdk.qqapi.data.*
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
+import io.ktor.http.Headers
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.buffered
-import kotlinx.io.files.Path
+import kotlinx.io.files.Path as FilePath
 import kotlinx.io.files.SystemFileSystem
-import kotlinx.io.readByteArray
 import kotlinx.serialization.encodeToString
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -50,34 +42,99 @@ interface IQQBotAPI {
     @Multipart
     @POST("channels/{channel_id}/messages")
     suspend fun _messageIO_channel(
-        @de.jensklingenberg.ktorfit.http.Path("channel_id")
-        channelId: String,
-        @Body
-        body: MultiPartFormDataContent,
+        @Path("channel_id") channelId: String,
+        @Body body: MultiPartFormDataContent,
     ): OpCode0.GuildMessage
-    @POST("channels/{channel_id}/messages")
-    suspend fun _messageIO_channel(
-        @de.jensklingenberg.ktorfit.http.Path("channel_id")
-        channelId: String,
-        @Body message: GuildMessageRequestDto,
+    @POST("dms/{guild_id}/messages")
+    suspend fun _messageIO_guild(
+        @Path("guild_id") guildId: String,
+        @Body body: MultiPartFormDataContent,
     ): OpCode0.GuildMessage
-
     @POST("v2/groups/{group_openid}/messages")
     suspend fun messageIO_groups(
-        @de.jensklingenberg.ktorfit.http.Path("group_openid")
-        groupOpenId: String,
+        @Path("group_openid") groupOpenId: String,
         @Body message: GroupMessageRequestDto,
     ): OpCode0.GuildMessage
 
+    /**
+     * @see <a href="https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/send-receive/rich-media.html#用于群聊">富文本消息 - 用于群聊</a>
+     */
     @POST("v2/groups/{group_openid}/files")
-    suspend fun files_groups(
-        @de.jensklingenberg.ktorfit.http.Path("group_openid")
-        groupOpenId: String,
-        @Body file: GroupFileRequestDto,
+    suspend fun _richMedia_groups(
+        @Path("group_openid") groupOpenId: String,
+        @Body body: MultiPartFormDataContent,
+    ): RichMediaRespDto
+    /**
+     * @see <a href="https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/send-receive/rich-media.html#用于群聊">富文本消息 - 用于群聊</a>
+     */
+    @POST("v2/users/{group_openid}/files")
+    suspend fun _richMedia_c2c(
+        @Path("openid") openid: String,
+        @Body body: MultiPartFormDataContent,
+    ): RichMediaRespDto
+
+    /**
+     * @see <a href="https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/send-receive/reset.html#文字子频道">撤回消息 - 文字子频道</a>
+     */
+    @DELETE("channels/{channel_id}/messages/{message_id}")
+    suspend fun messageDelete_channel(
+        @Path("channel_id") channelId: String,
+        @Path("message_id") messageId: String,
+        @Query("hidetip") hidetip: Boolean = false,
+    )
+    @DELETE("dms/{guild_id}/messages/{message_id}")
+    suspend fun messageDelete_guild(
+        @Path("guild_id") guildId: String,
+        @Path("message_id") messageId: String,
+        @Query("hidetip") hidetip: Boolean = false,
+    )
+
+    @PUT("channels/{channel_id}/messages/{message_id}/reactions/{type}/{id}")
+    suspend fun messageReaction_put(
+        @Path("channel_id") channelId: String,
+        @Path("message_id") messageId: String,
+        @Path("type") type: EmojiType,
+        @Path("id") id: String,
+    )
+    @DELETE("channels/{channel_id}/messages/{message_id}/reactions/{type}/{id}")
+    suspend fun messageReaction_delete(
+        @Path("channel_id") channelId: String,
+        @Path("message_id") messageId: String,
+        @Path("type") type: EmojiType,
+        @Path("id") id: String,
+    )
+    @GET("channels/{channel_id}/messages/{message_id}/reactions/{type}/{id}")
+    suspend fun messageReaction_delete(
+        @Path("channel_id") channelId: String,
+        @Path("message_id") messageId: String,
+        @Path("type") type: EmojiType,
+        @Path("id") id: String,
+        @Query("cookie") cookie: String? = null,
+        @Query("limit") limit: Int = 20,
     )
 }
 
-@OptIn(ExperimentalEncodingApi::class)
+suspend fun IQQBotAPI.richMedia_groups(
+    file: String,
+) {
+
+}
+suspend fun IQQBotAPI.messageIO_guild(
+    channelId: String,
+    content: String? = null,
+    embed: MessageEmbed? = null,
+    ark: MessageArk? = null,
+    messageReference: MessageReference? = null,
+    msgId: String? = null,
+    eventId: String? = null,
+    markdown: MessageMarkdown? = null,
+    images: List<String> = emptyList(),
+): OpCode0.GuildMessage {
+    return _messageIO_guild(channelId, createGuildMessageBody(
+        content, embed, ark, messageReference, msgId, eventId, markdown, images
+    ))
+}
+
 suspend fun IQQBotAPI.messageIO_channel(
     channelId: String,
 //    msgType: Int,
@@ -90,8 +147,23 @@ suspend fun IQQBotAPI.messageIO_channel(
     markdown: MessageMarkdown? = null,
     images: List<String> = emptyList(),
 ): OpCode0.GuildMessage {
-    return _messageIO_channel(channelId, MultiPartFormDataContent(formData {
-//        append("msg_type", msgType)
+    return _messageIO_channel(channelId, createGuildMessageBody(
+        content, embed, ark, messageReference, msgId, eventId, markdown, images
+    ))
+}
+
+@OptIn(ExperimentalEncodingApi::class)
+private suspend fun IQQBotAPI.createGuildMessageBody(
+    content: String? = null,
+    embed: MessageEmbed? = null,
+    ark: MessageArk? = null,
+    messageReference: MessageReference? = null,
+    msgId: String? = null,
+    eventId: String? = null,
+    markdown: MessageMarkdown? = null,
+    images: List<String> = emptyList(),
+): MultiPartFormDataContent {
+    return MultiPartFormDataContent(formData {
         content?.takeIf { it.isNotBlank() }?.let { append("content", it) }
         embed?.let { append("embed", MystereJson.encodeToString(it)) }
         ark?.let { append("ark", MystereJson.encodeToString(it)) }
@@ -106,9 +178,9 @@ suspend fun IQQBotAPI.messageIO_channel(
                     val path = with(item.substring(8)) {
                         if (contains(":")) this else "/$this"
                     }
-                    append(
+                    appendFile(
                         "file_image",
-                        SystemFileSystem.source(Path(path)).buffered().readByteArray(),
+                        value = FilePath(path),
                         headers = Headers.build {
                             append(HttpHeaders.ContentDisposition, "filename=\"upload-${size++}.png\"")
                             append(HttpHeaders.ContentType, "image/png")
@@ -116,11 +188,9 @@ suspend fun IQQBotAPI.messageIO_channel(
                     )
                 }
                 item.startsWith("https://") || item.startsWith("http://") -> {
-                    append(
+                    appendHttpResp(
                         "file_image",
-                        runBlocking {
-                            DefaultHttpClient.get(item).body<ByteArray>()
-                        },
+                        runBlocking { DefaultHttpClient.prepareGet(item) },
                         headers = Headers.build {
                             append(HttpHeaders.ContentDisposition, "filename=\"upload-${size++}.png\"")
                             append(HttpHeaders.ContentType, "image/png")
@@ -142,5 +212,5 @@ suspend fun IQQBotAPI.messageIO_channel(
                 }
             }
         }
-    }))
+    })
 }

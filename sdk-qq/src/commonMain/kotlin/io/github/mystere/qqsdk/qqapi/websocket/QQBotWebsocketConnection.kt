@@ -26,7 +26,7 @@ import kotlinx.serialization.json.*
 class QQBotWebsocketConnection(
     private val log: KLogger,
     private val url: String,
-    private val isPrivate: Boolean,
+    private val intent: Intent,
     private val channel: Channel<QQBotWebsocketPayload>,
     private val accessTokenProvider: () -> String,
 ): AutoCloseable {
@@ -46,13 +46,7 @@ class QQBotWebsocketConnection(
                     opCode = QQBotWebsocketPayload.OpCode.Identify,
                     data = OpCode2.IdentifyPayload(
                         token = "QQBot ${accessTokenProvider()}",
-                        intents = Intent.DEFAULT.let {
-                            if (isPrivate) {
-                                return@let it + Intent.PRIVATE
-                            } else {
-                                return@let it
-                            }
-                        },
+                        intents = intent,
                         properties = buildJsonObject {
                             put("\$client", JsonPrimitive("Mystere v${BuildKonfig.VERSION_NAME}(${BuildKonfig.COMMIT})"))
                             put("\$platform", JsonPrimitive(Platform.name))

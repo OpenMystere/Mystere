@@ -5,11 +5,15 @@ import io.ktor.client.*
 import io.ktor.client.plugins.api.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.websocket.*
+import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
+import kotlinx.io.RawSource
+import kotlinx.io.files.Path
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -45,6 +49,14 @@ fun HttpClientConfig<*>.withContentNegotiation(json: Json = MystereJson) {
     install(ContentNegotiation) {
         json(json)
     }
+}
+
+fun FormBuilder.appendHttpResp(key: String, value: HttpStatement, headers: Headers = Headers.Empty) {
+    value.
+}
+
+fun FormBuilder.appendFile(key: String, value: Path, headers: Headers = Headers.Empty) {
+
 }
 
 suspend inline fun <reified T: Any> DefaultClientWebSocketSession.sendWithLog(log: KLogger, data: T) {

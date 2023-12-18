@@ -43,6 +43,7 @@ kotlin {
 
                 implementation(mystere.kotlinx.coroutines.core)
                 implementation(mystere.kotlinx.datetime)
+                implementation(mystere.kotlinx.io.core)
             }
         }
 

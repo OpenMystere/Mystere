@@ -21,7 +21,9 @@ abstract class IOneBotConnection<ActionT: IOneBotAction, EventT: IOneBotEvent, R
 interface IOneBotAction {
     val action: Action
     interface Param
-    interface Action
+    interface Action {
+        val name: String
+    }
 }
 interface IOneBotActionResp {
     enum class Status {

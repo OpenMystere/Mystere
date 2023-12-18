@@ -132,10 +132,3 @@ data class GroupMessageRequestDto(
         val fileInfo: String,
     )
 }
-
-@Serializable
-data class GroupFileRequestDto(
-    @SerialName("file_type")
-    val fileType: Int,
-
-)

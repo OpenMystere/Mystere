@@ -23,24 +23,51 @@ object OpCode2 {
     ): OpCodeData
 }
 
-@Serializable(with = Intent.Serializer::class)
-open class Intent private constructor(
+enum class SingleIntent(
     val rawIntent: Long
 ) {
-    object GUILDS: Intent(1 shl 0)
-    object GUILD_MEMBERS: Intent(1 shl 1)
-    object GUILD_MESSAGES: Intent(1 shl 9)
-    object GUILD_MESSAGE_REACTIONS: Intent(1 shl 10)
-    object DIRECT_MESSAGE: Intent(1 shl 12)
-    object OPEN_FORUMS_EVENT: Intent(1 shl 12)
-    object AUDIO_OR_LIVE_CHANNEL_MEMBER: Intent(1 shl 19)
-    object INTERACTION: Intent(1 shl 26)
-    object MESSAGE_AUDIT: Intent(1 shl 27)
-    object FORUMS_EVENT: Intent(1 shl 28)
-    object AUDIO_ACTION: Intent(1 shl 29)
-    object PUBLIC_GUILD_MESSAGES: Intent(1 shl 30)
+    GUILDS(1 shl 0),
+    GUILD_MEMBERS(1 shl 1),
+    GUILD_MESSAGES(1 shl 9),
+    GUILD_MESSAGE_REACTIONS(1 shl 10),
+    DIRECT_MESSAGE(1 shl 12),
+    OPEN_FORUMS_EVENT(1 shl 12),
+    AUDIO_OR_LIVE_CHANNEL_MEMBER(1 shl 19),
+    INTERACTION(1 shl 26),
+    MESSAGE_AUDIT(1 shl 27),
+    FORUMS_EVENT(1 shl 28),
+    AUDIO_ACTION(1 shl 29),
+    PUBLIC_GUILD_MESSAGES(1 shl 30),
 
-    operator fun plus(intent: Intent): Intent {
+    _DEFAULT((GUILDS + PUBLIC_GUILD_MESSAGES + GUILD_MEMBERS).rawIntent),
+    _PRIVATE((GUILD_MESSAGES + FORUMS_EVENT).rawIntent),
+    ;
+
+    operator fun plus(intent: SingleIntent): Intent {
+        return Intent(intent.rawIntent + rawIntent)
+    }
+}
+
+fun List<SingleIntent>.asIntent(): Intent {
+    if (isEmpty()) {
+        throw IndexOutOfBoundsException("Empty intent list cannot convert to Intent")
+    }
+    var result: Intent? = null
+    for (intent in this) {
+        if (result == null) {
+            result = Intent.raw(intent.rawIntent)
+        } else {
+            result += intent
+        }
+    }
+    return result!!
+}
+
+@Serializable(with = Intent.Serializer::class)
+open class Intent internal constructor(
+    val rawIntent: Long
+) {
+    operator fun plus(intent: SingleIntent): Intent {
         return Intent(intent.rawIntent + rawIntent)
     }
 
@@ -48,9 +75,6 @@ open class Intent private constructor(
         fun raw(value: Long): Intent {
             return Intent(value)
         }
-
-        val DEFAULT = GUILDS + PUBLIC_GUILD_MESSAGES + GUILD_MEMBERS
-        val PRIVATE = GUILD_MESSAGES + FORUMS_EVENT
     }
 
     @OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)

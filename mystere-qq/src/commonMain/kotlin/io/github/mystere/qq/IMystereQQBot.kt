@@ -1,6 +1,7 @@
 package io.github.mystere.qq
 
 import io.github.mystere.core.IMystereBotConnection
+import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.*
 import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
@@ -8,12 +9,10 @@ import io.github.mystere.qq.database.IQQDatabase
 import io.github.mystere.qq.v11.MystereV11QQBot
 import io.github.mystere.qq.v12.MystereV12QQBot
 import io.github.mystere.qqsdk.QQBot
-import io.github.mystere.qqsdk.qqapi.dto.MessageReactionDto
 import io.github.mystere.qqsdk.qqapi.http.IQQBotAPI
 import io.github.mystere.qqsdk.qqapi.websocket.QQBotWebsocketPayload
 import io.github.mystere.qqsdk.qqapi.websocket.message.OpCode0
 import io.github.mystere.qqsdk.qqapi.websocket.withData
-import io.github.mystere.core.util.MystereJson
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
@@ -183,18 +182,25 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
     protected abstract suspend fun processUserRobotEvent(eventType: UserRobotEventType, message: OpCode0.UserRobot)
     protected abstract suspend fun processMessageReactionEvent(eventType: MessageReactionEventType, message: OpCode0.MessageReaction)
 
-    protected suspend fun processOneBotQQAction(action: OneBotQQAction, params: JsonElement?, echo: JsonElement?): RespT? {
+    protected suspend fun processOneBotQQAction(action: OneBotQQAction, params: JsonElement?, echo: JsonElement?): RespT {
         try {
             val respData: OneBotQQActionRespData? = when (action) {
-                OneBotQQAction.message_reaction_put -> params.castQQCustom<MessageReactionDto> {
+                OneBotQQAction.rich_media_group -> params.castQQCustom<OneBotQQActionParam.RichMedia> {
+                    processRichMediaGroupAction(this)
+                }
+                OneBotQQAction.rich_media_c2c -> params.castQQCustom<OneBotQQActionParam.RichMedia> {
+                    processRichMediaC2CAction(this)
+                }
+                OneBotQQAction.message_reaction_put -> params.castQQCustom<OneBotQQActionParam.MessageReaction> {
                     processMessageReactionPutAction(this)
                 }
-                OneBotQQAction.message_reaction_delete -> params.castQQCustom<MessageReactionDto> {
+                OneBotQQAction.message_reaction_delete -> params.castQQCustom<OneBotQQActionParam.MessageReaction> {
                     processMessageReactionDeleteAction(this)
                 }
-                OneBotQQAction.message_reaction_get -> params.castQQCustom<MessageReactionDto> {
+                OneBotQQAction.message_reaction_get -> params.castQQCustom<OneBotQQActionParam.MessageReaction> {
                     processMessageReactionGetAction(this)
                 }
+//                else -> throw OneBotNotImplementedException(action)
             }
             return createSuccessResp(
                 data = respData?.let {
@@ -206,14 +212,21 @@ abstract class IMystereQQBot<ActionT: IOneBotAction, EventT: IOneBotEvent, RespT
             return createFailedResp(e)
         }
     }
-    private suspend fun processMessageReactionPutAction(params: MessageReactionDto): OneBotQQActionRespData? {
-        return null
+
+    private suspend fun processRichMediaGroupAction(params: OneBotQQActionParam.RichMedia): OneBotQQActionRespData? {
+        TODO("Not implemented yet.")
     }
-    private suspend fun processMessageReactionDeleteAction(params: MessageReactionDto): OneBotQQActionRespData? {
-        return null
+    private suspend fun processRichMediaC2CAction(params: OneBotQQActionParam.RichMedia): OneBotQQActionRespData? {
+        TODO("Not implemented yet.")
     }
-    private suspend fun processMessageReactionGetAction(params: MessageReactionDto): OneBotQQActionRespData? {
-        return null
+    private suspend fun processMessageReactionPutAction(params: OneBotQQActionParam.MessageReaction): OneBotQQActionRespData? {
+        TODO("Not implemented yet.")
+    }
+    private suspend fun processMessageReactionDeleteAction(params: OneBotQQActionParam.MessageReaction): OneBotQQActionRespData? {
+        TODO("Not implemented yet.")
+    }
+    private suspend fun processMessageReactionGetAction(params: OneBotQQActionParam.MessageReaction): OneBotQQActionRespData? {
+        TODO("Not implemented yet.")
     }
 
 
