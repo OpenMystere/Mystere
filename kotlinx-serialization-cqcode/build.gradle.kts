@@ -8,7 +8,6 @@ plugins {
 
 kotlin {
     jvm {
-        jvmToolchain(17)
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()
@@ -20,8 +19,6 @@ kotlin {
     linuxArm64()
     linuxX64()
     mingwX64()
-
-    applyDefaultHierarchyTemplate()
 
     sourceSets {
         // common
@@ -48,18 +45,18 @@ kotlin {
         }
 
         // macos
-        val macosMain by getting {
-            dependencies {
-
-            }
-        }
+//        val macosMain by getting {
+//            dependencies {
+//
+//            }
+//        }
 
         // linux
-        val linuxMain by getting {
-            dependencies {
-
-            }
-        }
+//        val linuxMain by getting {
+//            dependencies {
+//
+//            }
+//        }
 
         // windows
         val mingwX64Main by getting {

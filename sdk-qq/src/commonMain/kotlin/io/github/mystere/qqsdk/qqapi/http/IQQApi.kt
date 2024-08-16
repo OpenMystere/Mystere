@@ -69,7 +69,7 @@ interface IQQBotAPI {
      */
     @POST("v2/users/{group_openid}/files")
     suspend fun _richMedia_c2c(
-        @Path("openid") openid: String,
+        @Path("group_openid") openid: String,
         @Body body: MultiPartFormDataContent,
     ): RichMediaRespDto
 

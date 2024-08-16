@@ -9,5 +9,5 @@ actual fun createSqliteDriver(
     schema: SqlSchema<QueryResult.Value<Unit>>,
     name: String,
 ): SqlDriver {
-    return JdbcSqliteDriver("jdbc:sqlite:$sqliteBasePath/$name")
+    return JdbcSqliteDriver("jdbc:sqlite:$_sqliteBasePath/$name")
 }

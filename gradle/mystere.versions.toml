@@ -1,8 +1,8 @@
 [versions]
-kotlin = "1.9.21"
-ksp = "1.9.21-1.0.15"
+kotlin = "2.0.10"
+ksp = "2.0.10-1.0.24"
 agp = "8.1.1"
-ktor = "2.3.6"
+ktor = "3.0.0-beta-2"
 ktorfit = "1.10.2"
 buildkonfig = "0.14.0"
 sqldelight = "2.0.1"
@@ -11,14 +11,15 @@ postgres-native = "0.0.11"
 kotlinx-coroutines = "1.7.3"
 kotlinx-serialization = "1.6.1"
 kotlinx-serialization-message-pack = "0.0.2"
-kotlinx-io= "0.3.0"
+kotlinx-io= "0.5.1"
 kotlinx-datetime = "0.4.1"
 
 kotlin-logging = "5.1.0"
 slf4j = "2.0.9"
 logback = "1.4.11"
-clikt = "4.2.1"
+clikt = "4.4.0"
 yamlkt = "0.13.0"
+kaml = "0.61.0"
 snakeyaml = "2.7.1-SNAPSHOT"
 
 [libraries]
@@ -67,6 +68,7 @@ sqldelight-adapter-primitive = { group = "app.cash.sqldelight", name = "primitiv
 # :mystere
 clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
 yamlkt = { group = "net.mamoe.yamlkt", name = "yamlkt", version.ref = "yamlkt" }
+kaml = { group = "com.charleskorn.kaml", name = "kaml", version.ref = "kaml" }
 snakeyaml = { group = "it.krzeminski", name = "snakeyaml-engine-kmp", version.ref = "snakeyaml" }
 
 [plugins]

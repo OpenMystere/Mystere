@@ -9,7 +9,6 @@ plugins {
 
 kotlin {
     jvm {
-        jvmToolchain(17)
         withJava()
         testRuns.named("test") {
             executionTask.configure {
@@ -30,8 +29,7 @@ kotlin {
     listOf(
         macosArm64(),
         macosX64(),
-        // TODO: clikt
-//        linuxArm64(),
+        linuxArm64(),
         linuxX64(),
         // TODO: ktor-server
 //        mingwX64(),

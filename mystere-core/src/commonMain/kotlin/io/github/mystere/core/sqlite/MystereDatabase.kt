@@ -4,9 +4,9 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
 
-internal var sqliteBasePath: String = "./data"
+internal var _sqliteBasePath: String = "./data"
 fun setSqliteBasePath(path: String) {
-    sqliteBasePath = if (path.endsWith("/")) {
+    _sqliteBasePath = if (path.endsWith("/")) {
         path.substring(0, path.length - 1)
     } else {
         path

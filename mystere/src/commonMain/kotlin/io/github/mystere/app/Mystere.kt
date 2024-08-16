@@ -10,7 +10,6 @@ import io.github.mystere.core.util.logger
 import io.github.mystere.onebot.v11.connection.IOneBotV11Connection
 import io.github.mystere.onebot.v12.connection.IOneBotV12Connection
 import io.github.mystere.qqsdk.QQBot
-import io.github.mystere.sqlite.MystereDatabaseConfig
 import io.github.mystere.core.sqlite.setSqliteBasePath
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*

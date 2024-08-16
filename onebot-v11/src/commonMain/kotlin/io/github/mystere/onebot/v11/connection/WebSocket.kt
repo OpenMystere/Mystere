@@ -2,7 +2,6 @@ package io.github.mystere.onebot.v11.connection
 
 import io.github.mystere.core.util.MystereJson
 import io.github.mystere.onebot.OneBotConnectionException
-import io.github.mystere.onebot.v11.OneBotV11ActionResp
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
@@ -20,11 +19,8 @@ internal class WebSocketConnection(
         KotlinLogging.logger("OneBotV11-WebSocketConnection(ownBotId: $ownBotId)")
     }
 
-    private var ApiConnection: ApplicationEngine? = null
-    private var EventConnection: ApplicationEngine? = null
-
-    private val ApiApplication: Application? get() = ApiConnection?.application
-    private val EventApplication: Application? get() = EventConnection?.application
+    private var ApiConnection: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
+    private var EventConnection: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
 
     override suspend fun connect(ownBotId: String) {
         super.connect(ownBotId)

@@ -37,3 +37,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+._*
+
+### Kotlin ###
+.kotlin

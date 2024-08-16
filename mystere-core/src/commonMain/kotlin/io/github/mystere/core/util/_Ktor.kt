@@ -10,10 +10,12 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.utils.io.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.io.RawSource
+import kotlinx.io.buffered
 import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -52,11 +54,15 @@ fun HttpClientConfig<*>.withContentNegotiation(json: Json = MystereJson) {
 }
 
 fun FormBuilder.appendHttpResp(key: String, value: HttpStatement, headers: Headers = Headers.Empty) {
-    value.
+    append(key, ChannelProvider {
+        runBlocking { value.execute().bodyAsChannel() }
+    }, headers)
 }
 
 fun FormBuilder.appendFile(key: String, value: Path, headers: Headers = Headers.Empty) {
-
+    appendInput(key, headers) {
+        SystemFileSystem.source(value).buffered()
+    }
 }
 
 suspend inline fun <reified T: Any> DefaultClientWebSocketSession.sendWithLog(log: KLogger, data: T) {

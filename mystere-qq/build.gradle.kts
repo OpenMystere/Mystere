@@ -9,18 +9,29 @@ plugins {
 
 kotlin {
     jvm {
-        jvmToolchain(17)
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()
             }
         }
     }
-    macosArm64()
-    macosX64()
-    linuxArm64()
-    linuxX64()
-//    mingwX64()
+    listOf(
+        macosArm64(),
+        macosX64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = "MystereQQ"
+        }
+    }
+    listOf(
+        linuxArm64(),
+        linuxX64(),
+//        mingwX64(),
+    ).forEach {
+        it.binaries.staticLib {
+            baseName = "MystereQQ"
+        }
+    }
 
     applyDefaultHierarchyTemplate()
 

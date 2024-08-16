@@ -8,7 +8,6 @@ plugins {
 
 kotlin {
     jvm {
-        jvmToolchain(17)
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()

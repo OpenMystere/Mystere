@@ -8,19 +8,30 @@ plugins {
 
 kotlin {
     jvm {
-        jvmToolchain(17)
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()
             }
         }
     }
-    macosArm64()
-    macosX64()
-    linuxArm64()
-    linuxX64()
-    // TODO: ktor-server
+    listOf(
+        macosArm64(),
+        macosX64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = "MystereOneBotV11"
+        }
+    }
+    listOf(
+        linuxArm64(),
+        linuxX64(),
+        // TODO: ktor-server
 //    mingwX64()
+    ).forEach {
+        it.binaries.staticLib {
+            baseName = "MystereOneBotV11"
+        }
+    }
 
     applyDefaultHierarchyTemplate()
 
@@ -53,7 +64,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(mystere.kotlin.test)
-                implementation(mystere.ktor.server.tests)
+//                implementation(mystere.ktor.server.tests)
             }
         }
 

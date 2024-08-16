@@ -9,5 +9,5 @@ actual fun createSqliteDriver(
     schema: SqlSchema<QueryResult.Value<Unit>>,
     name: String
 ): SqlDriver {
-    return NativeSqliteDriver(schema, "$sqliteBasePath/$name")
+    return NativeSqliteDriver(schema, "$_sqliteBasePath/$name")
 }

@@ -10,18 +10,29 @@ plugins {
 
 kotlin {
     jvm {
-        jvmToolchain(17)
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()
             }
         }
     }
-    macosArm64()
-    macosX64()
-    linuxArm64()
-    linuxX64()
-    mingwX64()
+    listOf(
+        macosArm64(),
+        macosX64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = "MystereSdkQQ"
+        }
+    }
+    listOf(
+        linuxArm64(),
+        linuxX64(),
+        mingwX64(),
+    ).forEach {
+        it.binaries.staticLib {
+            baseName = "MystereSdkQQ"
+        }
+    }
 
     applyDefaultHierarchyTemplate()
 
@@ -40,7 +51,6 @@ kotlin {
                 implementation(mystere.ktor.plugin.serialization.kotlinx.json)
                 implementation(mystere.ktorfit.lib.light)
 
-                implementation(mystere.kotlinx.io.core)
                 implementation(mystere.kotlinx.coroutines.core)
                 implementation(mystere.kotlinx.datetime)
 

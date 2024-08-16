@@ -11,18 +11,33 @@ plugins {
 
 kotlin {
     jvm {
-        jvmToolchain(17)
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()
             }
         }
+        java {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
     }
-    macosArm64()
-    macosX64()
-    linuxArm64()
-    linuxX64()
-    mingwX64()
+    listOf(
+        macosArm64(),
+        macosX64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = "MystereCore"
+        }
+    }
+    listOf(
+        linuxArm64(),
+        linuxX64(),
+        mingwX64(),
+    ).forEach {
+        it.binaries.staticLib {
+            baseName = "MystereCore"
+        }
+    }
 
     applyDefaultHierarchyTemplate()
 
